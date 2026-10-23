@@ -150,7 +150,7 @@ function renderForm(){
   <label for="ig">@ do Instagram (opcional)</label><input id="ig" placeholder="@suaclinica">
   <p class="err" id="err"></p>
   <button class="btn" id="ver" style="margin-top:12px">Ver meu resultado</button>
-  <p class="micro">Usamos seus dados só para enviar o Raio-X e falar com você. [PLACEHOLDER — link da política de privacidade]</p>`;
+  <p class="micro">Ao continuar, você concorda com a <a href="privacidade.html" target="_blank" style="color:var(--gold2)">Política de Privacidade</a>.</p>`;
   document.getElementById("ver").onclick = ()=>{
     const v = id=>document.getElementById(id).value.trim();
     const lead = {nome:v("nome"), whatsapp:v("wpp").replace(/\D/g,""), clinica:v("clinica"), subnicho:v("sub"), instagram:v("ig")};
