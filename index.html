@@ -3,95 +3,142 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Prime Studio — Presença de marca para clínicas de estética e odontologia</title>
-<meta name="description" content="Método PRIME: posicionamento no Google, Instagram e site para clínicas de estética e odontologia de alto ticket. Faça seu Raio-X de Presença grátis.">
+<title>Prime Studio — Clínicas de estética e odontologia escolhidas antes da primeira conversa</title>
+<meta name="description" content="Método PRIME: Google, Instagram, site e WhatsApp trabalhando juntos para clínicas de estética e odontologia de alto ticket. Faça o Raio-X de Presença grátis em 2 minutos.">
 <meta name="theme-color" content="#0b0a08">
 <meta property="og:title" content="Prime Studio — Raio-X de Presença grátis">
-<meta property="og:description" content="Descubra em 2 minutos como sua clínica aparece no Google, no Instagram e no site.">
+<meta property="og:description" content="Descubra em 2 minutos como sua clínica aparece para o paciente de alto ticket.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+<div class="progress" id="scrollbar"></div>
 <header class="nav" id="nav">
   <div class="wrap nav-in">
     <a class="logo" href="#topo" aria-label="Prime Studio">PRIME<span>STUDIO</span></a>
-    <nav class="links"><a href="#metodo">Método</a><a href="#cases">Projetos</a><a href="#quiz">Raio-X</a></nav>
-    <a class="btn btn-sm" href="#quiz">Raio-X grátis</a>
+    <nav class="links"><a href="#metodo">Método</a><a href="#cases">Projetos</a><a href="#como">Como funciona</a><a href="#faq">Dúvidas</a></nav>
+    <a class="btn btn-sm" href="#quiz" data-cta="nav">Raio-X grátis</a>
   </div>
 </header>
 
 <main id="topo">
+<!-- HERO -->
 <section class="hero">
-  <div class="glow"></div>
+  <div class="glow"></div><div class="gridbg" aria-hidden="true"></div>
   <div class="wrap hero-grid">
     <div>
-      <p class="eyebrow reveal">Estética &amp; Odontologia de alto padrão</p>
-      <h1 class="reveal">Sua clínica <em>encontrada</em>, escolhida e chamada no WhatsApp.</h1>
-      <p class="lead reveal">Posicionamento no Google, no Instagram e no site com o <strong>Método PRIME</strong>, para que o paciente certo perceba o valor da sua clínica antes mesmo da primeira conversa.</p>
+      <p class="eyebrow reveal">Para clínicas de estética e odontologia de alto ticket</p>
+      <h1 class="reveal">Presença <em>é</em> agenda.</h1>
+      <p class="lead big reveal">O paciente que paga por lentes, implantes ou harmonização pesquisa sua clínica antes de chamar. O <strong>Método PRIME</strong> faz Google, Instagram, site e WhatsApp mostrarem o padrão que você entrega, para ele chegar decidido.</p>
       <div class="hero-cta reveal">
-        <a class="btn" href="#quiz">Faça seu Raio-X de Presença grátis <span aria-hidden="true">→</span></a>
-        <p class="micro">7 perguntas · cerca de 2 minutos · resultado na hora</p>
+        <a class="btn" href="#quiz" data-cta="hero">Faça seu Raio-X de Presença grátis <span aria-hidden="true">→</span></a>
+        <a class="btn ghost" href="#metodo">Ver o método</a>
       </div>
+      <ul class="facts reveal" aria-label="Como é o Raio-X">
+        <li><b class="count" data-to="7">7</b><span>perguntas</span></li>
+        <li><b class="count" data-to="2">2</b><span>minutos</span></li>
+        <li><b class="count" data-to="100" data-pre="0–">0–100</b><span>nota de presença</span></li>
+        <li><b class="count" data-to="3">3</b><span>oportunidades</span></li>
+      </ul>
     </div>
-    <div class="hero-art reveal" aria-hidden="true">
-      <div class="phone">
-        <div class="ph-top"></div>
-        <div class="ph-scr">
-          <div class="ph-hero"></div>
-          <div class="ph-l w80"></div><div class="ph-l w60"></div>
-          <div class="ph-btn"></div>
-          <div class="ph-cards"><i></i><i></i><i></i></div>
-          <div class="ph-l w70"></div><div class="ph-l w40"></div>
+    <div class="hero-art reveal tilt" aria-hidden="true">
+      <div class="dash">
+        <div class="dash-h"><span class="dots"><i></i><i></i><i></i></span><span>Raio-X de Presença</span></div>
+        <div class="dash-b">
+          <div class="ring big" style="--v:0" id="heroRing"><span id="heroNum">0<small>/100</small></span></div>
+          <div class="dash-rows">
+            <div><span>Google</span><i style="--w:72%"></i></div>
+            <div><span>Instagram</span><i style="--w:55%"></i></div>
+            <div><span>Site</span><i style="--w:38%"></i></div>
+            <div><span>WhatsApp</span><i style="--w:64%"></i></div>
+          </div>
         </div>
+        <p class="dash-note">Ilustração do relatório</p>
       </div>
-      <div class="chip c1"><b>G</b> Perfil no Google</div>
-      <div class="chip c2"><b>◎</b> Instagram</div>
-      <div class="chip c3"><b>✆</b> WhatsApp</div>
-    </div>
-  </div>
-  <div class="wrap pillars reveal">
-    <span>Google Meu Negócio</span><span>Instagram</span><span>Site premium</span><span>WhatsApp</span><span>Agenda</span>
-  </div>
-</section>
-
-<section class="sec problem">
-  <div class="wrap two">
-    <h2 class="reveal">Paciente de alto ticket pesquisa antes de chamar.</h2>
-    <div class="reveal">
-      <p class="lead">Antes de agendar uma lente, um implante ou uma harmonização, o paciente procura sua clínica no Google, olha o Instagram e procura um site. Se o que ele encontra não transmite o padrão do seu trabalho, ele compara por preço ou vai para o concorrente.</p>
-      <p class="lead">A Prime Studio organiza essa jornada inteira para a sua clínica parecer exatamente o que ela é.</p>
+      <div class="chip c1"><b>G</b> Avaliações no Google</div>
+      <div class="chip c2"><b>◎</b> Bio e destaques</div>
+      <div class="chip c3"><b>✆</b> Agenda + WhatsApp</div>
     </div>
   </div>
 </section>
 
-<section id="metodo" class="sec">
-  <div class="wrap">
-    <p class="eyebrow reveal">Método PRIME</p>
-    <h2 class="reveal">Cinco etapas para sua clínica ser a escolha óbvia</h2>
-    <ol class="prime">
-      <li class="reveal"><b>P</b><div><h3>Perfil</h3><p>Raio-X da presença atual e definição do posicionamento: qual procedimento e qual paciente sua clínica quer liderar.</p></div></li>
-      <li class="reveal"><b>R</b><div><h3>Reputação</h3><p>Google Meu Negócio completo e rotina de avaliações para quem pesquisa encontrar prova.</p></div></li>
-      <li class="reveal"><b>I</b><div><h3>Imagem</h3><p>Instagram, bio, destaques e identidade visual coerentes com o ticket que você cobra.</p></div></li>
-      <li class="reveal"><b>M</b><div><h3>Marca no site</h3><p>Site mobile-first, rápido, com páginas por procedimento e caminho direto para o WhatsApp.</p></div></li>
-      <li class="reveal"><b>E</b><div><h3>Escala</h3><p>Medição dos contatos, agenda online e, quando fizer sentido, tráfego pago.</p></div></li>
-    </ol>
+<!-- SEGMENTOS -->
+<section class="marquee" aria-label="Especialidades atendidas">
+  <div class="track">
+    <span>Harmonização facial</span><span>Nanoglam · Estética de beleza</span><span>Estética facial e corporal</span><span>Lentes e facetas</span><span>Implantes dentários</span>
+    <span aria-hidden="true">Harmonização facial</span><span aria-hidden="true">Nanoglam · Estética de beleza</span><span aria-hidden="true">Estética facial e corporal</span><span aria-hidden="true">Lentes e facetas</span><span aria-hidden="true">Implantes dentários</span>
   </div>
 </section>
 
-<section id="cases" class="sec alt">
+<!-- PROBLEMA -->
+<section class="sec">
   <div class="wrap">
-    <p class="eyebrow reveal">Projetos</p>
-    <h2 class="reveal">Páginas pensadas para cada especialidade</h2>
-    <p class="lead reveal">Clique em um projeto para ver a página em tela cheia.</p>
+    <p class="num reveal">01 <span>(O problema)</span></p>
+    <h2 class="reveal">Seu trabalho é premium. <em>Sua presença digital mostra isso?</em></h2>
+    <div class="grid3">
+      <article class="card tilt reveal"><p class="k">Google</p><h3>Quem pesquisa não te encontra</h3><p>O paciente busca o procedimento na sua cidade e encontra primeiro o concorrente com mais avaliações.</p></article>
+      <article class="card tilt reveal"><p class="k">Instagram</p><h3>Bonito, mas não converte</h3><p>Muito conteúdo e pouco caminho: a bio não explica, os destaques não respondem e o contato se perde.</p></article>
+      <article class="card tilt reveal"><p class="k">Site / WhatsApp</p><h3>A conversa começa pelo preço</h3><p>Sem página que mostre o valor do tratamento, o paciente chega comparando orçamento em vez de querer você.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- MÉTODO (abas) -->
+<section id="metodo" class="sec alt">
+  <div class="wrap">
+    <p class="num reveal">02 <span>(O mecanismo)</span></p>
+    <h2 class="reveal">Método PRIME: cinco alavancas, <em>uma jornada.</em></h2>
+    <p class="lead reveal">Cada etapa resolve um ponto onde o paciente de alto ticket desiste. Juntas, levam a pessoa da pesquisa ao agendamento.</p>
+    <div class="tabs reveal" role="tablist" id="tabs"></div>
+    <div class="panel reveal" id="panel" role="tabpanel"></div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section id="cases" class="sec">
+  <div class="wrap">
+    <p class="num reveal">03 <span>(Projetos)</span></p>
+    <h2 class="reveal">Páginas desenhadas <em>para cada especialidade.</em></h2>
+    <p class="lead reveal">Exemplos de projeto: páginas-modelo ilustrativas. Toque para abrir em tela cheia.</p>
     <div class="cases" id="cases-grid"></div>
   </div>
 </section>
 
-<section id="quiz" class="sec">
+<!-- COMO FUNCIONA -->
+<section id="como" class="sec alt">
+  <div class="wrap">
+    <p class="num reveal">04 <span>(Próximo passo)</span></p>
+    <h2 class="reveal">Começar leva <em>2 minutos.</em></h2>
+    <ol class="steps3">
+      <li class="reveal"><b>1</b><h3>Faça o Raio-X</h3><p>7 perguntas rápidas sobre como sua clínica aparece hoje.</p></li>
+      <li class="reveal"><b>2</b><h3>Receba sua nota</h3><p>Nota de 0 a 100 e 3 oportunidades prioritárias, na hora.</p></li>
+      <li class="reveal"><b>3</b><h3>Converse com a gente</h3><p>Agende o diagnóstico ou fale direto no WhatsApp. Sem compromisso.</p></li>
+    </ol>
+    <div class="center reveal" style="margin-top:44px"><a class="btn" href="#quiz" data-cta="como">Quero minha nota agora <span aria-hidden="true">→</span></a></div>
+  </div>
+</section>
+
+<!-- PARA QUEM -->
+<section class="sec">
+  <div class="wrap two">
+    <div class="reveal">
+      <p class="num">05 <span>(Para quem é)</span></p>
+      <h2>Feito para clínicas que <em>cobram pelo valor</em>, não pelo preço.</h2>
+    </div>
+    <div class="fit reveal">
+      <div><p class="k ok">É para você se</p><ul><li>Oferece procedimentos de alto ticket</li><li>Quer ser referência na sua cidade</li><li>Recebe contatos, mas muitos chegam pedindo só preço</li><li>Quer agenda previsível além da indicação</li></ul></div>
+      <div><p class="k no">Não é para você se</p><ul><li>Procura só posts avulsos</li><li>Quer competir pelo menor preço</li><li>Não pode responder o WhatsApp</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="sec alt">
   <div class="wrap narrow">
-    <p class="eyebrow reveal">Raio-X de Presença</p>
-    <h2 class="reveal">Descubra a nota de presença digital da sua clínica</h2>
+    <p class="num reveal">06 <span>(Raio-X de Presença)</span></p>
+    <h2 class="reveal">Descubra a nota da sua clínica <em>em 2 minutos.</em></h2>
     <div class="quiz reveal" id="quizBox">
       <div class="bar"><span id="bar"></span></div>
       <p class="step" id="stepLbl"></p>
@@ -100,11 +147,30 @@
   </div>
 </section>
 
+<!-- FAQ -->
+<section id="faq" class="sec">
+  <div class="wrap narrow">
+    <p class="num reveal">07 <span>(Dúvidas)</span></p>
+    <h2 class="reveal">Perguntas frequentes</h2>
+    <div class="faq">
+      <details class="reveal"><summary>Já tenho Instagram. Preciso de mais alguma coisa?</summary><p>O Instagram é uma das peças. O paciente de alto ticket também pesquisa no Google e quer um site que explique o tratamento. O Método PRIME conecta tudo e leva para o WhatsApp ou para a agenda.</p></details>
+      <details class="reveal"><summary>Já tenho site. Vocês refazem do zero?</summary><p>Não necessariamente. O Raio-X mostra o que já funciona. Às vezes ajustar páginas, textos e chamadas resolve; quando não, propomos um site novo.</p></details>
+      <details class="reveal"><summary>Quanto custa?</summary><p>Depende do escopo da sua clínica. O valor é apresentado depois do diagnóstico, com o que está incluído em cada etapa. O Raio-X e a conversa de diagnóstico são gratuitos.</p></details>
+      <details class="reveal"><summary>Em quanto tempo vejo diferença?</summary><p>Ajustes de perfil, Google e site costumam ficar prontos em poucas semanas. O efeito em contatos e agenda depende da sua cidade, da concorrência e da constância. Não prometemos números antes de analisar o seu caso.</p></details>
+      <details class="reveal"><summary>Preciso gravar vídeos ou aparecer?</summary><p>Não é obrigatório. Ajudamos a definir o que faz sentido para a sua imagem e para a sua rotina.</p></details>
+      <details class="reveal"><summary>Vocês fazem tráfego pago?</summary><p>Sim, na etapa Escala, quando a base (Google, Instagram e site) já está pronta para receber o investimento.</p></details>
+      <details class="reveal"><summary>O Raio-X me obriga a contratar?</summary><p>Não. Você recebe a nota e as oportunidades na hora e decide se quer conversar.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
 <section class="sec final">
   <div class="wrap center">
-    <h2 class="reveal">Pronto para ver onde sua clínica está?</h2>
+    <h2 class="reveal">Toda semana, alguém pesquisa o seu procedimento na sua cidade. <em>Quem ele encontra?</em></h2>
+    <p class="lead reveal" style="margin-inline:auto">Descubra em 2 minutos, de graça, onde sua clínica está perdendo esse paciente.</p>
     <div class="ctas center reveal">
-      <a class="btn" href="#quiz">Faça seu Raio-X de Presença grátis</a>
+      <a class="btn" href="#quiz" data-cta="final">Faça seu Raio-X de Presença grátis</a>
       <a class="btn ghost" id="footWa" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
     </div>
   </div>
@@ -118,6 +184,8 @@
   </div>
 </footer>
 
+<a class="sticky-cta" id="stickyCta" href="#quiz" data-cta="sticky">Faça seu Raio-X grátis →</a>
+
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Projeto em tela cheia" hidden>
   <div class="modal-bar">
     <span class="dots"><i></i><i></i><i></i></span>
@@ -127,7 +195,6 @@
   </div>
   <div class="modal-body" id="modalBody"></div>
 </div>
-
-<script src="assets/app.js"></script>
+<script src="assets/app.js" defer></script>
 </body>
 </html>

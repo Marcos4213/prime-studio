@@ -86,6 +86,61 @@ addEventListener("keydown",e=>{ if(e.key==="Escape" && !modal.hidden) closeModal
 const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
 
+/* ---------- v2: interações ---------- */
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const PRIME = [
+  ["P","Perfil","Posicionamento claro antes de qualquer post.","Raio-X da presença atual",["Definição do procedimento-âncora","Perfil do paciente ideal","Mensagem e diferenciais da clínica"]],
+  ["R","Reputação","Quem pesquisa precisa encontrar prova.","Google Meu Negócio completo",["Categorias, fotos e serviços otimizados","Rotina de pedidos de avaliação","Respostas profissionais às avaliações"]],
+  ["I","Imagem","O Instagram precisa parecer o preço que você cobra.","Bio, destaques e identidade",["Bio com promessa e chamada","Destaques que respondem objeções","Linha visual coerente com o alto padrão"]],
+  ["M","Marca no site","Um site que vende o tratamento antes da consulta.","Site mobile-first e rápido",["Páginas por procedimento","Botão de WhatsApp e agenda online","Estrutura pensada para o Google"]],
+  ["E","Escala","Mais contatos, com medição.","Crescimento previsível",["Origem dos contatos medida","Agenda e WhatsApp integrados","Tráfego pago quando a base estiver pronta"]]
+];
+const tabs=document.getElementById("tabs"), panel=document.getElementById("panel");
+tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab" role="tab" aria-selected="${k===0}" data-k="${k}"><b>${t[0]}</b>${t[1]}</button>`).join("");
+let tabTimer;
+function showTab(k){
+  const t=PRIME[k]; tabs.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===k));
+  panel.classList.remove("anim"); void panel.offsetWidth; panel.classList.add("anim");
+  panel.innerHTML=`<div class="L">${t[0]}</div><div><p class="k">Etapa ${k+1} de 5 · ${t[1]}</p><h3>${t[2]}</h3><p style="margin-top:10px">${t[3]}.</p></div><ul>${t[4].map(x=>`<li>${x}</li>`).join("")}</ul>`;
+}
+tabs.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{clearInterval(tabTimer);showTab(+b.dataset.k);});
+showTab(0);
+if(!RM){ let cur=0; tabTimer=setInterval(()=>{cur=(cur+1)%5;showTab(cur);},6000);
+  new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) clearInterval(tabTimer); }),{threshold:0}).observe(panel); }
+
+function animateCount(el){
+  const to=+el.dataset.to, pre=el.dataset.pre||""; if(RM){el.textContent=pre+to;return;}
+  const t0=performance.now(), d=1200;
+  (function f(t){const k=Math.min(1,(t-t0)/d); el.textContent=pre+Math.round(to*(1-Math.pow(1-k,3))); if(k<1) requestAnimationFrame(f);})(t0);
+}
+const co=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ animateCount(e.target); co.unobserve(e.target);} }),{threshold:.6});
+document.querySelectorAll(".count").forEach(el=>co.observe(el));
+// anel ilustrativo do hero
+const hr=document.getElementById("heroRing"), hn=document.getElementById("heroNum");
+if(hr){ const go=()=>{ const to=72; if(RM){hr.style.setProperty("--v",to);hn.innerHTML=to+"<small>/100</small>";return;}
+  const t0=performance.now(); (function f(t){const k=Math.min(1,(t-t0)/1600),v=Math.round(to*(1-Math.pow(1-k,3))); hr.style.setProperty("--v",v); hn.innerHTML=v+"<small>/100</small>"; if(k<1) requestAnimationFrame(f);})(t0); };
+  setTimeout(go,400); document.querySelector(".dash-rows").classList.add("in"); }
+
+// stagger de entrada
+document.querySelectorAll(".grid3,.steps3,.cases,.faq,.facts").forEach(g=>[...g.children].forEach((c,k)=>c.style.setProperty("--d",(k*0.08)+"s")));
+
+// tilt 3D (só com mouse)
+if(!RM && matchMedia("(hover:hover) and (pointer:fine)").matches){
+  document.querySelectorAll(".tilt,.case").forEach(el=>{
+    el.addEventListener("mousemove",e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+      el.style.transform=`perspective(900px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-4px)`;});
+    el.addEventListener("mouseleave",()=>el.style.transform="");
+  });
+}
+// barra de progresso + sticky CTA
+const sb=document.getElementById("scrollbar"), sc=document.getElementById("stickyCta"), qz=document.getElementById("quiz");
+let quizVisible=false;
+new IntersectionObserver(es=>{quizVisible=es[0].isIntersecting; onScroll();},{threshold:0}).observe(qz);
+function onScroll(){ const h=document.documentElement; sb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";
+  sc.classList.toggle("show", scrollY>window.innerHeight*.7 && !quizVisible); }
+addEventListener("scroll",onScroll,{passive:true});
+document.querySelectorAll("[data-cta]").forEach(a=>a.addEventListener("click",()=>track("ViewContent",{content_name:"cta_"+a.dataset.cta})));
+
 /* ---------- Quiz ---------- */
 // p = pontos de presença (quanto mais, melhor presença); f = pontos de fit comercial
 const QUESTIONS = [
