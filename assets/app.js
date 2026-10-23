@@ -141,25 +141,30 @@ function onScroll(){ const h=document.documentElement; sb.style.width=(h.scrollT
 addEventListener("scroll",onScroll,{passive:true});
 document.querySelectorAll("[data-cta]").forEach(a=>a.addEventListener("click",()=>track("ViewContent",{content_name:"cta_"+a.dataset.cta})));
 
+const rot=document.getElementById("rot");
+if(rot && !RM){ const W=["harmonização","lentes de contato dental","implantes","tricologia","nutrição","dermatologia","studios de beleza premium"]; let wi=0;
+  setInterval(()=>{ rot.classList.add("out"); setTimeout(()=>{ wi=(wi+1)%W.length; rot.textContent=W[wi]; rot.classList.remove("out"); },350); },2400); }
 /* ---------- Quiz ---------- */
 // p = pontos de presença (quanto mais, melhor presença); f = pontos de fit comercial
+const OUTRO = "Outro segmento de saúde/beleza";
 const QUESTIONS = [
-  { id:"subnicho", q:"Qual é a especialidade da sua clínica?", opts:[
+  { id:"subnicho", q:"Qual é o seu segmento?", opts:[
     {t:"Harmonização facial"},{t:"Estética de beleza (Nanoglam, cílios, sobrancelha)"},
-    {t:"Estética corporal/facial em clínica"},{t:"Odonto estética (lentes/facetas)"},{t:"Implantes / reabilitação oral"},{t:"Outra"}]},
+    {t:"Estética corporal/facial em clínica"},{t:"Odonto estética (lentes/facetas)"},{t:"Implantes / reabilitação oral"},
+    {t:"Tricologia"},{t:"Nutrição"},{t:"Dermatologia"},{t:"Fisioterapia / estética"},{t:"Studio de beleza premium"},{t:OUTRO}]},
   { id:"origem", q:"Como chega a maioria dos seus clientes hoje?", opts:[
     {t:"Indicação / boca a boca", p:5, opp:"canal"},{t:"Instagram orgânico", p:15, opp:"canal"},
     {t:"Google", p:25},{t:"Tráfego pago", p:25},{t:"Não sei dizer", p:0, opp:"canal"}]},
-  { id:"google", q:"Quando alguém busca seu serviço no Google na sua cidade, sua clínica aparece?", opts:[
+  { id:"google", q:"Quando alguém busca seu serviço no Google na sua cidade, você aparece?", opts:[
     {t:"Sim, entre os primeiros e com boas avaliações", p:40},{t:"Aparece, mas com poucas avaliações", p:20, opp:"reputacao"},
     {t:"Não aparece", p:0, opp:"google"},{t:"Nunca verifiquei", p:5, opp:"google"}]},
-  { id:"site", q:"Sua clínica tem site?", opts:[
+  { id:"site", q:"Seu negócio tem site?", opts:[
     {t:"Sim, e ele gera contatos", p:35},{t:"Sim, mas está desatualizado", p:15, opp:"site"},
     {t:"Não, só Instagram / link na bio", p:5, opp:"site"},{t:"Não tenho", p:0, opp:"site"}]},
   { id:"objetivo", q:"Qual é seu principal objetivo nos próximos 90 dias?", opts:[
     {t:"Atrair mais pacientes de alto ticket", f:30},{t:"Ser referência na minha cidade", f:25},
     {t:"Organizar a presença digital", f:15},{t:"Ainda estou pesquisando", f:0}]},
-  { id:"faturamento", q:"Faturamento mensal aproximado da clínica", opts:[
+  { id:"faturamento", q:"Faturamento mensal aproximado do negócio", opts:[
     {t:"Acima de R$ 100 mil", f:35, perfil:"alto"},{t:"R$ 40 mil a R$ 100 mil", f:30, perfil:"alto"},
     {t:"R$ 15 mil a R$ 40 mil", f:20, perfil:"medio"},{t:"Até R$ 15 mil", f:5, perfil:"baixo"},{t:"Prefiro não informar", f:10, perfil:"medio"}]},
   { id:"momento", q:"Quando pretende começar e quem decide?", opts:[
@@ -167,20 +172,30 @@ const QUESTIONS = [
     {t:"Em 2 a 3 meses", f:10},{t:"Sem previsão", f:0}]}
 ];
 
+function termos(sub){
+  const x=(sub||"").toLowerCase();
+  if(/studio|beleza|nanoglam/.test(x)) return {item:"serviço",itens:"serviços",pessoa:"cliente",pessoas:"clientes",local:"studio"};
+  if(/nutri/.test(x)) return {item:"atendimento",itens:"atendimentos",pessoa:"paciente",pessoas:"pacientes",local:"consultório"};
+  if(/fisio|tricolog|dermato/.test(x)) return {item:"tratamento",itens:"tratamentos",pessoa:"paciente",pessoas:"pacientes",local:"clínica ou consultório"};
+  if(/outro/.test(x)) return {item:"serviço",itens:"serviços",pessoa:"paciente ou cliente",pessoas:"pacientes ou clientes",local:"negócio"};
+  return {item:"procedimento",itens:"procedimentos",pessoa:"paciente",pessoas:"pacientes",local:"clínica"};
+}
 const OPPS = {
-  google:"Colocar sua clínica no mapa: Google Meu Negócio completo para aparecer nas buscas locais da sua especialidade.",
-  reputacao:"Rotina de avaliações no Google para transformar quem já foi atendido em prova para quem está decidindo.",
-  site:"Site mobile-first com páginas por procedimento, levando o visitante direto para o WhatsApp.",
-  canal:"Criar um canal previsível de novos pacientes além da indicação, para não depender só do boca a boca.",
-  imagem:"Revisar bio, destaques e identidade do Instagram para transmitir o padrão premium da clínica.",
-  escala:"Medir de onde vêm os contatos do WhatsApp e só então escalar com tráfego pago.",
-  perfil:"Definir o posicionamento: qual procedimento e qual público sua clínica quer ser a primeira escolha."
+  google:T=>`Colocar seu ${T.local==="clínica"?"negócio":T.local.split(" ")[0]} no mapa: Google Meu Negócio completo para aparecer nas buscas locais do seu segmento.`,
+  reputacao:T=>`Rotina de avaliações no Google para transformar quem já foi atendido em prova para o próximo ${T.pessoa} que está decidindo.`,
+  site:T=>`Site mobile-first com páginas por ${T.item}, levando o visitante direto para o WhatsApp.`,
+  canal:T=>`Criar um canal previsível de novos ${T.pessoas} além da indicação, para não depender só do boca a boca.`,
+  imagem:T=>"Revisar bio, destaques e identidade do Instagram para transmitir o seu padrão premium.",
+  escala:T=>"Medir de onde vêm os contatos do WhatsApp e só então escalar com tráfego pago.",
+  perfil:T=>`Definir o posicionamento: qual ${T.item} e qual público você quer liderar como primeira escolha.`
 };
+
 
 let i = 0; const ans = {}; const stage = document.getElementById("stage");
 const bar = document.getElementById("bar"), stepLbl = document.getElementById("stepLbl");
 const TOTAL = QUESTIONS.length + 1;
 let started = false;
+let segOutro = "";
 
 function progress(n){ bar.style.width = (n/TOTAL*100)+"%"; stepLbl.textContent = n<TOTAL ? `Etapa ${n+1} de ${TOTAL}` : "Resultado"; }
 
@@ -190,7 +205,16 @@ function renderQ(){
   const bk=document.getElementById("back"); if(bk) bk.onclick=()=>{i--;renderQ();};
   stage.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
     if(!started){started=true; track("ViewContent",{content_name:"quiz_start"});}
-    ans[Q.id] = Q.opts[+b.dataset.k]; i++; i<QUESTIONS.length ? renderQ() : renderForm();
+    const o = Q.opts[+b.dataset.k];
+    if(Q.id==="subnicho" && o.t===OUTRO){
+      stage.querySelectorAll(".opt").forEach(x=>x.style.display=x===b?"":"none");
+      b.insertAdjacentHTML("afterend",`<label for="outroQ">Qual é o seu segmento?</label><input id="outroQ" placeholder="Ex.: podologia, medicina integrativa, spa" value="${esc(segOutro)}"><p class="err" id="errQ"></p><button class="btn" id="okQ" style="margin-top:8px">Continuar →</button>`);
+      const inp=document.getElementById("outroQ"); inp.focus(); inp.oninput=()=>{document.getElementById("errQ").textContent="";};
+      const go=()=>{ const t=inp.value.trim(); if(t.length<2){document.getElementById("errQ").textContent="Conte qual é o seu segmento para continuar.";return;} segOutro=t; ans[Q.id]=o; i++; renderQ(); };
+      document.getElementById("okQ").onclick=go; inp.onkeydown=e=>{ if(e.key==="Enter") go(); };
+      return;
+    }
+    ans[Q.id] = o; i++; i<QUESTIONS.length ? renderQ() : renderForm();
   });
 }
 
@@ -200,16 +224,19 @@ function renderForm(){
   stage.innerHTML = `<p class="q">Para onde enviamos seu Raio-X?</p>
   <label for="nome">Seu nome</label><input id="nome" autocomplete="name">
   <label for="wpp">WhatsApp (com DDD)</label><input id="wpp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999">
-  <label for="clinica">Nome da clínica</label><input id="clinica">
-  <label for="sub">Especialidade</label><select id="sub">${subs}</select>
-  <label for="ig">@ do Instagram (opcional)</label><input id="ig" placeholder="@suaclinica">
+  <label for="clinica">Nome da clínica, consultório ou studio</label><input id="clinica">
+  <label for="sub">Segmento</label><select id="sub">${subs}</select>
+  <div id="outroWrap" ${ans.subnicho.t===OUTRO?"":"hidden"}><label for="outro">Qual segmento? (obrigatório)</label><input id="outro" value="${esc(segOutro)}" placeholder="Ex.: podologia, spa, medicina integrativa"></div>
+  <label for="ig">@ do Instagram (opcional)</label><input id="ig" placeholder="@seuperfil">
   <p class="err" id="err"></p>
   <button class="btn" id="ver" style="margin-top:12px">Ver meu resultado</button>
   <p class="micro">Ao continuar, você concorda com a <a href="privacidade.html" target="_blank" style="color:var(--gold2)">Política de Privacidade</a>.</p>`;
+  const sel=document.getElementById("sub"); sel.onchange=()=>{document.getElementById("outroWrap").hidden = sel.value!==OUTRO;};
   document.getElementById("ver").onclick = ()=>{
     const v = id=>document.getElementById(id).value.trim();
     const lead = {nome:v("nome"), whatsapp:v("wpp").replace(/\D/g,""), clinica:v("clinica"), subnicho:v("sub"), instagram:v("ig")};
-    if(!lead.nome || lead.whatsapp.length<10 || !lead.clinica){ document.getElementById("err").textContent="Preencha nome, WhatsApp com DDD e nome da clínica."; return; }
+    if(!lead.nome || lead.whatsapp.length<10 || !lead.clinica){ document.getElementById("err").textContent="Preencha nome, WhatsApp com DDD e nome do seu negócio."; return; }
+    if(lead.subnicho===OUTRO){ const t=v("outro"); if(t.length<2){ document.getElementById("err").textContent="Informe qual é o seu segmento."; return; } segOutro=t; lead.segmento_outro=t; lead.subnicho="Outro: "+t; }
     renderResult(lead);
   };
 }
@@ -225,7 +252,7 @@ function compute(){
 }
 
 function waLink(lead, nota){
-  const msg = `Olá! Sou ${lead.nome}, da ${lead.clinica}. Fiz o Raio-X de Presença da Prime Studio e minha nota foi ${nota}/100. Quero entender como melhorar.`;
+  const msg = `Olá! Sou ${lead.nome}, da ${lead.clinica} (${lead.subnicho}). Fiz o Raio-X de Presença da Prime Studio e minha nota foi ${nota}/100. Quero entender como melhorar.`;
   return `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -252,15 +279,15 @@ function renderResult(lead){
   const dentro = emHorario();
   const prazo = dentro ? "em até 30 minutos" : "no próximo horário comercial";
   const hor = `${["dom","seg","ter","qua","qui","sex","sáb"].filter((_,k)=>CONFIG.HORARIO.dias.includes(k)).join(", ")}, ${CONFIG.HORARIO.inicio}h às ${CONFIG.HORARIO.fim}h`;
-  const intro = { quente:"Seu momento e seu perfil combinam com o Método PRIME.", morno:"Há oportunidades claras para sua clínica.", frio:"Comece pelas oportunidades acima, e conte com a gente quando quiser." }[r.nivel];
+  const intro = { quente:"Seu momento e seu perfil combinam com o Método PRIME.", morno:"Há oportunidades claras para o seu negócio.", frio:"Comece pelas oportunidades acima, e conte com a gente quando quiser." }[r.nivel];
   stage.innerHTML = `<div class="score-wrap"><div class="ring" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div>
   <div><p class="step" style="margin:0">Nota de presença digital</p><p class="q" style="margin:4px 0">${esc(lead.nome.split(" ")[0])}, este é o seu Raio-X</p><span class="tag">${esc(lead.clinica)} · ${esc(lead.subnicho)}</span></div></div>
-  <p class="step" style="margin-top:28px">3 oportunidades para sua clínica</p>
-  <ol class="opps">${r.opps.map(o=>`<li>${esc(OPPS[o])}</li>`).join("")}</ol>
+  <p class="step" style="margin-top:28px">3 oportunidades para você</p>
+  <ol class="opps">${r.opps.map(o=>`<li>${esc(OPPS[o](termos(lead.subnicho)))}</li>`).join("")}</ol>
   <div class="callbox">
     <p class="k">Próximo passo · ${esc(intro)}</p>
     <h3>Receba uma ligação de diagnóstico ${prazo}</h3>
-    <p>Não é venda. É só para entender sua clínica e explicar o seu Raio-X. Ligamos para <b>${esc(lead.whatsapp.replace(/^(\d{2})(\d{4,5})(\d{4})$/,"($1) $2-$3"))}</b>.</p>
+    <p>Não é venda. É só para entender o seu negócio e explicar o seu Raio-X. Ligamos para <b>${esc(lead.whatsapp.replace(/^(\d{2})(\d{4,5})(\d{4})$/,"($1) $2-$3"))}</b>.</p>
     <button class="btn" id="bCall">Quero receber a ligação</button>
     <p class="micro">Horário comercial: ${hor}.${dentro?"":" Fora desse horário, ligamos no próximo horário comercial."}</p>
   </div>

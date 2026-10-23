@@ -201,3 +201,6 @@ h2 em{color:var(--gold2);font-style:italic}
 .callbox{margin-top:26px;padding:26px;border-radius:20px;border:1px solid var(--gold);background:linear-gradient(180deg,rgba(200,162,90,.12),rgba(200,162,90,.03))}
 .callbox h3{font-size:1.7rem;margin:6px 0 10px}.callbox p{color:var(--mut)}.callbox b{color:var(--tx)}.callbox .btn{margin-top:16px}
 .btn:disabled{opacity:.6;cursor:wait}
+.rot{display:inline-block;color:var(--gold2);font-weight:500;border-bottom:1px solid rgba(200,162,90,.5);transition:opacity .35s,transform .35s}
+.rot.out{opacity:0;transform:translateY(-6px)}
+.track span.main{color:var(--tx)}

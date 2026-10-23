@@ -10,7 +10,7 @@ export async function onRequestPost({ request, env }) {
   let b; try { b = await request.json(); } catch { return json({ ok: false, error: "json" }, 400); }
   const lead = {
     nome: clean(b.nome, 80), whatsapp: clean(b.whatsapp, 20).replace(/\D/g, ""), clinica: clean(b.clinica, 120),
-    subnicho: clean(b.subnicho, 80), instagram: clean(b.instagram, 60), nota: +b.nota || 0, fit: +b.fit || 0,
+    subnicho: clean(b.subnicho, 120), segmento_outro: clean(b.segmento_outro, 80), instagram: clean(b.instagram, 60), nota: +b.nota || 0, fit: +b.fit || 0,
     nivel: clean(b.nivel, 10), ligacao: !!b.ligacao, respostas: b.respostas && typeof b.respostas === "object" ? Object.fromEntries(Object.entries(b.respostas).slice(0, 10).map(([k, v]) => [clean(k, 30), clean(v, 120)])) : {},
     pagina: clean(b.pagina, 200), ua: clean(request.headers.get("user-agent"), 160), data: new Date().toISOString()
   };
