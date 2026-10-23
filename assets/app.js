@@ -1,14 +1,14 @@
 /* ===================== CONFIGURAÇÃO — EDITE AQUI ===================== */
 const CONFIG = {
-  // Página de agendamento do Google Agenda (link curto, usado nos botões)
-  GOOGLE_AGENDA_URL: "https://calendar.app.google/PLmXdrdHxs4c8Lin8",
-  // URL de incorporação (embed). O link curto bloqueia iframe (X-Frame-Options: SAMEORIGIN);
-  // a URL completa com ?gv=true permite. Se trocar a agenda, atualize as duas.
-  GOOGLE_AGENDA_EMBED: "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1j7mGcU4UXRXWgmIymupwfC9P9LONQCbPkMWm3m07snl1rEEZ-JKZEG5nZxa5UgzSuA524q1YS?gv=true",
-  EMBED_AGENDA: true,             // leads quentes veem a agenda embutida
+  // Endpoint que salva o lead (Cloudflare Pages Function em /functions/api/lead.js).
+  // No GitHub Pages não existe; o site cai automaticamente no WhatsApp.
+  LEAD_API: "/api/lead",
+  // Horário comercial (America/Sao_Paulo) para a promessa "ligação em até 30 minutos"
+  HORARIO: { dias:[1,2,3,4,5], inicio:9, fim:18 },   // seg–sex, 9h–18h  [CONFIRMAR COM MARCOS]
   WHATSAPP_NUMERO: "5511913221587",
+  // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
+  AGENDA_URL: "https://calendar.app.google/PLmXdrdHxs4c8Lin8",
   META_PIXEL_ID: "",              // preencha para ativar o Pixel (Lead, Schedule, Contact)
-  WEBHOOK_URL: "",                // opcional: salvar leads (ex. Google Apps Script)
   CONTEUDO_URL: "#metodo"
 };
 /* ======================================================================= */
@@ -229,31 +229,61 @@ function waLink(lead, nota){
   return `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
 }
 
+function emHorario(d=new Date()){
+  const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Sao_Paulo",weekday:"short",hour:"numeric",hour12:false}).formatToParts(d);
+  const wd={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6}[parts.find(x=>x.type==="weekday").value];
+  const h=+parts.find(x=>x.type==="hour").value%24;
+  return CONFIG.HORARIO.dias.includes(wd) && h>=CONFIG.HORARIO.inicio && h<CONFIG.HORARIO.fim - 0.5;
+}
+let leadId=null;
+async function sendLead(payload){
+  try{
+    const r=await fetch(CONFIG.LEAD_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    if(!r.ok) return false; const j=await r.json(); if(j.id) leadId=j.id; return !!j.ok;
+  }catch(e){ return false; }
+}
 function renderResult(lead){
   const r = compute(); progress(TOTAL);
+  const respostas=Object.fromEntries(Object.entries(ans).map(([k,v])=>[k,v.t]));
+  const base={...lead, nota:r.nota, fit:r.fit, nivel:r.nivel, respostas, pagina:location.href};
   track("Lead",{content_name:"raio_x", value:r.nota, status:r.nivel});
-  if(CONFIG.WEBHOOK_URL){ fetch(CONFIG.WEBHOOK_URL,{method:"POST",mode:"no-cors",body:JSON.stringify({...lead, ...r, respostas:Object.fromEntries(Object.entries(ans).map(([k,v])=>[k,v.t])), data:new Date().toISOString()})}).catch(()=>{}); }
+  const firstSend = sendLead({...base, ligacao:false});
   const wa = waLink(lead, r.nota);
-  const agendaBtn = `<a class="btn" id="bAg" href="${esc(CONFIG.GOOGLE_AGENDA_URL)}" target="_blank" rel="noopener">Agendar meu diagnóstico</a>`;
-  const waBtn = (cls)=>`<a class="btn ${cls}" id="bWa" href="${esc(wa)}" target="_blank" rel="noopener">Receber meu Raio-X no WhatsApp</a>`;
-  const msgs = {
-    quente:"Seu momento e seu perfil combinam com o Método PRIME. Escolha um horário para o seu diagnóstico gratuito:",
-    morno:"Vamos te enviar o Raio-X completo pelo WhatsApp com os próximos passos:",
-    frio:"Comece pelas oportunidades abaixo. Quando quiser, fale com a gente ou agende uma conversa:"
-  };
-  let ctas = r.nivel==="quente" ? agendaBtn + waBtn("ghost")
-           : r.nivel==="morno" ? waBtn("")
-           : waBtn("") + agendaBtn.replace('class="btn"','class="btn ghost"') + `<a class="btn ghost" href="${esc(CONFIG.CONTEUDO_URL)}">Conhecer o Método PRIME</a>`;
+  const dentro = emHorario();
+  const prazo = dentro ? "em até 30 minutos" : "no próximo horário comercial";
+  const hor = `${["dom","seg","ter","qua","qui","sex","sáb"].filter((_,k)=>CONFIG.HORARIO.dias.includes(k)).join(", ")}, ${CONFIG.HORARIO.inicio}h às ${CONFIG.HORARIO.fim}h`;
+  const intro = { quente:"Seu momento e seu perfil combinam com o Método PRIME.", morno:"Há oportunidades claras para sua clínica.", frio:"Comece pelas oportunidades acima, e conte com a gente quando quiser." }[r.nivel];
   stage.innerHTML = `<div class="score-wrap"><div class="ring" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div>
   <div><p class="step" style="margin:0">Nota de presença digital</p><p class="q" style="margin:4px 0">${esc(lead.nome.split(" ")[0])}, este é o seu Raio-X</p><span class="tag">${esc(lead.clinica)} · ${esc(lead.subnicho)}</span></div></div>
   <p class="step" style="margin-top:28px">3 oportunidades para sua clínica</p>
   <ol class="opps">${r.opps.map(o=>`<li>${esc(OPPS[o])}</li>`).join("")}</ol>
-  <p style="margin-top:18px">${msgs[r.nivel]}</p>
-  <div class="ctas">${ctas}</div>
-  ${r.nivel==="quente" && CONFIG.EMBED_AGENDA ? `<div class="embed"><iframe src="${esc(CONFIG.GOOGLE_AGENDA_EMBED)}" title="Agendar diagnóstico"></iframe></div>`:""}`;
+  <div class="callbox">
+    <p class="k">Próximo passo · ${esc(intro)}</p>
+    <h3>Receba uma ligação de diagnóstico ${prazo}</h3>
+    <p>Não é venda. É só para entender sua clínica e explicar o seu Raio-X. Ligamos para <b>${esc(lead.whatsapp.replace(/^(\d{2})(\d{4,5})(\d{4})$/,"($1) $2-$3"))}</b>.</p>
+    <button class="btn" id="bCall">Quero receber a ligação</button>
+    <p class="micro">Horário comercial: ${hor}.${dentro?"":" Fora desse horário, ligamos no próximo horário comercial."}</p>
+  </div>
+  <p class="step" style="margin-top:24px">Prefere outro caminho?</p>
+  <div class="ctas">
+    <a class="btn ghost" id="bWa" href="${esc(wa)}" target="_blank" rel="noopener">2 · Falar agora no WhatsApp</a>
+    <a class="btn ghost" id="bAg" href="${esc(CONFIG.AGENDA_URL)}" target="_blank" rel="noopener">3 · Escolher um horário na agenda</a>
+  </div>`;
   stage.dataset.nivel = r.nivel;
-  const ag=document.getElementById("bAg"); if(ag) ag.onclick=()=>track("Schedule",{status:r.nivel});
-  const w=document.getElementById("bWa"); if(w) w.onclick=()=>track("Contact",{status:r.nivel});
+  document.getElementById("bCall").onclick = async (e)=>{
+    const btn=e.currentTarget; btn.disabled=true; btn.textContent="Enviando…";
+    track("Contact",{content_name:"pedido_ligacao", status:r.nivel});
+    await firstSend; const ok = await sendLead({...base, ligacao:true, id:leadId});
+    const box=btn.closest(".callbox");
+    if(ok){ box.innerHTML=`<p class="k">Pedido recebido</p><h3>Pronto! Vamos te ligar ${prazo}.</h3><p>Se preferir adiantar, mande um oi no WhatsApp.</p>`; box.dataset.status="ok"; }
+    else {
+      // Sem servidor (ex. GitHub Pages) ou falha: o pedido segue pelo WhatsApp, que avisa o Marcos na hora
+      const msg=`Olá! Sou ${lead.nome}, da ${lead.clinica} (${lead.subnicho}). Fiz o Raio-X de Presença (nota ${r.nota}/100) e quero receber a ligação de diagnóstico no ${lead.whatsapp}.`;
+      box.innerHTML=`<p class="k">Quase lá</p><h3>Confirme seu pedido pelo WhatsApp</h3><p>Abrimos uma mensagem pronta. É só enviar.</p><a class="btn" href="https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar pedido no WhatsApp</a>`; box.dataset.status="fallback";
+    }
+  };
+  document.getElementById("bAg").onclick=()=>track("Schedule",{status:r.nivel});
+  document.getElementById("bWa").onclick=()=>track("Contact",{content_name:"whatsapp",status:r.nivel});
   document.getElementById("quiz").scrollIntoView({behavior:"smooth"});
 }
 

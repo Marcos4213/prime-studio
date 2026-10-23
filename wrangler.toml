@@ -1,0 +1,7 @@
+name = "prime-studio"
+pages_build_output_dir = "."
+compatibility_date = "2026-04-01"
+
+[[kv_namespaces]]
+binding = "LEADS"
+id = "990e6ebb9ab24a3a994c1a7b2705fd49"
