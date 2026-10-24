@@ -133,11 +133,9 @@ if(!RM && matchMedia("(hover:hover) and (pointer:fine)").matches){
   });
 }
 // barra de progresso + sticky CTA
-const sb=document.getElementById("scrollbar"), sc=document.getElementById("stickyCta"), qz=document.getElementById("quiz");
-let quizVisible=false;
-new IntersectionObserver(es=>{quizVisible=es[0].isIntersecting; onScroll();},{threshold:0}).observe(qz);
+const sb=document.getElementById("scrollbar"), nv=document.getElementById("nav");
 function onScroll(){ const h=document.documentElement; sb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";
-  sc.classList.toggle("show", scrollY>window.innerHeight*.7 && !quizVisible); }
+  nv.classList.toggle("scrolled", scrollY>10); }
 addEventListener("scroll",onScroll,{passive:true});
 document.querySelectorAll("[data-cta]").forEach(a=>a.addEventListener("click",()=>track("ViewContent",{content_name:"cta_"+a.dataset.cta})));
 
