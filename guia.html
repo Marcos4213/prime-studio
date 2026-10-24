@@ -73,6 +73,7 @@ a{color:#d4b06a}
  .steps li:before{background:#f1e7d3}.steps li,.ck label{border-color:#eee4d2}.ck input{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .bar,.bar i,.ck input:checked{-webkit-print-color-adjust:exact;print-color-adjust:exact}.sc-l div{background:#f4ecdd}.intro,.ckt,.sc-m{color:#1a140a!important}
  .foot{color:#9a7432}
+ .cover{padding-top:30mm}.cover-img{max-height:95mm;width:auto;opacity:1}.dots b,.steps li,.ck label span{color:#2a241a!important}
 }
 </style></head>
 <body>
@@ -166,7 +167,7 @@ const PIXEL_ID="";
 if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
 const WA="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20Marcos%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio.";
 const $=id=>document.getElementById(id), KEY="prime_guia", CK="prime_guia_ck";
-const MSG=[[0,"Sua presença ainda não mostra o negócio que você tem. O paciente de alto padrão está decidindo por outro antes de falar com você. Comece pelo Perfil: é o ajuste mais rápido e o que mais muda a primeira impressão."],[40,"Você já tem uma base, mas há lacunas visíveis que custam pacientes todos os dias. Corrija primeiro o passo com a menor nota: é ali que a decisão está escapando."],[70,"Sua presença está acima da média. Agora o ganho está nos detalhes e na escala: consistência, prova e um processo que transforma atenção em agenda cheia."],[90,"Presença de alto padrão. O próximo nível é escalar com previsibilidade sem perder o padrão que você construiu."]];
+const MSG=[[0,"Sua presença ainda não mostra o negócio que você tem. O paciente de alto padrão está decidindo por outro antes de falar com você. Comece pelo passo com a menor nota: é ali que a primeira impressão está quebrando."],[40,"Você já tem uma base, mas há lacunas visíveis que custam pacientes todos os dias. Corrija primeiro o passo com a menor nota: é ali que a decisão está escapando."],[70,"Sua presença está acima da média. Agora o ganho está nos detalhes e na escala: consistência, prova e um processo que transforma atenção em agenda cheia."],[90,"Presença de alto padrão. O próximo nível é escalar com previsibilidade sem perder o padrão que você construiu."]];
 function track(ev,p){ if(window.fbq) try{ fbq(["Lead","Contact"].includes(ev)?"track":"trackCustom",ev,p||{}); }catch(e){} }
 function open(){ $("gate").hidden=true; $("book").hidden=false; score(); spy(); }
 let saved={}; try{ saved=JSON.parse(localStorage.getItem(CK))||{}; }catch(e){}
