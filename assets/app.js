@@ -4,20 +4,60 @@ const CONFIG = {
   // No GitHub Pages não existe; o site cai automaticamente no WhatsApp.
   LEAD_API: "/api/lead",
   // Horário comercial (America/Sao_Paulo) para a promessa "ligação em até 30 minutos"
-  HORARIO: { dias:[1,2,3,4,5], inicio:9, fim:18 },   // seg–sex, 9h–18h  [CONFIRMAR COM MARCOS]
+  HORARIO: { dias:[1,2,3,4,5,6], inicio:9, fim:18 },   // seg–sáb, 9h–18h (sábado a confirmar)
   WHATSAPP_NUMERO: "5511913221587",
   // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
-  AGENDA_URL: "https://calendar.app.google/PLmXdrdHxs4c8Lin8",
-  META_PIXEL_ID: "",              // preencha para ativar o Pixel (Lead, Schedule, Contact)
+  AGENDA_URL: "https://cal.com/marcos-paulo-wpugxh/diagnostico",
+  CAL_LINK: "marcos-paulo-wpugxh/diagnostico",   // Cal.com: Diagnóstico de Presença (30 min, Google Meet)
+  CAL_BRAND: "#c8a25a",
+  META_PIXEL_ID: "",              // preencha para ativar o Pixel (inativo vazio)
+  CAPI_URL: "/api/capi",           // Conversions API (só envia se META_PIXEL_ID e, no servidor, META_CAPI_TOKEN existirem)
   CONTEUDO_URL: "#metodo"
 };
 /* ======================================================================= */
 
+/* ---------- Atribuição (UTMs, fbclid, _fbc/_fbp) ---------- */
+const ATTR = (()=>{
+  const q=new URLSearchParams(location.search), keys=["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"];
+  let s={}; try{ s=JSON.parse(localStorage.getItem("prime_attr"))||{}; }catch(e){}
+  const now={}; keys.forEach(k=>{ const v=q.get(k); if(v) now[k]=v.slice(0,200); });
+  if(Object.keys(now).length){ s.last={...now, ts:Date.now(), landing:location.pathname}; if(!s.first) s.first=s.last; }
+  if(!s.first) s.first={ref:document.referrer.slice(0,200), ts:Date.now(), landing:location.pathname};
+  if(now.fbclid){ const fbc=`fb.1.${Date.now()}.${now.fbclid}`; document.cookie=`_fbc=${fbc};path=/;max-age=7776000;SameSite=Lax`; }
+  try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
+  return s;
+})();
+const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
+function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{};
+  return { utm_source:l.utm_source||f.utm_source||"", utm_medium:l.utm_medium||f.utm_medium||"", utm_campaign:l.utm_campaign||f.utm_campaign||"", utm_content:l.utm_content||f.utm_content||"", utm_term:l.utm_term||f.utm_term||"", fbclid:l.fbclid||f.fbclid||"", gclid:l.gclid||f.gclid||"", referrer:f.ref||"", landing:f.landing||"", fbc:cookie("_fbc"), fbp:cookie("_fbp") }; }
+function origem(){ const a=attribution(); return a.utm_source ? `utm:${a.utm_source}` : a.fbclid ? "meta_ads" : a.gclid ? "google_ads" : a.referrer && !a.referrer.includes(location.host) ? "referral" : "direto"; }
+async function sha256(v){ if(!v||!crypto.subtle) return ""; const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(v).trim().toLowerCase())); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+const uid=()=> (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
+
+/* ---------- Meta Pixel + Conversions API (inativos sem META_PIXEL_ID) ---------- */
+let PX_USER={};   // em/ph já em SHA-256 (Advanced Matching)
 if (CONFIG.META_PIXEL_ID) {
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', CONFIG.META_PIXEL_ID); fbq('track', 'PageView');
+  fbq('init', CONFIG.META_PIXEL_ID);
 }
-function track(ev, data){ if (window.fbq) fbq('track', ev, data || {}); }
+const STD=new Set(["PageView","ViewContent","Lead","CompleteRegistration","Contact","Schedule","InitiateCheckout"]);
+function track(ev, data, eid){
+  if(!CONFIG.META_PIXEL_ID) return null;
+  const event_id=eid||uid(), params={...(data||{})};
+  try{ fbq(STD.has(ev)?"track":"trackCustom", ev, params, {eventID:event_id}); }catch(e){}
+  if(CONFIG.CAPI_URL){
+    const body=JSON.stringify({event_name:ev, event_id, params, url:location.href, user:PX_USER, fbc:cookie("_fbc"), fbp:cookie("_fbp")});
+    try{ navigator.sendBeacon ? navigator.sendBeacon(CONFIG.CAPI_URL, new Blob([body],{type:"application/json"})) : fetch(CONFIG.CAPI_URL,{method:"POST",body,keepalive:true,headers:{"content-type":"application/json"}}); }catch(e){}
+  }
+  return event_id;
+}
+async function setMatch(email, phone){
+  PX_USER={em:await sha256(email), ph:await sha256(String(phone||"").replace(/\D/g,""))};
+  if(CONFIG.META_PIXEL_ID){ try{ fbq('init', CONFIG.META_PIXEL_ID, {em:PX_USER.em, ph:PX_USER.ph}); }catch(e){} }
+}
+track("PageView");
+// ViewContent por seção (uma vez por seção)
+if("IntersectionObserver" in window){ const seen=new Set(); const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting && !seen.has(e.target.id)){ seen.add(e.target.id); track("ViewContent",{content_name:"secao_"+e.target.id, content_category:"secao"}); } }),{threshold:.4}); document.querySelectorAll("section[id]").forEach(s=>io.observe(s)); }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 /* ---------- UI geral ---------- */
@@ -26,7 +66,7 @@ const nav = document.getElementById("nav");
 addEventListener("scroll", ()=>nav.classList.toggle("scrolled", scrollY>30), {passive:true});
 const footWa = document.getElementById("footWa");
 footWa.href = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent("Olá! Vim pelo site da Prime Studio e quero saber mais sobre o Método PRIME.")}`;
-footWa.onclick = ()=>track("Contact",{content_name:"rodape"});
+footWa.onclick = ()=>track("Contact",{content_name:"whatsapp_rodape", origem:origem()});
 
 /* ---------- Cases (EXEMPLOS de projeto — substitua por cases reais) ---------- */
 const ART = {
@@ -202,7 +242,7 @@ const TOTAL = QUESTIONS.length + 1;
 let lastFocus=null;
 function openQuiz(src){
   lastFocus=document.activeElement; qx.hidden=false; document.documentElement.classList.add("qx-on");
-  track("ViewContent",{content_name:"quiz_open", src}); render(); setTimeout(()=>qx.querySelector("button.opt, input, .btn")?.focus(),60);
+  if(!st.started){ st.started=true; save(); track("QuizStart",{src, origem:origem()}); } render(); setTimeout(()=>qx.querySelector("button.opt, input, .btn")?.focus(),60);
 }
 function closeQuiz(){ qx.hidden=true; document.documentElement.classList.remove("qx-on"); lastFocus&&lastFocus.focus&&lastFocus.focus(); }
 document.querySelectorAll("[data-quiz]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openQuiz(b.dataset.cta||"quiz");}));
@@ -225,10 +265,11 @@ function renderQ(){
       const go=()=>{ const t=inp.value.trim(); if(t.length<2){document.getElementById("errQ").textContent="Conte qual é o seu segmento.";return;} st.outro=t; st.ans.nicho=o; st.i++; save(); render(); };
       document.getElementById("okQ").onclick=go; inp.onkeydown=e=>{ if(e.key==="Enter") go(); }; return;
     }
-    b.classList.add("sel"); st.ans[Q.id]=o; save();
+    b.classList.add("sel"); st.ans[Q.id]=o; save(); track("QuizStep",{step:st.i+1, pergunta:Q.id, resposta:o.t});
     setTimeout(()=>{ if(st.i<QUESTIONS.length-1){ st.i++; } else { st.view="form"; } save(); render(); },180);
   });
 }
+function pxParams(r){ return {nicho:(NICHOS[r.nk]||{}).t||"", score:r.nota, value:r.nota, currency:"BRL", dor:(DOR[r.dk]||{}).t||"", faixa:r.faixa, status:r.nivel}; }
 function compute(){
   let p=0,f=0; const weak=[];
   QUESTIONS.forEach(Q=>{const a=st.ans[Q.id]||{}; p+=a.p||0; f+=a.f||0; if(a.w && !weak.includes(a.w)) weak.push(a.w);});
@@ -259,15 +300,16 @@ function renderForm(){
     st.lead=lead; st.view="result"; save();
     const respostas=Object.fromEntries(Object.entries(st.ans).map(([k,o])=>[k,o.t]));
     const N=NICHOS[r.nk];
-    sendLead({...lead, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:r.nivel, ligacao:false, respostas, pagina:location.href});
-    track("Lead",{content_name:"raio_x", value:r.nota, status:r.nivel});
+    sendLead({...lead, nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:r.nivel, ligacao:false, respostas, pagina:location.href});
+    const pp=pxParams(r); setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,"")).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}); if(eid){ st.leadEventId=eid; save(); } });
     renderResult();
   };
 }
-async function sendLead(payload){ try{ const x=await fetch(CONFIG.LEAD_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); return x.ok; }catch(e){ return false; } }
+async function sendLead(payload){ try{ const x=await fetch(CONFIG.LEAD_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await x.json().catch(()=>({})); if(d.id){ try{ st.leadId=d.id; save(); }catch(_){} } return x.ok; }catch(e){ return false; } }
 function renderResult(){
   const r=compute(), L=st.lead, N=NICHOS[r.nk], nome=L.nome.split(" ")[0];
   prog(TOTAL, "Seu Raio-X");
+  if(!st.crSent){ st.crSent=true; save(); track("CompleteRegistration",{content_name:"raio_x_resultado", ...pxParams(r)}); }
   const seg = r.nk==="outro" && st.outro ? st.outro : N.t;
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
   const perda = PERDA[r.faixa];
@@ -287,6 +329,36 @@ function renderResult(){
      <div><a class="btn ghost" id="bAg" href="${esc(agHref)}" target="_blank" rel="noopener">Escolher horário do diagnóstico</a><p class="micro">Conversa curta e gratuita. Você sai com o plano ${N.local==="clínica"?"da sua":"do seu"} ${esc(N.local)}, mesmo que não contrate.</p></div>
    </div>`;
   anim();
-  document.getElementById("bWa").onclick=()=>track("Contact",{content_name:"whatsapp",status:r.nivel});
-  document.getElementById("bAg").onclick=()=>track("Schedule",{status:r.nivel});
+  document.getElementById("bWa").onclick=()=>track("Contact",{content_name:"whatsapp_resultado", ...pxParams(r)});
+  document.getElementById("bAg").onclick=e=>{ e.preventDefault(); track("InitiateCheckout",{content_name:"agenda_aberta", ...pxParams(r)}); closeQuiz();
+    openAgenda({name:L.nome, email:L.email, whatsapp:"+55"+L.whatsapp.replace(/^55/,""), negocio:L.clinica, nicho:seg, score:r.nota, dor:DOR[r.dk].t}); };
 }
+
+/* ---------- Cal.com (agenda do diagnóstico) ---------- */
+let calReady=false;
+function loadCal(){
+  if(calReady) return; calReady=true;
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+  Cal("init","diag",{origin:"https://cal.com"});
+  Cal.ns.diag("ui",{theme:"dark",cssVarsPerTheme:{dark:{"cal-brand":CONFIG.CAL_BRAND},light:{"cal-brand":CONFIG.CAL_BRAND}},hideEventTypeDetails:false,layout:"month_view"});
+  let done=false; const ok=(e)=>{ if(done) return; done=true; let pp={}; try{ if(st.lead){ pp=pxParams(compute()); } }catch(_){}
+    const d=(e&&e.detail&&e.detail.data)||{}; const bu=d.uid||(d.booking&&d.booking.uid)||"";
+    track("Schedule",{content_name:"diagnostico", ...pp}, bu?"sched_"+bu:undefined); try{ st.agendado=true; save(); }catch(_){} const q=new URLSearchParams({n:(st.lead&&st.lead.nome||"").split(" ")[0]||"", t:d.startTime||(d.booking&&d.booking.startTime)||"", u:d.uid||(d.booking&&d.booking.uid)||""});
+    setTimeout(()=>{ location.href="confirmado.html?"+q.toString(); },1200); };
+  Cal.ns.diag("on",{action:"bookingSuccessful",callback:ok});
+  Cal.ns.diag("on",{action:"bookingSuccessfulV2",callback:ok});
+}
+function openAgenda(pre){
+  loadCal(); pre=pre||{}; const s=(typeof st!=="undefined"&&st.lead)?st.lead:null;
+  if(!pre.name && s){ const r=compute(); pre={name:s.nome,email:s.email,whatsapp:"+55"+s.whatsapp.replace(/^55/,""),negocio:s.clinica,nicho:(NICHOS[r.nk]||{}).t,score:r.nota,dor:(DOR[r.dk]||{}).t}; }
+  const config={layout:"month_view",theme:"dark",lang:"pt"};
+  if(pre.name) config.name=pre.name; if(pre.email) config.email=pre.email; if(pre.whatsapp) config.whatsapp=pre.whatsapp; if(pre.negocio) config.negocio=pre.negocio;
+  if(pre.nicho) config["metadata[nicho]"]=pre.nicho; if(pre.score!=null) config["metadata[score]"]=String(pre.score); if(pre.dor) config["metadata[dor]"]=pre.dor;
+  const at=attribution(); config["metadata[origem]"]= s ? "quiz" : origem();
+  ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid","fbc","fbp"].forEach(k=>{ if(at[k]) config["metadata["+k+"]"]=String(at[k]).slice(0,200); });
+  if(s && s.email) config["metadata[lead_email]"]=s.email;
+  if(s){ try{ const rr=compute(); config["metadata[faixa]"]=rr.faixa; config["metadata[nicho_key]"]=rr.nk; config["metadata[nivel]"]=rr.nivel; }catch(_){} } if(st.leadId) config["metadata[lead_id]"]=st.leadId;
+  Cal.ns.diag("modal",{calLink:CONFIG.CAL_LINK,config});
+}
+document.querySelectorAll("[data-agenda]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openAgenda();}));
+if(/[?&]agenda\b/.test(location.search) || location.hash==="#agenda") setTimeout(()=>openAgenda(),400);

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Diagnóstico confirmado · Prime Studio</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0a08">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0a08;--card:#17140f;--line:#2a251b;--gold:#c8a25a;--gold2:#ecd29a;--tx:#f4efe5;--mut:#a39a88;--serif:"Cormorant Garamond",Georgia,serif;--sans:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1000px 520px at 50% -10%,#2a2112 0%,transparent 60%),var(--bg);color:var(--tx);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+.w{width:min(720px,90%);margin:auto;padding:40px 0 64px}
+.logo{font-family:var(--serif);letter-spacing:.32em;font-size:1.05rem;color:var(--tx);text-decoration:none}.logo span{color:var(--gold);margin-left:.4em}
+.ok{width:64px;height:64px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;margin:44px 0 18px;color:var(--gold2);font-size:28px;box-shadow:0 0 0 8px rgba(200,162,90,.08)}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1.05;margin-bottom:.3em}h1 em{color:var(--gold2)}
+h2{font-family:var(--serif);font-weight:500;font-size:1.7rem;margin:0 0 .6em}
+.lead{color:var(--mut);font-weight:300;font-size:1.06rem}
+.when{margin:26px 0;padding:20px 22px;border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--card);border-radius:14px}
+.when b{display:block;font-family:var(--serif);font-size:1.5rem;font-weight:500;color:var(--gold2)}
+.when small{color:var(--mut)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:999px;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1a1408;font-weight:600;text-decoration:none;font-size:.95rem;border:0;cursor:pointer;flex:1 1 220px}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--line)}.btn.g:hover{border-color:var(--gold)}
+.card{margin-top:22px;padding:24px 22px;border:1px solid var(--line);border-radius:16px;background:rgba(23,20,15,.7)}
+ol,ul{padding-left:0;list-style:none;counter-reset:n}
+li{position:relative;padding:0 0 14px 40px;color:var(--mut)}li strong{color:var(--tx);font-weight:500;display:block}
+ol li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);color:var(--gold2);font-size:.8rem;display:grid;place-items:center}
+ul li::before{content:"";position:absolute;left:8px;top:.6em;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.micro{color:var(--mut);font-size:.8rem;margin-top:10px}
+footer{margin-top:36px;color:var(--mut);font-size:.8rem;border-top:1px solid var(--line);padding-top:18px}footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<main class="w">
+  <a class="logo" href="/">PRIME<span>STUDIO</span></a>
+  <div class="ok" aria-hidden="true">✓</div>
+  <h1 id="tt">Diagnóstico <em>confirmado</em>.</h1>
+  <p class="lead">O convite com o link do Google Meet já foi para o seu e-mail. Até lá, a gente já começa a olhar a sua presença digital.</p>
+
+  <div class="when" id="when" hidden><small>Sua conversa</small><b id="whenTxt"></b><small>30 minutos · Google Meet · horário de Brasília</small></div>
+
+  <div class="btns">
+    <a class="btn" id="gcal" href="#" target="_blank" rel="noopener">Adicionar ao Google Agenda</a>
+    <a class="btn g" id="ics" href="#" download="diagnostico-prime-studio.ics">Baixar convite (.ics)</a>
+  </div>
+  <p class="micro" id="calNote">Se o horário não aparecer aqui, use o convite que chegou no seu e-mail: ele já adiciona o evento à sua agenda.</p>
+
+  <section class="card">
+    <h2>O que acontece na conversa</h2>
+    <ol>
+      <li><strong>Leitura da sua presença pelo Método PRIME</strong>Google, Instagram, site e WhatsApp: o que o seu paciente ou cliente vê antes de falar com você.</li>
+      <li><strong>Onde você está perdendo contatos hoje</strong>Os pontos que fazem quem pesquisou você fechar com outro.</li>
+      <li><strong>3 ações práticas para o seu negócio</strong>Você sai com o plano, contratando a Prime Studio ou não.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Como se preparar (5 minutos)</h2>
+    <ul>
+      <li><strong>Tenha à mão o @ do Instagram e o link do site</strong>Se tiver perfil no Google, o nome exato como aparece na busca.</li>
+      <li><strong>Pense no seu principal serviço</strong>Aquele que você mais quer vender ou que dá mais margem.</li>
+      <li><strong>Esteja em um lugar tranquilo, de preferência no computador</strong>A gente compartilha a tela para mostrar o diagnóstico.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Precisa remarcar ou tirar uma dúvida?</h2>
+    <p class="lead" style="font-size:.98rem">Fale direto com os fundadores no WhatsApp. Para remarcar, você também pode usar o link do e-mail de confirmação.</p>
+    <div class="btns"><a class="btn" id="wa" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a><a class="btn g" href="/">Voltar ao site</a></div>
+  </section>
+
+  <footer>© Prime Studio · DevBrasil · <a href="privacidade.html">Política de Privacidade</a></footer>
+</main>
+<script>
+(function(){
+  var WA="5511913221587", q=new URLSearchParams(location.search), n=(q.get("n")||"").replace(/[^\p{L} '-]/gu,"").slice(0,30), t=q.get("t")||q.get("startTime")||"";
+  if(n) document.getElementById("tt").innerHTML=n.replace(/[<>&]/g,"")+", seu diagnóstico está <em>confirmado</em>.";
+  var msg="Olá! Agendei o Diagnóstico de Presença da Prime Studio"+(n?" (sou "+n+")":"")+" e queria tirar uma dúvida.";
+  document.getElementById("wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent(msg);
+  var d=t?new Date(t):null, ok=d&&!isNaN(d);
+  var title="Diagnóstico de Presença — Prime Studio", det="Conversa de 30 min com a Prime Studio. O link do Google Meet está no convite enviado por e-mail.\nWhatsApp: https://wa.me/"+WA;
+  var f=function(x){return x.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");};
+  if(ok){
+    var e=new Date(d.getTime()+30*60000);
+    document.getElementById("when").hidden=false; document.getElementById("calNote").hidden=true;
+    document.getElementById("whenTxt").textContent=d.toLocaleString("pt-BR",{weekday:"long",day:"2-digit",month:"long",hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"}).replace(","," ·");
+    document.getElementById("gcal").href="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(title)+"&dates="+f(d)+"/"+f(e)+"&details="+encodeURIComponent(det)+"&location="+encodeURIComponent("Google Meet");
+    var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Prime Studio//Diagnostico//PT","BEGIN:VEVENT","UID:"+(q.get("u")||Date.now())+"@prime.devbrasil.online","DTSTAMP:"+f(new Date()),"DTSTART:"+f(d),"DTEND:"+f(e),"SUMMARY:"+title,"DESCRIPTION:"+det.replace(/\n/g,"\\n"),"LOCATION:Google Meet","BEGIN:VALARM","TRIGGER:-PT1H","ACTION:DISPLAY","DESCRIPTION:"+title,"END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+    document.getElementById("ics").href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
+  } else {
+    document.getElementById("gcal").href="https://calendar.google.com/calendar/r/search?q="+encodeURIComponent("Diagnóstico Prime Studio");
+    document.getElementById("gcal").textContent="Ver no Google Agenda"; document.getElementById("ics").hidden=true;
+  }
+})();
+</script>
+</body>
+</html>
