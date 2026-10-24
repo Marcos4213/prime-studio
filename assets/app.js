@@ -30,7 +30,7 @@ const ATTR = (()=>{
 const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
 function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{};
   return { utm_source:l.utm_source||f.utm_source||"", utm_medium:l.utm_medium||f.utm_medium||"", utm_campaign:l.utm_campaign||f.utm_campaign||"", utm_content:l.utm_content||f.utm_content||"", utm_term:l.utm_term||f.utm_term||"", fbclid:l.fbclid||f.fbclid||"", gclid:l.gclid||f.gclid||"", referrer:f.ref||"", landing:f.landing||"", fbc:cookie("_fbc"), fbp:cookie("_fbp") }; }
-function origem(){ const a=attribution(); return a.utm_source ? `utm:${a.utm_source}` : a.fbclid ? "meta_ads" : a.gclid ? "google_ads" : a.referrer && !a.referrer.includes(location.host) ? "referral" : "direto"; }
+function origem(){ const lp=document.body.dataset.origemLead; if(lp) return lp; const a=attribution(); return a.utm_source ? `utm:${a.utm_source}` : a.fbclid ? "meta_ads" : a.gclid ? "google_ads" : a.referrer && !a.referrer.includes(location.host) ? "referral" : "direto"; }
 async function sha256(v){ if(!v||!crypto.subtle) return ""; const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(v).trim().toLowerCase())); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
 const uid=()=> (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
 
@@ -300,7 +300,7 @@ function renderForm(){
     st.lead=lead; st.view="result"; save();
     const respostas=Object.fromEntries(Object.entries(st.ans).map(([k,o])=>[k,o.t]));
     const N=NICHOS[r.nk];
-    sendLead({...lead, nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:r.nivel, ligacao:false, respostas, pagina:location.href});
+    sendLead({...lead, origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:r.nivel, ligacao:false, respostas, pagina:location.href});
     const pp=pxParams(r); setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,"")).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}); if(eid){ st.leadEventId=eid; save(); } });
     renderResult();
   };
@@ -354,7 +354,7 @@ function openAgenda(pre){
   const config={layout:"month_view",theme:"dark",lang:"pt"};
   if(pre.name) config.name=pre.name; if(pre.email) config.email=pre.email; if(pre.whatsapp) config.whatsapp=pre.whatsapp; if(pre.negocio) config.negocio=pre.negocio;
   if(pre.nicho) config["metadata[nicho]"]=pre.nicho; if(pre.score!=null) config["metadata[score]"]=String(pre.score); if(pre.dor) config["metadata[dor]"]=pre.dor;
-  const at=attribution(); config["metadata[origem]"]= s ? "quiz" : origem();
+  const at=attribution(); config["metadata[origem]"]= s ? "quiz" : origem(); if(document.body.dataset.origemLead) config["metadata[origem_lead]"]=document.body.dataset.origemLead;
   ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid","fbc","fbp"].forEach(k=>{ if(at[k]) config["metadata["+k+"]"]=String(at[k]).slice(0,200); });
   if(s && s.email) config["metadata[lead_email]"]=s.email;
   if(s){ try{ const rr=compute(); config["metadata[faixa]"]=rr.faixa; config["metadata[nicho_key]"]=rr.nk; config["metadata[nivel]"]=rr.nivel; }catch(_){} } if(st.leadId) config["metadata[lead_id]"]=st.leadId;
