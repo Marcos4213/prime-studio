@@ -286,3 +286,43 @@ h2 em{color:var(--gold2);font-style:italic}
 .phones .tagba{top:auto;bottom:14px;right:50%;transform:translateX(50%)}
 .ph img{object-position:center top}.pro .ph{background:#0f0d0a}
 @media(min-width:521px){.pro{grid-template-columns:170px 1fr}}
+/* ===== v6 mobile hardening ===== */
+html,body{max-width:100%;overflow-x:hidden}
+@supports(overflow:clip){html,body{overflow-x:clip}}
+img,svg{max-width:100%}
+.wrap>*,.ba>*,.two>*,.team>*,.hero-grid>*,.grid3>*{min-width:0}
+section[id]{scroll-margin-top:64px}
+h1{font-size:clamp(2.6rem,12vw,7.5rem)}
+h2{font-size:clamp(1.75rem,7vw,3.2rem);overflow-wrap:break-word}
+/* transições de fundo: faixa curta e suave (antes 110px dura) */
+.light{background:#f6f1e7;position:relative;padding:110px 0}
+.light::before,.light::after{content:"";position:absolute;left:0;right:0;height:56px;pointer-events:none}
+.light::before{top:0;background:linear-gradient(#0b0a08,rgba(246,241,231,0))}
+.light::after{bottom:0;background:linear-gradient(rgba(246,241,231,0),#0b0a08)}
+.light>.wrap{position:relative;z-index:1}
+@media(min-width:860px){.light{padding:150px 0}.light::before,.light::after{height:90px}}
+/* máscaras com prefixo para Safari */
+.hero-photo{-webkit-mask-image:radial-gradient(ellipse at center,#000 45%,transparent 78%)}
+.gridbg{-webkit-mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 70%)}
+.nav{-webkit-backdrop-filter:saturate(140%) blur(16px)}
+/* rótulos dos celulares: no topo, sem cobrir conteúdo */
+.phones figure{display:flex;flex-direction:column}
+.phones .tagba{position:static;order:-1;align-self:center;transform:none;margin:8px auto 6px}
+.ba>figure{max-width:100%}
+/* hero mobile: chips em linha, sem sobrepor o painel */
+@media(max-width:959px){
+ .hero{padding:96px 0 56px}
+ .hero-art{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 0}
+ .hero-art .dash{width:100%;max-width:380px}
+ .chip{position:static;animation:none;font-size:.75rem;padding:8px 12px}
+ .hero-photo{display:none}
+ .hero-art.tilt{transform:none!important}
+ .facts{gap:14px 18px}
+}
+@media(max-width:380px){.ig-st{gap:0 8px}.ig-hl{gap:8px}.gm-btns span{padding:6px 10px}}
+.gm{max-width:100%}
+/* especialistas v6: foto grande, sem cortar a logo */
+.pro{grid-template-columns:1fr!important;padding:16px}
+.pro .ph{height:auto!important;min-height:0;aspect-ratio:3/4;place-items:stretch}
+.pro .ph img{object-fit:cover;object-position:center top}
+@media(min-width:1000px){.pro{grid-template-columns:minmax(0,300px) 1fr!important;align-items:center}}

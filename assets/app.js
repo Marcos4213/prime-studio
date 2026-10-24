@@ -83,8 +83,11 @@ document.getElementById("modalClose").onclick=closeModal;
 addEventListener("keydown",e=>{ if(e.key==="Escape" && !modal.hidden) closeModal(); });
 
 /* ---------- Animações ---------- */
-const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }),{threshold:.12});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }),{threshold:0,rootMargin:"0px 0px -8% 0px"});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+// fallback: nada fica invisível se o observer falhar
+setTimeout(()=>document.querySelectorAll(".reveal:not(.in)").forEach(el=>{const r=el.getBoundingClientRect(); if(r.top<innerHeight) el.classList.add("in");}),1500);
+addEventListener("load",()=>setTimeout(()=>{ if(!("IntersectionObserver" in window)) document.querySelectorAll(".reveal").forEach(e=>e.classList.add("in")); },0));
 
 /* ---------- v2: interações ---------- */
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
