@@ -99,17 +99,18 @@ const PRIME = [
   ["E","Escala","Mais contatos, com medição.","Crescimento previsível",["Origem dos contatos medida","Agenda e WhatsApp integrados","Tráfego pago quando a base estiver pronta"]]
 ];
 const tabs=document.getElementById("tabs"), panel=document.getElementById("panel");
-tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab" role="tab" aria-selected="${k===0}" data-k="${k}"><b>${t[0]}</b>${t[1]}</button>`).join("");
-let tabTimer;
+tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab" role="tab" aria-selected="${k===0}" aria-controls="panel" aria-label="Etapa ${k+1}: ${t[0]} de ${t[1]}" data-k="${k}"><b>${t[0]}</b><span>${t[1]}</span><i class="pg"></i></button>`).join("");
+let tabTimer=null, cur=0, manual=false;
 function showTab(k){
-  const t=PRIME[k]; tabs.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===k));
+  cur=k; const t=PRIME[k]; tabs.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===k));
   panel.classList.remove("anim"); void panel.offsetWidth; panel.classList.add("anim");
   panel.innerHTML=`<div class="L">${t[0]}</div><div><p class="k">Etapa ${k+1} de 5 · ${t[1]}</p><h3>${t[2]}</h3><p style="margin-top:10px">${t[3]}.</p></div><ul>${t[4].map(x=>`<li>${x}</li>`).join("")}</ul>`;
 }
-tabs.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{clearInterval(tabTimer);showTab(+b.dataset.k);});
+function stopAuto(){ clearInterval(tabTimer); tabTimer=null; tabs.classList.remove("auto"); }
+function startAuto(){ if(RM||manual||tabTimer) return; tabs.classList.remove("auto"); void tabs.offsetWidth; tabs.classList.add("auto"); tabTimer=setInterval(()=>{showTab((cur+1)%5); tabs.classList.remove("auto"); void tabs.offsetWidth; tabs.classList.add("auto");},6000); }
+tabs.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{manual=true;stopAuto();showTab(+b.dataset.k);});
 showTab(0);
-if(!RM){ let cur=0; tabTimer=setInterval(()=>{cur=(cur+1)%5;showTab(cur);},6000);
-  new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) clearInterval(tabTimer); }),{threshold:0}).observe(panel); }
+if(!RM && "IntersectionObserver" in window){ new IntersectionObserver(es=>es.forEach(e=>{ e.isIntersecting?startAuto():stopAuto(); }),{threshold:.25}).observe(tabs); }
 
 function animateCount(el){
   const to=+el.dataset.to, pre=el.dataset.pre||""; if(RM){el.textContent=pre+to;return;}
