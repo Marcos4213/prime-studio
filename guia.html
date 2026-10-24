@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>O Paciente Decide em 7 Segundos — Prime Studio</title><meta name="theme-color" content="#0b0a08">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>*{box-sizing:border-box;margin:0}html,body{overflow-x:hidden}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{background:#0b0a08;color:#e9e1d2;font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,.lt,.sc-n{font-family:"Cormorant Garamond",serif;font-weight:500}em{color:#d4b06a}
+a{color:#d4b06a}
+.cover{text-align:center;padding:52px 20px 10px;background:radial-gradient(120% 70% at 50% 0,#2a2112,#0b0a08 65%)}
+.logo{width:140px;height:auto;display:block;margin:0 auto 30px}
+.kick{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:#a99d86}
+.cover h1{font-size:clamp(2.3rem,10vw,3.8rem);line-height:1.02;margin:12px auto 16px;max-width:12ch}
+.cover .sub{max-width:36ch;margin:0 auto;color:#b9ae9a}
+.cover-img{display:block;width:min(100%,520px);height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:18px;margin:30px auto 0;border:1px solid #3a3122;opacity:.9}
+.gate{max-width:440px;margin:30px auto 60px;padding:26px 20px;border:1px solid #3a3122;border-radius:20px;background:#12100c}
+.gate h2{font-size:1.8rem;line-height:1.1}.gate>p{color:#a99d86;margin:8px 0 18px;font-size:.95rem}
+.gate label{display:block;font-size:.82rem;color:#b9ae9a;margin:12px 0 5px}
+.gate input,.gate select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #3a3122;background:#0b0a08;color:#efe7d8;font:inherit}
+.gate input:focus,.gate select:focus{outline:none;border-color:#c8a25a}
+.gate .btn{width:100%;margin-top:20px}.gerr{color:#e58b7a;font-size:.88rem;margin-top:10px}
+.priv{font-size:.75rem;color:#6f6656;margin-top:12px;text-align:center}
+.btn{display:inline-block;text-align:center;padding:15px 22px;border-radius:999px;border:0;cursor:pointer;font:600 1rem Inter,sans-serif;text-decoration:none;color:#1a140a;background:linear-gradient(135deg,#e2c27e,#b8893f);box-shadow:0 10px 30px rgba(200,162,90,.25)}
+.btn.ghost{background:transparent;color:#e2c27e;border:1px solid #c8a25a;box-shadow:none}.btn.sm{padding:12px 18px;font-size:.92rem}
+.toc{position:sticky;top:0;z-index:5;background:rgba(11,10,8,.94);backdrop-filter:blur(10px);border-bottom:1px solid #2a2418;display:flex;align-items:center;gap:10px;padding:0 12px}
+.tp{position:absolute;left:0;right:0;bottom:-1px;height:2px}.tp i{display:block;height:100%;width:0;background:#c8a25a}
+.tl{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:12px 0}.tl::-webkit-scrollbar{display:none}
+.tl a{flex:none;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid #2a2418;color:#8f846f;font-size:.78rem;text-decoration:none;white-space:nowrap}
+.tl a i{width:7px;height:7px;border-radius:50%;border:1px solid currentColor}
+.tl a.done i{background:#c8a25a;border-color:#c8a25a}.tl a.on{color:#e2c27e;border-color:#c8a25a}
+.pdf{flex:none;background:none;border:1px solid #3a3122;color:#e2c27e;border-radius:999px;padding:7px 12px;font:500 .78rem Inter;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.ch{padding:64px 0 20px;border-bottom:1px solid #1e1a12}
+.num{font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:#a99d86}
+.lt{width:58px;height:58px;border-radius:50%;border:1px solid #c8a25a;color:#d4b06a;display:grid;place-items:center;font-size:2rem;margin:16px 0 4px}
+.ch h2{font-size:clamp(2rem,8vw,2.8rem);line-height:1.05;margin:8px 0 18px}
+.ch h3{font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;color:#d4b06a;margin:28px 0 8px;font-weight:600}
+.ch p{color:#cfc5b3}.intro{font-size:1.1rem;color:#efe7d8!important}
+.dots{padding-left:18px}.dots li{margin:8px 0}.dots b{color:#efe7d8}
+.steps{counter-reset:s;list-style:none;padding:0}.steps li{counter-increment:s;position:relative;padding:12px 0 12px 42px;border-bottom:1px solid #1e1a12}
+.steps li:before{content:counter(s);position:absolute;left:0;top:12px;width:28px;height:28px;border-radius:50%;background:#1e1912;color:#d4b06a;display:grid;place-items:center;font-size:.85rem;font-weight:600}
+.niche{display:grid;gap:10px;margin:26px 0}.niche p{padding:14px 16px;border-radius:14px;background:#12100c;border:1px solid #2a2418;font-size:.94rem}
+.niche b{display:block;color:#d4b06a;font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
+.err{border-left:3px solid #b5654f;padding:12px 16px;background:rgba(181,101,79,.08);border-radius:0 12px 12px 0}
+.et{font-weight:600;color:#e8a08d!important;font-size:.9rem}
+.ck{margin:28px 0 10px;padding:20px;border-radius:18px;border:1px solid #3a3122;background:linear-gradient(180deg,#15120d,#0f0d0a)}
+.ckt{font-family:"Cormorant Garamond",serif;font-size:1.4rem;color:#efe7d8!important;margin-bottom:8px}
+.ck label{display:flex;gap:12px;align-items:flex-start;padding:10px 0;cursor:pointer;border-top:1px solid #1e1a12}
+.ck input{appearance:none;flex:none;width:22px;height:22px;border-radius:6px;border:1px solid #c8a25a;margin-top:2px;display:grid;place-items:center;cursor:pointer}
+.ck input:checked{background:#c8a25a}.ck input:checked:after{content:"✓";color:#1a140a;font-size:14px;font-weight:700}
+.cta-card{margin:40px 0;padding:24px 20px;border-radius:20px;background:radial-gradient(120% 120% at 0 0,#2a2112,#12100c);border:1px solid #4a3c22}
+.cc-t{font-family:"Cormorant Garamond",serif;font-size:1.6rem;line-height:1.15;color:#efe7d8}.cc-s{color:#b9ae9a;margin:8px 0 16px}
+.cc-b{display:flex;flex-wrap:wrap;gap:10px}
+.score{margin-top:20px;padding:26px 20px;border-radius:20px;border:1px solid #4a3c22;background:#12100c;text-align:center}
+.sc-n{font-size:4.2rem;line-height:1;color:#e2c27e}.sc-n small{font-size:1.4rem;color:#8f846f}
+.bar{height:10px;border-radius:99px;background:#1e1912;margin:16px 0;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#b8893f,#e2c27e);transition:width .5s}
+.sc-l{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.sc-l div{padding:8px 0;border-radius:10px;background:#0b0a08;font-size:.78rem;color:#8f846f}.sc-l b{display:block;color:#d4b06a;font-family:"Cormorant Garamond",serif;font-size:1.3rem}
+.sc-m{margin-top:16px;color:#efe7d8!important}
+.fin{display:grid;gap:18px;margin:30px 0 40px}.fin .btn{width:100%}.mc{font-size:.85rem;color:#a99d86!important;margin-top:8px;text-align:center}
+@media(min-width:760px){.fin{grid-template-columns:1fr 1fr}.niche{grid-template-columns:repeat(3,1fr)}}
+.foot{text-align:center;padding:40px 0;font-size:.75rem;letter-spacing:.2em;color:#6f6656}
+.print-only{display:none}
+@media print{
+ @page{size:A4;margin:16mm 15mm}
+ body{background:#fff;color:#2a241a;font-size:11pt}
+ .no-print,.toc,.gate{display:none!important}#book{display:block!important}.print-only{display:block;margin-top:20px;font-weight:600}
+ .cover{background:none;min-height:auto;page-break-after:always;padding-top:60mm}.cover h1,.ch h2,.sc-n{color:#1a140a}.cover .sub,.ch p,.kick,.num{color:#4a4031!important}
+ .logo{filter:invert(1) hue-rotate(180deg)}em,.ch h3,.niche b,.lt{color:#9a7432!important}.lt{border-color:#9a7432}
+ .ch{page-break-before:always;border:0;padding-top:0}.niche p,.ck,.score,.err{background:#faf6ee!important;border-color:#e4d8c2!important;break-inside:avoid}
+ .steps li:before{background:#f1e7d3}.steps li,.ck label{border-color:#eee4d2}.ck input{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .bar,.bar i,.ck input:checked{-webkit-print-color-adjust:exact;print-color-adjust:exact}.sc-l div{background:#f4ecdd}.intro,.ckt,.sc-m{color:#1a140a!important}
+ .foot{color:#9a7432}
+}
+</style></head>
+<body>
+<header class="cover">
+  <img class="logo" src="/assets/logo-prime-studio.svg" alt="Prime Studio" width="140" height="38">
+  <p class="kick">Guia Prime Studio</p>
+  <h1>O Paciente Decide em <em>7 Segundos</em></h1>
+  <p class="sub">Como clínicas de saúde, beleza e alto padrão conquistam o paciente antes da primeira conversa, e o método em 5 passos para aplicar no seu negócio.</p>
+  <img class="cover-img" src="/assets/img/recepcao.webp" alt="" width="960" height="720">
+</header>
+<section class="gate no-print" id="gate">
+  <h2>Receba o guia completo agora</h2>
+  <p>Leitura direta, com o passo a passo e um checklist para você dar nota à sua presença.</p>
+  <form id="gf" novalidate>
+    <label for="gn">Nome</label><input id="gn" autocomplete="name" required>
+    <label for="gw">WhatsApp com DDD</label><input id="gw" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" required>
+    <label for="ge">E-mail</label><input id="ge" type="email" inputmode="email" autocomplete="email" required>
+    <label for="gs">Seu segmento</label><select id="gs" required><option value="">Selecione</option><option>Estética</option><option>Odontologia</option><option>Saúde</option><option>Beleza</option><option>Outro</option></select>
+    <p class="gerr" id="gerr" hidden></p>
+    <button class="btn" type="submit" id="gb">Liberar o guia</button>
+    <p class="priv">Seus dados ficam com a Prime Studio. <a href="/privacidade.html">Política de Privacidade</a></p>
+  </form>
+</section>
+<div id="book" hidden>
+<nav class="toc no-print" id="toc"><div class="tp"><i id="tpb"></i></div><div class="tl"><a href="#c1" data-t="c1"><i></i><span>Os primeiros segundos</span></a><a href="#c2" data-t="c2"><i></i><span>P · Perfil</span></a><a href="#c3" data-t="c3"><i></i><span>R · Reputação</span></a><a href="#c4" data-t="c4"><i></i><span>I · Imagem</span></a><a href="#c5" data-t="c5"><i></i><span>M · Marca no site</span></a><a href="#c6" data-t="c6"><i></i><span>E · Escala</span></a><a href="#c7" data-t="c7"><i></i><span>Sua nota</span></a><a href="#c8" data-t="c8"><i></i><span>Próximo passo</span></a></div><button class="pdf" id="pdf" type="button">Baixar PDF</button></nav>
+<main class="wrap"><section class="ch" id="c1"><p class="num">Capítulo 1</p><h2>Os primeiros <em>segundos</em></h2>
+<p class="intro">Antes de ler uma linha, o paciente de alto padrão já decidiu se você parece confiável. Ele não está avaliando a sua técnica, porque ainda não tem como. Está avaliando sinais.</p>
+<h3>O que ele vê primeiro</h3>
+<p>Quem procura um procedimento de valor alto chega por uma indicação, um anúncio ou uma busca no Google. Em todos os casos, o primeiro contato não é com você: é com a sua foto de perfil, a sua bio, o seu site, as suas avaliações. Esses sinais são lidos em conjunto, quase sem perceber, e formam uma impressão imediata.</p>
+<h3>Por que o alto padrão é mais exigente</h3>
+<ul class="dots"><li><b>Ele tem opções.</b> Quem pode pagar mais tem vários profissionais à disposição e não precisa dar uma segunda chance.</li><li><b>O risco é pessoal.</b> Rosto, sorriso e saúde não admitem erro. Qualquer sinal de descuido vira medo.</li><li><b>Ele compara pelo que vê.</b> Sem conseguir julgar a técnica, julga o cuidado com a apresentação como prova do cuidado com ele.</li></ul>
+<h3>O teste da primeira impressão</h3>
+<p>Peça para alguém que não conhece seu trabalho abrir seu Instagram e seu site no celular por alguns segundos e responder: o que essa clínica faz, para quem e quanto ela parece cobrar? Se a resposta não bate com a realidade, a sua presença está trabalhando contra você.</p>
+<div class="niche"><p><b>Estética</b> Um feed com fotos de antes e depois cruas e sem padrão passa a sensação de procedimento em série, não de cuidado individual.</p><p><b>Odontologia</b> Um site lento e desatualizado faz o paciente imaginar um consultório também desatualizado.</p><p><b>Saúde</b> Um perfil sem rosto do profissional deixa o paciente sem saber com quem vai falar, e ele adia a decisão.</p></div>
+<p class="key">Os próximos cinco capítulos mostram, passo a passo, como transformar cada um desses sinais a seu favor. É o Método PRIME.</p></section><section class="ch" id="c2"><p class="num">Capítulo 2</p><div class="lt">P</div><h2>Perfil: <em>Seu Instagram é a sua recepção</em></h2>
+<h3>O problema</h3><p>A maioria dos perfis de clínica foi montada aos poucos: uma bio escrita às pressas, destaques sem ordem, fotos de celular misturadas com artes de banco de imagem. Cada peça isolada parece inofensiva. Juntas, dizem ao paciente que o atendimento também é improvisado.</p>
+<h3>Como é o premium</h3><p>Um perfil premium responde em uma olhada três perguntas: o que você faz, para quem e como agendar. A bio tem uma promessa clara, a cidade e um único link que leva à agenda. Os destaques funcionam como um mini site: procedimentos, resultados, estrutura, depoimentos e como agendar.</p>
+<h3>O que fazer agora</h3><ol class="steps"><li>Reescreva a bio em 3 linhas: especialidade + resultado que você entrega, cidade/bairro e um convite para agendar.</li><li>Troque a foto de perfil por uma imagem nítida da marca ou do profissional, com fundo limpo e boa luz.</li><li>Organize 5 destaques fixos com capas no mesmo estilo: Procedimentos, Resultados, Clínica, Depoimentos, Agendar.</li><li>Fixe 3 posts no topo que apresentem você, seu principal procedimento e como funciona a primeira consulta.</li><li>Use um link na bio que leve direto ao agendamento ou ao WhatsApp, não a uma lista confusa.</li></ol>
+<div class="niche"><p><b>Estética</b> "Harmonização facial com resultado natural · Jardins, SP · Avaliação individual" diz mais que "✨ beleza e autoestima ✨".</p><p><b>Odontologia</b> Um destaque "Lentes" mostrando planejamento, prova e resultado final vende mais que dez posts de dente branco genérico.</p><p><b>Saúde</b> Um médico ou fisioterapeuta que fixa "Como é a primeira consulta" tira a principal insegurança de quem ainda não o conhece.</p></div>
+<div class="err"><p class="et">O erro que custa caro</p><p>Encher a bio de emojis e frases genéricas como "sua beleza é nossa prioridade". O paciente não sabe o que você faz nem por que você e não outro.</p></div>
+<div class="ck" data-ch="P"><p class="ckt">Como está o seu perfil hoje?</p><label><input type="checkbox" data-k="P0"><span>Minha bio diz o que faço, para quem e onde, sem precisar abrir nada</span></label><label><input type="checkbox" data-k="P1"><span>Tenho destaques organizados com capas no mesmo padrão</span></label><label><input type="checkbox" data-k="P2"><span>Os 3 posts fixados apresentam meu trabalho principal</span></label><label><input type="checkbox" data-k="P3"><span>O link da bio leva direto a agendar ou conversar</span></label></div></section><section class="ch" id="c3"><p class="num">Capítulo 3</p><div class="lt">R</div><h2>Reputação: <em>A prova que fala antes de você</em></h2>
+<h3>O problema</h3><p>O paciente de alto padrão não quer ser o primeiro a arriscar. Antes de chamar, ele procura sinais de que outras pessoas parecidas com ele confiaram em você e ficaram satisfeitas. Se esses sinais não aparecem, ele não reclama: só fecha a aba.</p>
+<h3>Como é o premium</h3><p>Reputação premium é visível em todos os pontos de contato: avaliações recentes no Google com respostas cuidadosas, depoimentos reais organizados no Instagram e casos apresentados com contexto, não só fotos soltas.</p>
+<h3>O que fazer agora</h3><ol class="steps"><li>Crie uma rotina: todo atendimento satisfeito recebe, no mesmo dia, uma mensagem curta com o link direto de avaliação do Google.</li><li>Responda todas as avaliações, inclusive as negativas, com educação e sem expor dados do paciente.</li><li>Peça depoimentos em vídeo curto ou print autorizado e reúna tudo em um destaque fixo.</li><li>Apresente casos com história: o que incomodava, o que foi planejado e como o paciente se sente agora, respeitando as regras do seu conselho profissional.</li><li>Mantenha o perfil do Google completo: horários, fotos reais da clínica, serviços e telefone corretos.</li></ol>
+<div class="niche"><p><b>Estética</b> Um destaque com depoimentos de clientes falando da naturalidade do resultado responde ao medo número um: ficar artificial.</p><p><b>Odontologia</b> Responder uma avaliação explicando o cuidado com conforto e anestesia acalma quem tem medo de dentista.</p><p><b>Saúde</b> Avaliações que citam pontualidade e atenção na consulta pesam muito para quem está escolhendo um especialista.</p></div>
+<div class="err"><p class="et">O erro que custa caro</p><p>Ter dezenas de pacientes felizes e nenhum registro disso. A satisfação que não vira prova pública não trabalha para você.</p></div>
+<div class="ck" data-ch="R"><p class="ckt">Como está o seu reputação hoje?</p><label><input type="checkbox" data-k="R0"><span>Peço avaliação no Google de forma rotineira após o atendimento</span></label><label><input type="checkbox" data-k="R1"><span>Respondo todas as avaliações que recebo</span></label><label><input type="checkbox" data-k="R2"><span>Tenho depoimentos reais organizados e fáceis de encontrar</span></label><label><input type="checkbox" data-k="R3"><span>Meu perfil do Google está completo e atualizado</span></label></div></section><aside class="cta-card no-print"><p class="cc-t">Quer ver isso aplicado ao seu negócio?</p><p class="cc-s">Em uma conversa rápida eu te mostro o que corrigir primeiro.</p><div class="cc-b"><a class="btn sm" href="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20Marcos%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio." target="_blank" rel="noopener" data-ev="whatsapp">Falar com Marcos no WhatsApp</a><a class="btn sm ghost" href="/raio-x?utm_source=guia" data-ev="raiox">Fazer o Raio-X grátis</a></div></aside><section class="ch" id="c4"><p class="num">Capítulo 4</p><div class="lt">I</div><h2>Imagem: <em>Parecer o preço que você cobra</em></h2>
+<h3>O problema</h3><p>Quem cobra um valor de alto padrão e se apresenta com fotos escuras, artes de modelo pronto e cores diferentes a cada post cria um desencontro. O paciente sente que o preço não combina com o que vê, e começa a negociar ou desiste.</p>
+<h3>Como é o premium</h3><p>Imagem premium é consistência: uma paleta definida, duas fontes, fotos reais com boa luz da equipe, da estrutura e dos bastidores. Cada post parece da mesma marca, mesmo sem o logo.</p>
+<h3>O que fazer agora</h3><ol class="steps"><li>Defina sua paleta de 2 a 3 cores e duas fontes, e use em tudo: posts, stories, site e materiais impressos.</li><li>Faça uma sessão de fotos profissional da equipe e da clínica e crie um banco de imagens para os próximos meses.</li><li>Troque fotos de banco de imagem genéricas por imagens reais do seu espaço e do seu atendimento.</li><li>Padronize a capa dos reels e dos carrosséis para o feed parecer organizado.</li><li>Revise cada post antes de publicar: ele parece de uma clínica que cobra o que você cobra?</li></ol>
+<div class="niche"><p><b>Estética</b> Tons neutros, luz suave e fotos de ambiente transmitem delicadeza, que é exatamente o que o paciente busca.</p><p><b>Odontologia</b> Fotos da estrutura e dos equipamentos, com a equipe uniformizada, comunicam tecnologia e segurança.</p><p><b>Saúde</b> Retratos do profissional em atendimento, com olhar e postura acolhedores, constroem confiança antes da consulta.</p></div>
+<div class="err"><p class="et">O erro que custa caro</p><p>Mudar de estilo a cada mês seguindo a tendência do momento. Sem consistência, ninguém reconhece sua marca no meio do feed.</p></div>
+<div class="ck" data-ch="I"><p class="ckt">Como está o seu imagem hoje?</p><label><input type="checkbox" data-k="I0"><span>Tenho uma paleta e fontes definidas e uso em todos os canais</span></label><label><input type="checkbox" data-k="I1"><span>Uso fotos reais e profissionais da equipe e do espaço</span></label><label><input type="checkbox" data-k="I2"><span>Meu feed parece de uma única marca, sem estilos misturados</span></label><label><input type="checkbox" data-k="I3"><span>Minhas imagens combinam com o valor que cobro</span></label></div></section><section class="ch" id="c5"><p class="num">Capítulo 5</p><div class="lt">M</div><h2>Marca no site: <em>Um endereço próprio que vende</em></h2>
+<h3>O problema</h3><p>Instagram é terreno alugado: o alcance muda, a conta pode cair e a atenção dura segundos. Quem pesquisa no Google por um procedimento na sua cidade e não encontra um site seu acaba no site de outra pessoa.</p>
+<h3>Como é o premium</h3><p>Um site premium é rápido no celular, explica cada procedimento em uma página própria, mostra prova e estrutura e tem um único próximo passo claro em todas as telas: agendar ou chamar no WhatsApp.</p>
+<h3>O que fazer agora</h3><ol class="steps"><li>Garanta um domínio com o nome da sua marca e um e-mail profissional nele.</li><li>Crie uma página para cada procedimento principal, com o problema que resolve, como funciona e o que esperar.</li><li>Deixe o botão de WhatsApp ou agenda visível o tempo todo no celular.</li><li>Teste o site no seu próprio celular: ele carrega rápido e se entende em poucos segundos?</li><li>Cadastre o site no Perfil da Empresa do Google e na bio do Instagram.</li></ol>
+<div class="niche"><p><b>Estética</b> Uma página só para "bioestimuladores" responde dúvidas que o paciente teria vergonha de perguntar no direct.</p><p><b>Odontologia</b> Uma página de lentes com as etapas do tratamento reduz a insegurança de quem vai fazer um investimento alto.</p><p><b>Saúde</b> Uma página por especialidade ou exame ajuda o paciente a ter certeza de que você trata exatamente o caso dele.</p></div>
+<div class="err"><p class="et">O erro que custa caro</p><p>Ter um site bonito, mas parado: sem páginas por procedimento, lento e sem botão claro. Ele existe, mas não traz nenhum paciente.</p></div>
+<div class="ck" data-ch="M"><p class="ckt">Como está o seu marca no site hoje?</p><label><input type="checkbox" data-k="M0"><span>Tenho um site com domínio próprio</span></label><label><input type="checkbox" data-k="M1"><span>Cada procedimento principal tem sua própria página</span></label><label><input type="checkbox" data-k="M2"><span>O botão de agendar ou WhatsApp aparece em todas as telas do celular</span></label><label><input type="checkbox" data-k="M3"><span>Meu site carrega rápido e se entende em segundos</span></label></div></section><aside class="cta-card no-print"><p class="cc-t">Enquanto você lê, seu concorrente está sendo encontrado.</p><p class="cc-s">Faça o Raio-X grátis e descubra em qual passo você está perdendo pacientes.</p><div class="cc-b"><a class="btn sm" href="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20Marcos%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio." target="_blank" rel="noopener" data-ev="whatsapp">Falar com Marcos no WhatsApp</a><a class="btn sm ghost" href="/raio-x?utm_source=guia" data-ev="raiox">Fazer o Raio-X grátis</a></div></aside><section class="ch" id="c6"><p class="num">Capítulo 6</p><div class="lt">E</div><h2>Escala: <em>Clientes novos chegando todo dia</em></h2>
+<h3>O problema</h3><p>Muitos negócios bons vivem de indicação e de picos: um mês cheio, outro vazio. Quando o movimento cai, a reação é postar mais ou baixar o preço, e as duas coisas desgastam a marca.</p>
+<h3>Como é o premium</h3><p>Escala premium é previsível: tráfego pago bem segmentado levando para uma página que converte, um processo de atendimento no WhatsApp que responde rápido e um acompanhamento de quem chamou e ainda não agendou.</p>
+<h3>O que fazer agora</h3><ol class="steps"><li>Só invista em anúncios depois que perfil, reputação, imagem e site estiverem prontos, ou você paga para mostrar uma vitrine fraca.</li><li>Anuncie com uma oferta clara de primeiro passo, como uma avaliação, e leve o clique para uma página feita para isso.</li><li>Defina um tempo máximo de resposta no WhatsApp e um roteiro de atendimento que conduz até o agendamento.</li><li>Registre cada contato e faça follow-up de quem não agendou em 24h, 3 dias e 7 dias.</li><li>Acompanhe toda semana quantos contatos chegaram, quantos agendaram e de onde vieram.</li></ol>
+<div class="niche"><p><b>Estética</b> Uma campanha de avaliação facial levando para uma página do procedimento e para um WhatsApp que responde em minutos.</p><p><b>Odontologia</b> Follow-up educado de quem pediu orçamento de implante e sumiu costuma recuperar quem ainda estava decidindo.</p><p><b>Saúde</b> Anúncios locais por especialidade, para um raio próximo do consultório, atraem quem realmente consegue ir até você.</p></div>
+<div class="err"><p class="et">O erro que custa caro</p><p>Ligar anúncios para o perfil do Instagram e esperar o melhor. Sem página de conversão e sem processo de atendimento, o dinheiro vira curtida, não agenda.</p></div>
+<div class="ck" data-ch="E"><p class="ckt">Como está o seu escala hoje?</p><label><input type="checkbox" data-k="E0"><span>Meus anúncios levam para uma página feita para converter</span></label><label><input type="checkbox" data-k="E1"><span>Respondo os contatos do WhatsApp rápido e com um roteiro</span></label><label><input type="checkbox" data-k="E2"><span>Faço follow-up de quem chamou e não agendou</span></label><label><input type="checkbox" data-k="E3"><span>Sei toda semana quantos contatos chegam e de onde vêm</span></label></div></section><section class="ch" id="c7"><p class="num">Capítulo 7</p><h2>Sua <em>Nota de Presença</em></h2>
+<p class="intro">Cada item marcado nos capítulos anteriores soma pontos. Volte e ajuste quando quiser: a nota se atualiza na hora.</p>
+<div class="score"><div class="sc-n"><span id="scN">0</span><small>/100</small></div><div class="bar"><i id="scBar"></i></div>
+<div class="sc-l"><div><b>P</b><span id="scP">0/4</span></div><div><b>R</b><span id="scR">0/4</span></div><div><b>I</b><span id="scI">0/4</span></div><div><b>M</b><span id="scM">0/4</span></div><div><b>E</b><span id="scE">0/4</span></div></div>
+<p class="sc-m" id="scMsg"></p></div></section><section class="ch final" id="c8"><p class="num">Capítulo 8</p><h2>Próximo <em>passo</em></h2>
+<p class="intro">Agora você sabe exatamente o que separa uma presença comum de uma presença que faz o paciente de alto padrão escolher você. Saber é a parte fácil. Executar os cinco passos com consistência, enquanto atende a sua agenda, é onde quase todo mundo para.</p>
+<p>A Prime Studio existe para isso: aplicar o Método PRIME inteiro no seu negócio, do perfil à escala, com estratégia, design e site sob o mesmo teto. Você continua cuidando dos seus pacientes. A sua presença passa a trabalhar por você.</p>
+<p>No diagnóstico gratuito eu olho a sua presença real, aponto os pontos que estão custando pacientes e mostro a ordem certa para corrigir.</p>
+<div class="fin no-print"><div><a class="btn" href="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20Marcos%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio." target="_blank" rel="noopener" data-ev="whatsapp">Falar com Marcos no WhatsApp</a><p class="mc">Cada semana com a presença atual é paciente indo para o concorrente.</p></div>
+<div><a class="btn ghost" href="https://cal.com/marcos-paulo-wpugxh/diagnostico" target="_blank" rel="noopener" data-ev="agenda">Agendar diagnóstico</a><p class="mc">Saia da conversa sabendo exatamente o que corrigir primeiro.</p></div></div>
+<p class="print-only">Fale com a Prime Studio: prime.devbrasil.online · WhatsApp (11) 91322-1587</p></section></main>
+</div>
+<footer class="foot"><p>PRIME STUDIO</p></footer>
+<script>
+const ATTR = (()=>{
+  const q=new URLSearchParams(location.search), keys=["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"];
+  let s={}; try{ s=JSON.parse(localStorage.getItem("prime_attr"))||{}; }catch(e){}
+  const now={}; keys.forEach(k=>{ const v=q.get(k); if(v) now[k]=v.slice(0,200); });
+  if(Object.keys(now).length){ s.last={...now, ts:Date.now(), landing:location.pathname}; if(!s.first) s.first=s.last; }
+  if(!s.first) s.first={ref:document.referrer.slice(0,200), ts:Date.now(), landing:location.pathname};
+  if(now.fbclid){ const fbc=`fb.1.${Date.now()}.${now.fbclid}`; document.cookie=`_fbc=${fbc};path=/;max-age=7776000;SameSite=Lax`; }
+  try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
+  return s;
+})();
+const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
+const PIXEL_ID="";
+if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
+const WA="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20Marcos%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio.";
+const $=id=>document.getElementById(id), KEY="prime_guia", CK="prime_guia_ck";
+const MSG=[[0,"Sua presença ainda não mostra o negócio que você tem. O paciente de alto padrão está decidindo por outro antes de falar com você. Comece pelo Perfil: é o ajuste mais rápido e o que mais muda a primeira impressão."],[40,"Você já tem uma base, mas há lacunas visíveis que custam pacientes todos os dias. Corrija primeiro o passo com a menor nota: é ali que a decisão está escapando."],[70,"Sua presença está acima da média. Agora o ganho está nos detalhes e na escala: consistência, prova e um processo que transforma atenção em agenda cheia."],[90,"Presença de alto padrão. O próximo nível é escalar com previsibilidade sem perder o padrão que você construiu."]];
+function track(ev,p){ if(window.fbq) try{ fbq(["Lead","Contact"].includes(ev)?"track":"trackCustom",ev,p||{}); }catch(e){} }
+function open(){ $("gate").hidden=true; $("book").hidden=false; score(); spy(); }
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(CK))||{}; }catch(e){}
+document.querySelectorAll(".ck input").forEach(i=>{ i.checked=!!saved[i.dataset.k]; i.onchange=()=>{ saved[i.dataset.k]=i.checked; try{localStorage.setItem(CK,JSON.stringify(saved));}catch(e){} score(); }; });
+function score(){ let t=0; "PRIME".split("").forEach(L=>{ const n=document.querySelectorAll(`.ck[data-ch="${L}"] input:checked`).length; t+=n; $("sc"+L).textContent=n+"/4"; });
+  const v=t*5; $("scN").textContent=v; $("scBar").style.width=v+"%"; $("scMsg").textContent=MSG.filter(m=>v>=m[0]).pop()[1]; }
+function spy(){ const secs=[...document.querySelectorAll(".ch")], links=[...document.querySelectorAll(".tl a")];
+  const f=()=>{ const h=document.documentElement, b=$("book"), top=b.offsetTop, p=Math.min(1,Math.max(0,(scrollY-top)/(b.offsetHeight-innerHeight))); $("tpb").style.width=(p*100)+"%";
+    let cur=0; secs.forEach((s,k)=>{ if(s.getBoundingClientRect().top<innerHeight*.4) cur=k; });
+    links.forEach((a,k)=>{ a.classList.toggle("on",k===cur); a.classList.toggle("done",k<cur); }); const on=links[cur]; if(on&&on.dataset.c!=cur){ on.dataset.c=cur; on.scrollIntoView({inline:"center",block:"nearest"}); } };
+  addEventListener("scroll",f,{passive:true}); f(); }
+$("pdf").onclick=()=>{ track("GuiaPDF"); window.print(); };
+document.querySelectorAll("[data-ev]").forEach(a=>a.addEventListener("click",()=>track(a.dataset.ev==="whatsapp"?"Contact":"GuiaClick",{content_name:"guia_"+a.dataset.ev})));
+function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{}; const o={}; ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"].forEach(k=>o[k]=l[k]||f[k]||""); o.referrer=f.ref||""; o.landing=f.landing||""; o.fbc=cookie("_fbc"); o.fbp=cookie("_fbp"); return o; }
+$("gf").onsubmit=async e=>{ e.preventDefault(); const nome=$("gn").value.trim(), w=$("gw").value.replace(/\D/g,""), email=$("ge").value.trim(), nicho=$("gs").value, er=$("gerr");
+  const bad = nome.length<2?"Informe seu nome.": w.length<10||w.length>13?"Informe um WhatsApp válido com DDD.": !/^\S+@\S+\.\S+$/.test(email)?"Informe um e-mail válido.": !nicho?"Selecione seu segmento.":"";
+  if(bad){ er.textContent=bad; er.hidden=false; return; } er.hidden=true; const b=$("gb"); b.disabled=true; b.textContent="Liberando…";
+  const payload={nome, whatsapp:w, email, clinica:`${nome} · ${nicho}`, subnicho:nicho, origem:"ebook-guia", atribuicao:attribution(), pagina:location.href};
+  try{ const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await r.json().catch(()=>({})); if(d.id) payload.id=d.id; }catch(_){}
+  try{ localStorage.setItem(KEY,JSON.stringify({ts:Date.now(),nome})); }catch(_){}
+  track("Lead",{content_name:"ebook_guia"}); open(); $("book").scrollIntoView(); };
+try{ if(localStorage.getItem(KEY)) open(); }catch(e){}
+
+</script>
+</body></html>
