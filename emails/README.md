@@ -1,10 +1,12 @@
-# Templates de e-mail (Cal.com Workflows)
+# Templates de e-mail (fluxo de ligação)
 
-Cole o HTML em Cal.com → Workflows → ação "Enviar e-mail ao participante" (editor HTML). Variáveis no padrão do Cal.com.
+Fluxo atual: a paciente faz o Raio-X, o lead entra no HubSpot e o nosso time liga em até 30 minutos (horário comercial). Sem agenda, sem link de reunião.
 
-| Arquivo | Gatilho | Assunto |
+Cole o HTML no editor de e-mail do HubSpot (ou envie manualmente). `{{ contact.firstname }}` é o token de primeiro nome do HubSpot.
+
+| Arquivo | Quando enviar | Assunto |
 |---|---|---|
-| confirmacao.html | Quando o evento é agendado | Confirmado: seu Diagnóstico Prime Studio em {EVENT_DATE_DD/MM} às {EVENT_TIME_HH:mm} |
-| lembrete-24h.html | 24h antes do evento | Amanhã, {EVENT_TIME_HH:mm}: seu Diagnóstico Prime Studio |
-| lembrete-1h.html | 1h antes do evento | Em 1 hora: Diagnóstico Prime Studio ({EVENT_TIME_HH:mm}) |
-| no-show.html | Quando o participante não comparece (No-show) | {ATTENDEE_FIRST_NAME}, vamos remarcar seu diagnóstico? |
+| confirmacao.html | Assim que o lead entra | Recebemos seu Raio-X, {{ contact.firstname }} |
+| tentativa-ligacao.html | Depois de uma ligação não atendida | {{ contact.firstname }}, tentamos te ligar |
+| apos-ligacao.html | Depois da ligação de diagnóstico | Seu diagnóstico Prime Studio, {{ contact.firstname }} |
+| retomada.html | 3 dias sem conseguir falar | {{ contact.firstname }}, vamos retomar o seu diagnóstico? |

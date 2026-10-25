@@ -39,14 +39,14 @@ def ig(before):
         btns = '<span class="i6-b pri">Seguir</span><span class="i6-b">Mensagem</span><span class="i6-b sq">'+I['addp']+'</span>'
         vf = ""
     else:
-        user, name, cat = "institutolumiere", "Instituto Lumière", "Clínica de estética"
+        user, name, cat = "maisonverelle", "Maison Verelle", "Clínica de harmonização facial"
         av = '<span class="i6-av rg"><span class="i6-avi">'+IMG("consulta")+'</span></span>'
         stats = ("128","9.420","310")
         bio = '<p>Harmonização facial com resultado natural.</p><p>Avaliação individual com especialista.</p><p>Jardins · São Paulo</p>'
-        link = '<p class="i6-lk">'+I['link']+'<span>lumiere.clinic/avaliacao</span></p>'
-        hls = [("consulta","Resultados"),("recepcao","Clínica"),("sala","Protocolos"),("tricologia","Equipe"),("dental","Dúvidas")]
+        link = '<p class="i6-lk">'+I['link']+'<span>Maison Verelle · site</span></p>'
+        hls = [("consulta","Tratamentos"),("recepcao","Clínica"),("sala","Protocolos"),("tricologia","Equipe"),("dental","Dúvidas")]
         hl = "".join(f'<span class="i6-h"><i class="i6-hc">{IMG(c)}</i><em>{t}</em></span>' for c,t in hls)
-        tiles = ['<i class="i6t xph xw1">'+IMG("consulta")+'</i>', '<i class="i6t xcover"><span>Resultado<br><em>natural</em></span></i>', '<i class="i6t xph xw2">'+IMG("recepcao")+'</i>',
+        tiles = ['<i class="i6t xph xw1">'+IMG("consulta")+'</i>', '<i class="i6t xcover"><span>Como é o<br><em>cuidado</em></span></i>', '<i class="i6t xph xw2">'+IMG("recepcao")+'</i>',
                  '<i class="i6t xph xw3">'+IMG("sala")+'</i>', '<i class="i6t xph xw4">'+IMG("tricologia")+'</i>', '<i class="i6t xcover xdk"><span>Como é a<br><em>avaliação</em></span></i>']
         btns = '<span class="i6-b pri">Seguir</span><span class="i6-b">Mensagem</span><span class="i6-b">Contato</span><span class="i6-b sq">'+I['addp']+'</span>'
         vf = I['verif']
@@ -82,7 +82,7 @@ def stars(n):
         out += f'<i class="{cls}"></i>'
     return f'<span class="g-stars">{out}</span>'
 def chips(lst):
-    return "".join(f'<span class="g-chip{" pri" if i==0 and lst[0][0]=="call" else ""}">{GI[k]}{t}</span>' for i,(k,t) in enumerate(lst))
+    return "".join(f'<span class="g-chip{" pri" if i==0 and lst[0][0] in ("call","web") else ""}">{GI[k]}{t}</span>' for i,(k,t) in enumerate(lst))
 def rev(ini, color, who, n, when, txt, reply=None):
     r = f'<div class="g-rv"><div class="g-rh"><i class="g-ra" style="background:{color}">{ini}</i><div><b>{who}</b><span>{stars(n)} {when}</span></div></div><p>{txt}</p>'
     if reply: r += f'<p class="g-rp"><b>Resposta do proprietário</b>{reply}</p>'
@@ -96,9 +96,9 @@ def google(before):
         revs = rev("R","#7cb342","Renata M.",2,"há 3 meses","Mandei mensagem e demoraram dois dias para responder.") + rev("J","#8e24aa","Juliana S.",4,"há 8 meses","Gostei do atendimento.")
     else:
         photos = '<div class="g-ph"><i class="a">'+IMG("recepcao")+'</i><i class="b">'+IMG("consulta")+'</i><i class="c">'+IMG("sala")+'</i></div>'
-        name, rt, cnt, sub = "Instituto Lumière", 4.9, "186", "Clínica de estética · Jardins"
+        name, rt, cnt, sub = "Maison Verelle", 4.9, "186", "Harmonização facial · Jardins"
         hours = '<p class="g-hr"><b>Aberto</b> ⋅ Fecha às 19:00</p>'
-        ch = chips([("call","Ligar"),("dir","Rotas"),("web","Site"),("save","Salvar"),("share","Compartilhar")])
+        ch = chips([("web","Site"),("call","Ligar"),("dir","Rotas"),("save","Salvar"),("share","Compartilhar")])
         revs = rev("C","#1e88e5","Camila R.",5,"há 2 semanas","Resultado natural, exatamente como conversamos na avaliação. Equipe muito atenciosa.","Obrigada, Camila! Foi um prazer cuidar de você.") + rev("P","#f4511e","Patrícia L.",5,"há 1 mês","Clínica linda e explicaram cada etapa do procedimento.")
     inner = f'''<div class="g {'bf' if before else 'af'}">
 <div class="g-top"><span class="g-mn">{S('<path d="M4 7h16M4 12h16M4 17h16"/>',2)}</span><span class="g-wm"><i style="color:#4285F4">G</i><i style="color:#EA4335">o</i><i style="color:#FBBC05">o</i><i style="color:#4285F4">g</i><i style="color:#34A853">l</i><i style="color:#EA4335">e</i></span><i class="g-me">M</i></div>

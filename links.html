@@ -6,6 +6,7 @@
 <title>Prime Studio — Links</title><meta name="theme-color" content="#0b0a08">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://prime.devbrasil.online/links">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
 *{box-sizing:border-box;margin:0}html,body{overflow-x:hidden}
@@ -45,13 +46,14 @@ button.lk{width:100%;font:inherit;cursor:pointer}
 </style></head>
 <body><main>
 <img class="logo" src="/assets/logo-prime-studio.svg" alt="Prime Studio" width="150" height="40">
-<h1>Presença digital <em>agressiva</em> para quem é alto padrão.</h1>
-<p class="sub">Só clínicas. Só alto valor. Google, Instagram, site e vendas para a paciente enxergar o seu valor.</p>
+<h1>Sites premium para clínicas <em>de alto padrão.</em></h1>
+<p class="sub">Sua clínica é premium. A gente faz a paciente enxergar isso antes de te mandar mensagem.</p>
 <nav class="lks">
-<a class="lk pri" href="/raio-x?utm_source=instagram&utm_medium=bio" data-ev="raiox"><span class="t">Raio-X grátis da sua presença</span><span class="m">Descubra onde você está perdendo pacientes hoje.</span><i aria-hidden="true">→</i></a>
-<button type="button" class="lk" data-flow="wa" data-ev="whatsapp"><span class="t">Falar comigo no WhatsApp</span><span class="m">Responda 4 perguntas rápidas e a conversa já começa no ponto certo.</span><i aria-hidden="true">→</i></button>
+<a class="lk pri" href="/raio-x?utm_source=instagram&utm_medium=bio" data-ev="raiox"><span class="t">Raio-X grátis da sua presença</span><span class="m">Descubra se a sua presença mostra o seu valor.</span><i aria-hidden="true">→</i></a>
+<button type="button" class="lk" data-flow="wa" data-ev="whatsapp"><span class="t">Falar com o nosso time no WhatsApp</span><span class="m">Responda 4 perguntas rápidas e a conversa já começa no ponto certo.</span><i aria-hidden="true">→</i></button>
 <button type="button" class="lk" data-flow="ag" data-ev="ligacao"><span class="t">Receber diagnóstico por ligação</span><span class="m">Nosso time te liga em até 30 minutos, já com seus perfis abertos.</span><i aria-hidden="true">→</i></button>
-<a class="lk " href="/#como" data-ev="metodo"><span class="t">Conheça o Método PRIME</span><span class="m">5 passos para a paciente enxergar o seu valor.</span><i aria-hidden="true">→</i></a>
+<a class="lk" href="/?utm_source=instagram&utm_medium=bio#cases" data-ev="sites"><span class="t">Veja sites que criamos</span><span class="m">Projetos desenhados para cada especialidade.</span><i aria-hidden="true">→</i></a>
+<a class="lk" href="/#metodo" data-ev="metodo"><span class="t">Conheça o Método PRIME</span><span class="m">5 passos para a paciente enxergar o seu valor.</span><i aria-hidden="true">→</i></a>
 <a class="lk" href="/guia?utm_source=instagram&utm_medium=bio" data-ev="guia"><span class="t">Guia gratuito</span><span class="m">O Paciente Decide em 7 Segundos: o método completo, sem custo.</span><i aria-hidden="true">→</i></a>
 </nav>
 <footer>PRIME STUDIO</footer>
@@ -122,12 +124,12 @@ function form(){ const ag=F==="ag";
 function done(){ bar.style.width="100%";
   if(!A.q){ S.innerHTML=`<h2>Obrigado, ${esc(A.nome.split(" ")[0])}. <em>Seu próximo passo é outro.</em></h2><p class="s">Pelo seu momento, o melhor caminho agora não é uma conversa individual, e sim estruturar a base da sua presença. Separei dois materiais gratuitos que vão te ajudar mais neste momento.</p>
     <a class="go" href="/guia?utm_source=instagram&utm_medium=bio_filtro">Ler o guia gratuito</a><a class="go gh" href="/raio-x?utm_source=instagram&utm_medium=bio_filtro">Fazer o Raio-X grátis</a><p class="fine">Quando o seu negócio estiver pronto para o próximo nível, estaremos aqui.</p>`; return; }
-  if(F==="wa"){ const msg=`Olá Marcos, sou ${A.nome} ${A.seg==="outro"?"de outra área":"da área de "+A.segT.toLowerCase()}, faturamos ${A.fatT.replace(/^Até/,"até").replace(/^Acima/,"acima")} por mês e meu maior desafio hoje é ${DES[A.des_i][0]}. Quero entender como a Prime Studio pode ajudar.`;
+  if(F==="wa"){ const msg=`Olá, time Prime Studio! Sou ${A.nome}, ${A.seg==="outro"?"de outra área":"da área de "+A.segT.toLowerCase()}, e meu maior desafio hoje é ${DES[A.des_i][0]}. Quero entender como a Prime Studio pode ajudar.`;
     const url=`https://wa.me/${NUM}?text=${encodeURIComponent(msg)}`; A.waUrl=url;
     S.innerHTML=`<h2>Perfeito, ${esc(A.nome.split(" ")[0])}. <em>Sua mensagem está pronta.</em></h2><p class="s">É só enviar. Ela já leva as suas respostas para a conversa começar no ponto certo.</p><a class="go" id="waGo" href="${url}" target="_blank" rel="noopener">Abrir o WhatsApp</a>`;
     document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_whatsapp"}); return; }
   const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})), h=d.getHours(), hor=d.getDay()>=1&&d.getDay()<=5&&h>=9&&h<18;
-  const msg=`Olá! Sou ${A.nome}, da ${A.cli}. Pedi o diagnóstico por ligação pela bio. Meu Instagram é ${A.ig} e faturamos ${A.fatT.replace(/^Até/,"até").replace(/^Acima/,"acima")} por mês. Quero adiantar a conversa.`;
+  const msg=`Olá, time Prime Studio! Sou ${A.nome}, da ${A.cli}. Pedi o diagnóstico por ligação pela bio. Meu Instagram é ${A.ig}. Quero adiantar a conversa.`;
   S.innerHTML=`<h2>Pronto, ${esc(A.nome.split(" ")[0])}. <em>Nosso time vai te ligar ${hor?"em até 30 minutos":"no início do próximo horário de atendimento"} com seus perfis já abertos.</em></h2><p class="s">Deixe o WhatsApp por perto. Na ligação, analisamos a sua presença com você e entendemos seus objetivos.</p><a class="go gh" id="waGo" href="https://wa.me/${NUM}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a>`;
   document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_ligacao_whatsapp"}); }
 document.querySelectorAll("[data-flow]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.flow)));

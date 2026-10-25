@@ -7,8 +7,6 @@ const CONFIG = {
   HORARIO: { dias:[1,2,3,4,5,6], inicio:9, fim:18 },   // seg–sáb, 9h–18h (sábado a confirmar)
   WHATSAPP_NUMERO: "5511913221587",
   // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
-  AGENDA_URL: "https://cal.com/marcos-paulo-wpugxh/diagnostico",
-  CAL_LINK: "marcos-paulo-wpugxh/diagnostico",   // Cal.com: Diagnóstico de Presença (30 min, Google Meet)
   CAL_BRAND: "#c8a25a",
   META_PIXEL_ID: "",              // preencha para ativar o Pixel (inativo vazio)
   CAPI_URL: "/api/capi",           // Conversions API (só envia se META_PIXEL_ID e, no servidor, META_CAPI_TOKEN existirem)
@@ -65,7 +63,7 @@ document.getElementById("yr").textContent = new Date().getFullYear();
 const nav = document.getElementById("nav");
 addEventListener("scroll", ()=>nav.classList.toggle("scrolled", scrollY>30), {passive:true});
 const footWa = document.getElementById("footWa");
-footWa.href = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent("Olá! Vim pelo site da Prime Studio e quero saber mais sobre o Método PRIME.")}`;
+footWa.href = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent("Olá, time Prime Studio! Vim pelo site e quero saber mais sobre o Método PRIME.")}`;
 footWa.onclick = ()=>track("Contact",{content_name:"whatsapp_rodape", origem:origem()});
 
 /* ---------- Cases (EXEMPLOS de projeto — substitua por cases reais) ---------- */
@@ -75,20 +73,20 @@ const ART = {
   est:`<svg viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice" width="100%" height="100%"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dfe4d6"/><stop offset="1" stop-color="#9aa58a"/></linearGradient></defs><rect width="400" height="520" fill="url(#eg)"/><ellipse cx="200" cy="300" rx="120" ry="160" fill="#f4f1e8" opacity=".55"/><g fill="none" stroke="#4f5a40" stroke-width="1.6" opacity=".6"><path d="M90 470C150 360 160 250 120 120"/><path d="M120 300c-30-10-50-30-55-60M128 230c25-12 40-32 42-58M118 380c30-6 52-24 62-50"/></g><circle cx="280" cy="150" r="46" fill="#fff" opacity=".5"/><circle cx="280" cy="150" r="22" fill="#c9b48a" opacity=".7"/></svg>`
 };
 const CASES = [
-  { id:"harm", nicho:"Harmonização facial", nome:"Maison Aurora", url:"maisonaurora.com.br",
-    resumo:"Página por procedimento com narrativa de naturalidade, agenda online e WhatsApp sempre à mão.",
+  { id:"harm", nicho:"Harmonização facial", nome:"Maison Verelle",
+    resumo:"Página por procedimento com narrativa de naturalidade, rostos reais e WhatsApp a um toque.",
     t:{a:"#a07a4f",bgc:"#f7f0e7",ink:"#2b2118",soft:"#eadccb"},
     h1:"Beleza <em>natural</em>, assinada com precisão.", sub:"Harmonização facial com planejamento individual e foco em resultados equilibrados.",
     servs:[["Preenchimento labial","Volume e contorno respeitando a proporção do rosto."],["Toxina botulínica","Suavização de linhas de expressão com naturalidade."],["Bioestimuladores","Firmeza e qualidade de pele de forma gradual."]],
     band:"Cada rosto pede um plano. O seu começa com uma avaliação.", },
-  { id:"odonto", nicho:"Odonto estética · Lentes", nome:"Lumière Odonto", url:"lumiereodonto.com.br",
+  { id:"odonto", nicho:"Odonto estética · Lentes", nome:"Solenne Odonto",
     resumo:"Página de alto padrão para lentes de contato dental, com etapas do tratamento e captação via WhatsApp.",
     t:{a:"#c9a35d",bgc:"#0f1d2b",ink:"#f1ede4",soft:"#1d3245"}, dark:true,
     h1:"O sorriso que você <em>sempre quis</em> mostrar.", sub:"Lentes de contato dental e facetas com planejamento digital do sorriso.",
     servs:[["Lentes de contato dental","Lâminas ultrafinas para forma, cor e alinhamento."],["Facetas em porcelana","Durabilidade e brilho natural para casos complexos."],["Planejamento digital","Visualize a proposta do sorriso antes de começar."]],
     band:"Agende sua avaliação e conheça o seu novo sorriso." },
-  { id:"est", nicho:"Estética facial e corporal", nome:"Essence Clinique", url:"essenceclinique.com.br",
-    resumo:"Site com protocolos organizados por objetivo, linguagem acolhedora e agenda integrada.",
+  { id:"est", nicho:"Estética facial e corporal", nome:"Clinique Avelline",
+    resumo:"Site com protocolos organizados por objetivo, linguagem acolhedora e estrutura da clínica à vista.",
     t:{a:"#6e7b55",bgc:"#f3f2ec",ink:"#26291f",soft:"#e2e4d7"},
     h1:"Cuidado que se <em>sente</em> e se vê.", sub:"Protocolos faciais e corporais em clínica, com avaliação personalizada.",
     servs:[["Protocolos faciais","Limpeza, viço e tratamento de manchas."],["Estética corporal","Tecnologias para contorno e firmeza."],["Bem-estar","Experiência completa em ambiente reservado."]],
@@ -102,7 +100,7 @@ function tplHTML(c){
   <div class="t-nav"><span class="t-logo">${c.nome}</span><span class="t-menu"><span>Tratamentos</span><span>Clínica</span><span>Contato</span></span><span class="t-cta">Agendar avaliação</span></div>
   <div class="t-hero"><div><p class="t-eb">${c.nicho}</p><h1>${c.h1}</h1><p>${c.sub}</p><p style="margin-top:28px"><span class="t-cta">Agendar avaliação</span> &nbsp; <span style="font-size:.85rem;opacity:.7">ou fale no WhatsApp</span></p></div><div class="t-img">${ART[c.id]}</div></div>
   <div class="t-sec"><p class="t-eb">Tratamentos</p><h2>Procedimentos</h2><div class="t-grid">${c.servs.map((s,k)=>`<div class="t-card" style="${card}"><div class="ic">${["I","II","III"][k]}</div><h3>${s[0]}</h3><p>${s[1]}</p></div>`).join("")}</div></div>
-  <div class="t-sec" style="padding-top:0"><p class="t-eb">Como funciona</p><h2>Sua jornada</h2><div class="t-steps"><div><h3>Contato</h3><p>Pelo WhatsApp ou agenda online.</p></div><div><h3>Avaliação</h3><p>Conversa e análise individual.</p></div><div><h3>Plano</h3><p>Proposta personalizada.</p></div><div><h3>Acompanhamento</h3><p>Retornos e cuidados.</p></div></div></div>
+  <div class="t-sec" style="padding-top:0"><p class="t-eb">Como funciona</p><h2>Sua jornada</h2><div class="t-steps"><div><h3>Contato</h3><p>Pelo WhatsApp, em poucos toques.</p></div><div><h3>Avaliação</h3><p>Conversa e análise individual.</p></div><div><h3>Plano</h3><p>Proposta personalizada.</p></div><div><h3>Acompanhamento</h3><p>Retornos e cuidados.</p></div></div></div>
   <div class="t-band"><h2>${c.band}</h2><p style="margin:14px 0 26px">Atendimento com hora marcada.</p><span class="t-cta">Agendar avaliação</span></div>
   <div class="t-foot"><span>${c.nome} · endereço da clínica</span><span>Instagram · WhatsApp</span></div>
   <div class="t-wa">✆</div></div>`;
@@ -113,9 +111,13 @@ grid.innerHTML = CASES.map((c,k)=>`<button class="case reveal" data-k="${k}" ari
   <div class="info"><h3>${c.nome}</h3><p><strong>${c.nicho}.</strong> ${c.resumo}</p></div></button>`).join("");
 function fitMinis(){ grid.querySelectorAll(".frame").forEach(f=>{ f.querySelector(".mini").style.transform=`scale(${f.clientWidth/1280})`; }); }
 addEventListener("resize", fitMinis); fitMinis();
+// v17: site em MacBook + iPhone (mesmo projeto dos cases)
+document.querySelectorAll("[data-site]").forEach(el=>{ const c=CASES[+el.dataset.site||0]; el.innerHTML=tplHTML(c); if(el.closest("[data-fit='390']")) el.firstElementChild.classList.add("mob"); });
+function fitDev(){ document.querySelectorAll("[data-fit]").forEach(f=>{ const m=f.querySelector(".mini"); if(m) m.style.transform=`scale(${f.clientWidth/+f.dataset.fit})`; }); }
+addEventListener("resize", fitDev); fitDev();
 const modal=document.getElementById("modal"), mBody=document.getElementById("modalBody");
 grid.querySelectorAll(".case").forEach(b=>b.onclick=()=>{
-  const c=CASES[+b.dataset.k]; mBody.innerHTML=tplHTML(c); document.getElementById("modalUrl").textContent="https://"+c.url;
+  const c=CASES[+b.dataset.k]; mBody.innerHTML=tplHTML(c); document.getElementById("modalUrl").textContent=c.nome;
   modal.hidden=false; document.body.classList.add("lock"); mBody.scrollTop=0; document.getElementById("modalClose").focus();
 });
 function closeModal(){ modal.hidden=true; document.body.classList.remove("lock"); }
@@ -136,10 +138,10 @@ const PRIME = [
   ["R","Reputação","Reputação que gera confiança.","Google e prova social",["Google Meu Negócio completo e otimizado","Rotina de avaliações e respostas profissionais","Depoimentos e casos organizados com ética"]],
   ["I","Imagem","Imagem à altura do seu cuidado.","Identidade e conteúdo",["Identidade visual coerente com o seu ticket","Linha editorial que vende o tratamento, não o preço","Fotos e criativos que mostram o seu padrão"]],
   ["M","Marca no site","Marca no site que confirma a escolha.","Site que converte",["Páginas por procedimento","WhatsApp sempre a um toque","Estrutura pensada para o Google"]],
-  ["E","Escala","Escala sem depender de desconto.","Vendas previsíveis",["Tráfego pago para quem pode pagar o seu valor","Processo de atendimento e follow-up no WhatsApp","Origem de cada contato medida"]]
+  ["E","Escala","Crescimento que preserva o seu valor.","Mais pacientes certas",["Google e Instagram levando a paciente certa ao seu site","Anúncios só quando o site está pronto para receber","Origem de cada contato medida"]]
 ];
 const tabs=document.getElementById("tabs"), panel=document.getElementById("panel");
-tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab" role="tab" aria-selected="${k===0}" aria-controls="panel" aria-label="Etapa ${k+1}: ${t[0]} de ${t[1]}" data-k="${k}"><b>${t[0]}</b><span>${t[1]}</span><i class="pg"></i></button>`).join("");
+tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab${k===3?" hl":""}" role="tab" aria-selected="${k===0}" aria-controls="panel" aria-label="Etapa ${k+1}: ${t[0]} de ${t[1]}" data-k="${k}"><b>${t[0]}</b><span>${t[1]}</span><i class="pg"></i></button>`).join("");
 let tabTimer=null, cur=0, manual=false;
 function showTab(k){
   cur=k; const t=PRIME[k]; tabs.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===k));
@@ -207,28 +209,27 @@ const HEAD = {
   outro:["Seu negócio entrega alto padrão. A presença digital ainda não.","Você aparece, mas não se diferencia de quem cobra menos.","Base sólida. Falta transformar presença em agenda previsível."]
 };
 const DOR = {
-  agenda:{t:"Agenda com buracos ou irregular", d:N=>`Agenda irregular quase sempre é falta de fluxo constante de ${N.ps} novos: hoje você depende de indicação e de momentos de sorte, e não de um caminho que leva quem pesquisa até o seu WhatsApp.`},
   preco:{t:"Chegam pedindo só preço", d:N=>`Quando o ${N.p} chega perguntando só o preço, é porque a sua presença não mostrou o valor antes da conversa. Ele compara você com o mais barato porque não viu diferença.`},
+  valor:{t:"Meu site e meu perfil não transmitem meu nível", d:N=>`O seu atendimento é de alto padrão, mas o perfil, o site e o WhatsApp ainda passam uma imagem comum. O ${N.p} decide em segundos se você "parece caro e confiável".`},
   visib:{t:"Pouca gente nova me encontra", d:N=>`Quem procura ${N.item} na sua região pesquisa no Google e no Instagram antes de chamar. Se ${N.local==="clínica"?"a sua":"o seu"} ${N.local} não aparece bem ali, esse ${N.p} vai para quem aparece.`},
-  valor:{t:"Meu perfil não transmite meu nível", d:N=>`O seu atendimento é de alto padrão, mas o perfil, o site e o WhatsApp ainda passam uma imagem comum. O ${N.p} decide em segundos se você "parece caro e confiável".`}
+  agenda:{t:"Agenda com buracos ou irregular", d:N=>`Agenda irregular quase sempre é falta de fluxo constante de ${N.ps} novos: hoje você depende de indicação e de momentos de sorte, e não de um caminho que leva quem pesquisa até o seu WhatsApp.`}
 };
 const OPP = {
   estetica:{google:"Google Meu Negócio com fotos reais da clínica e rotina de avaliações de quem fez protocolo.",insta:"Destaques de Resultados, Protocolos e Depoimentos para a paciente entender o processo antes de chamar.",site:"Páginas por protocolo (flacidez, gordura localizada, manchas) que levam direto à avaliação.",wpp:"WhatsApp Business com catálogo de protocolos e horários de avaliação.",canal:"Campanha local para \"estética + bairro\" quando a base estiver pronta."},
   odonto:{google:"Aparecer em \"lentes de contato dental\" e \"implante\" na sua cidade, com avaliações e fotos do consultório.",insta:"Destaques de Casos, Planejamento e Depoimentos para justificar o investimento do tratamento.",site:"Página de lentes e de implantes com etapas, tempo e o que está incluso, sem expor preço.",wpp:"Fluxo de WhatsApp que agenda a avaliação e envia o que levar.",canal:"Rotina de pedidos de indicação de pacientes satisfeitos."},
-  harmo:{google:"Perfil no Google para \"harmonização facial\" na sua região, com avaliações que citam resultado natural.",insta:"Destaques de Resultados naturais, Procedimentos e Antes/Depois com contexto ético.",site:"Páginas por procedimento (lábios, mandíbula, full face) que respondem às dúvidas antes da consulta.",wpp:"WhatsApp com catálogo e mensagem de avaliação individual, sem cair no \"quanto custa?\".",canal:"Conteúdo e campanha para pacientes de alto ticket na sua cidade."},
+  harmo:{google:"Perfil no Google para \"harmonização facial\" na sua região, com avaliações que citam resultado natural.",insta:"Destaques de Procedimentos, Bastidores e Dúvidas, com o caminho para o seu site.",site:"Páginas por procedimento (lábios, mandíbula, full face) que respondem às dúvidas antes da consulta.",wpp:"WhatsApp com catálogo e mensagem de avaliação individual, sem cair no \"quanto custa?\".",canal:"Conteúdo e campanha para pacientes de alto ticket na sua cidade."},
   nutri:{google:"Aparecer em \"nutricionista + especialidade\" na sua cidade, com avaliações de quem teve resultado.",insta:"Destaques de Método, Depoimentos e Como funciona o acompanhamento.",site:"Página do seu método de acompanhamento com a jornada do paciente e agenda online.",wpp:"WhatsApp que agenda a primeira consulta e envia o pré-questionário.",canal:"Parcerias e conteúdo que levam a uma primeira consulta, não só a seguidores."},
   fisio:{google:"Aparecer quando alguém busca \"fisioterapia + dor\" no seu bairro, com avaliações e horários.",insta:"Destaques de Tratamentos, Equipe e Depoimentos de recuperação.",site:"Páginas por condição (coluna, joelho, pós-operatório) que convertem em avaliação particular.",wpp:"WhatsApp com triagem rápida e horários de avaliação.",canal:"Canal de pacientes particulares além de convênio e indicação médica."},
   beleza:{google:"Perfil do Google do studio com fotos de trabalhos e avaliações recentes.",insta:"Destaques de Trabalhos, Cuidados, Valores sob consulta e Localização com ícones da marca.",site:"Link da bio organizado com serviços, agenda e localização.",wpp:"WhatsApp com catálogo de serviços e agendamento de retorno.",canal:"Rotina de retorno e indicação para manter a agenda recorrente."},
   outro:{google:"Google Meu Negócio completo com avaliações e fotos do seu espaço.",insta:"Bio, destaques e identidade que transmitem o seu padrão.",site:"Site mobile-first com páginas por serviço levando ao WhatsApp.",wpp:"WhatsApp Business com catálogo e horários organizados.",canal:"Canal previsível de novos clientes além da indicação."}
 };
-const PERDA = {baixa:"6 a 12", media:"3 a 6", alta:"1 a 3"};
 const QUESTIONS = [
   {id:"nicho", q:"Qual é o seu segmento?", opts:Object.entries(NICHOS).map(([k,n])=>({t:n.t,k}))},
   {id:"dor", q:"Qual é a sua maior dor hoje?", opts:Object.entries(DOR).map(([k,d])=>({t:d.t,k}))},
   {id:"origem", q:"Como chega a maioria dos seus novos clientes?", opts:[{t:"Indicação / boca a boca",p:5,w:"canal"},{t:"Instagram orgânico",p:12,w:"canal"},{t:"Google",p:20},{t:"Tráfego pago",p:20},{t:"Não sei dizer",p:0,w:"canal"}]},
+  {id:"site", q:"Sua clínica tem um site que transmite o seu nível?", opts:[{t:"Tenho e ele gera contatos",p:25},{t:"Tenho, mas está desatualizado",p:12,w:"site"},{t:"Só link na bio",p:5,w:"site"},{t:"Não tenho",p:0,w:"site"}]},
   {id:"google", q:"Quando alguém busca o seu serviço no Google na sua cidade, você aparece?", opts:[{t:"Sim, entre os primeiros e com boas avaliações",p:30},{t:"Aparece, mas com poucas avaliações",p:15,w:"google"},{t:"Não aparece",p:0,w:"google"},{t:"Nunca verifiquei",p:3,w:"google"}]},
   {id:"insta", q:"O seu Instagram transmite o nível do seu atendimento?", opts:[{t:"Sim, bio, destaques e feed no padrão",p:25},{t:"Mais ou menos, falta organização",p:12,w:"insta"},{t:"Não, parece amador",p:3,w:"insta"},{t:"Quase não uso",p:0,w:"insta"}]},
-  {id:"site", q:"E o site?", opts:[{t:"Tenho e ele gera contatos",p:25},{t:"Tenho, mas está desatualizado",p:12,w:"site"},{t:"Só link na bio",p:5,w:"site"},{t:"Não tenho",p:0,w:"site"}]},
   {id:"faturamento", q:"Qual o faturamento mensal do negócio hoje?", opts:[{t:"Até R$10 mil",f:5,fk:"ate_10k"},{t:"R$10–30 mil",f:15,fk:"10_30k"},{t:"R$30–80 mil",f:28,fk:"30_80k"},{t:"R$80–150 mil",f:33,fk:"80_150k"},{t:"Acima de R$150 mil",f:35,fk:"acima_150k"}]},
   {id:"momento", q:"Quando você quer resolver isso?", opts:[{t:"Agora, nos próximos 30 dias",f:35},{t:"Em 1 a 3 meses",f:15},{t:"Só estou pesquisando",f:0}]}
 ];
@@ -317,8 +318,7 @@ function renderResult(){
   if(!st.crSent){ st.crSent=true; save(); track("CompleteRegistration",{content_name:"raio_x_resultado", ...pxParams(r)}); }
   const seg = r.nk==="outro" && st.outro ? st.outro : N.t;
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
-  const perda = PERDA[r.faixa];
-  const msgWa = `Olá! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
+  const msgWa = `Olá, time Prime Studio! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
   const wa = t=>`https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(t)}`;
   const quando = emHorario() ? "em até 30 minutos" : "no início do próximo horário de atendimento";
   const fim = st.qual
