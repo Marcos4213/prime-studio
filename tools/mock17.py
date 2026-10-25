@@ -37,10 +37,11 @@ CSS17 = q(r'''
 .cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:30px}
 .cmp-c{background:#0f0e0c;color:#efe9dc;border:1px solid rgba(200,162,90,.25);border-radius:20px;padding:20px 14px 18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;min-width:0}
 .cmp-c .p16{--w:clamp(118px,36vw,220px)}
-.cmp-c h3{font-family:"Cormorant Garamond",serif;font-size:1.5rem;color:var(--gold)}.cmp-c p{color:#bdb5a4;font-size:.9rem;line-height:1.45;margin-top:4px}
+.cmp-c>div h3{font-family:"Cormorant Garamond",serif;font-size:1.5rem;color:var(--gold)}.cmp-c>div p{color:#bdb5a4;font-size:.9rem;line-height:1.45;margin-top:4px}
 .dor17{padding:70px 0;border-bottom:1px solid var(--line)}.dor17 h2{max-width:22ch;margin-inline:auto}.dor17 .lead{margin-inline:auto}
 .hero h1.h17{font-size:clamp(2.1rem,5vw,3.7rem);line-height:1.08}
 .lp-steps li:nth-child(4){border-color:rgba(200,162,90,.7);box-shadow:0 10px 30px -12px rgba(200,162,90,.45)}
+.hero .facts{grid-template-columns:repeat(3,auto)}
 .tab.hl{border-color:rgba(200,162,90,.7)}.tab.hl b{color:var(--gold)}
 .ent-c.big{grid-column:1/-1;background:#0f0e0c;color:#efe9dc;border-color:rgba(200,162,90,.4)}.ent-c.big b{font-size:1.3rem;color:var(--gold)}.ent-c.big p{color:#cfc7b5}
 .ent-x{margin-top:16px;text-align:center;font-size:.92rem;opacity:.75}
