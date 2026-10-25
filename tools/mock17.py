@@ -51,7 +51,7 @@ CSS17 = q(r'''
 def write_css():
     st = R/"assets/style.css"; css = st.read_text(); m = "/* ===== v16 mockups"
     if m in css: css = css[:css.index(m)].rstrip()+"\n"
-    st.write_text(css + CSS16 + CSS17)
+    st.write_text(css + CSS16 + CSS17 + (R/"tools/v18.css").read_text())
 
 if __name__ == "__main__":
     write_css(); print("css ok")

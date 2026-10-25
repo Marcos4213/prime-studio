@@ -23,7 +23,8 @@ I = {
  'search': S('<circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5.5 5.5"/>',2),
  'verif': '<svg class="vf" viewBox="0 0 40 40" aria-hidden="true"><path fill="#0095F6" d="M19.998 3.094 14.638 0l-2.972 5.15H5.432v6.354L0 14.64 3.094 20 0 25.359l5.432 3.137v5.905h6.234L14.638 40l5.36-3.094L25.358 40l3.232-5.6h6.162v-6.01L40 25.359 36.905 20 40 14.641l-5.248-3.03v-6.46h-6.419L25.358 0l-5.36 3.094Z"/><path fill="#fff" d="m17.2 27.3-6.2-6.3 2.3-2.3 3.9 3.9 8.5-8.5 2.3 2.3z"/></svg>',
 }
-IMG = lambda n, extra="": f'<img src="/assets/img/{n}.webp" alt="" loading="lazy" decoding="async"{extra}>'
+STK = {"consulta":"ver-hero1-v18-800","recepcao":"ver-amb1-v18-800","sala":"ver-amb2-v18-800","tricologia":"ver-proc1-v18-800","dental":"ver-proc3-v18-800"}
+IMG = lambda n, extra="": f'<img src="/assets/img/stock/{STK.get(n,n)}.webp" alt="" loading="lazy" decoding="async"{extra}>'
 
 def ig(before):
     if before:
