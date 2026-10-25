@@ -45,12 +45,12 @@ button.lk{width:100%;font:inherit;cursor:pointer}
 <body><main>
 <img class="logo" src="/assets/logo-prime-studio.svg" alt="Prime Studio" width="150" height="40">
 <h1>Presença digital <em>agressiva</em> para quem é alto padrão.</h1>
-<p class="sub">Saúde, beleza e alto padrão: Instagram, site e Google trabalhando para lotar sua agenda.</p>
+<p class="sub">Só clínicas. Só alto valor. Google, Instagram, site e vendas para a paciente enxergar o seu valor.</p>
 <nav class="lks">
 <a class="lk pri" href="/raio-x?utm_source=instagram&utm_medium=bio" data-ev="raiox"><span class="t">Raio-X grátis da sua presença</span><span class="m">Descubra onde você está perdendo pacientes hoje.</span><i aria-hidden="true">→</i></a>
 <button type="button" class="lk" data-flow="wa" data-ev="whatsapp"><span class="t">Falar comigo no WhatsApp</span><span class="m">Responda 4 perguntas rápidas e a conversa já começa no ponto certo.</span><i aria-hidden="true">→</i></button>
-<button type="button" class="lk" data-flow="ag" data-ev="agenda"><span class="t">Agendar diagnóstico</span><span class="m">Vagas limitadas: garanta a análise da sua presença com hora marcada.</span><i aria-hidden="true">→</i></button>
-<a class="lk " href="/#como" data-ev="metodo"><span class="t">Conheça o Método PRIME</span><span class="m">5 passos do perfil comum à agenda cheia.</span><i aria-hidden="true">→</i></a>
+<button type="button" class="lk" data-flow="ag" data-ev="ligacao"><span class="t">Receber diagnóstico por ligação</span><span class="m">Nosso time te liga em até 30 minutos, já com seus perfis abertos.</span><i aria-hidden="true">→</i></button>
+<a class="lk " href="/#como" data-ev="metodo"><span class="t">Conheça o Método PRIME</span><span class="m">5 passos para a paciente enxergar o seu valor.</span><i aria-hidden="true">→</i></a>
 <a class="lk" href="/guia?utm_source=instagram&utm_medium=bio" data-ev="guia"><span class="t">Guia gratuito</span><span class="m">O Paciente Decide em 7 Segundos: o método completo, sem custo.</span><i aria-hidden="true">→</i></a>
 </nav>
 <footer>PRIME STUDIO</footer>
@@ -71,7 +71,7 @@ const PIXEL_ID="";
 if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
 document.querySelectorAll('a[data-ev]').forEach(a=>a.addEventListener('click',()=>{if(window.fbq)fbq(a.dataset.ev==='whatsapp'?'track':'trackCustom',a.dataset.ev==='whatsapp'?'Contact':'LinkClick',{content_name:'bio_'+a.dataset.ev});}));
 
-const NUM="5511913221587", CAL_LINK="marcos-paulo-wpugxh/diagnostico";
+const NUM="5511913221587";
 const FAT=[["ate_10k","Até R$10 mil"],["10_30k","R$10–30 mil"],["30_80k","R$30–80 mil"],["80_150k","R$80–150 mil"],["acima_150k","Acima de R$150 mil"]];
 const QUAL=new Set(["30_80k","80_150k","acima_150k"]);
 const SEG=[["estetica","Estética"],["odonto","Odontologia"],["fisio","Saúde"],["outro","Outro"]];
@@ -98,20 +98,20 @@ const qDes=()=>choice("Qual é o seu <em>maior desafio</em> hoje?","Escolha o qu
 const qUrg=()=>choice("Quando você quer <em>resolver isso?</em>","Sem compromisso, só para entender seu momento.",URG,"urg");
 function field(id,lab,attrs,val){ return `<label for="${id}">${lab}</label><input id="${id}" ${attrs} value="${esc(val||"")}">`; }
 function form(){ const ag=F==="ag";
-  S.innerHTML = (ag?`<h2>Garanta seu <em>diagnóstico</em></h2><p class="s">Preencha para ver os horários disponíveis. O diagnóstico é preparado para o seu negócio.</p>`:`<h2>Quase lá. <em>Como te chamo?</em></h2><p class="s">Sua mensagem já vai pronta com as suas respostas.</p>`)
+  S.innerHTML = (ag?`<h2>Receba seu <em>diagnóstico por ligação</em></h2><p class="s">Nosso time te liga em até 30 minutos, em horário comercial, já com seus perfis abertos.</p>`:`<h2>Quase lá. <em>Como te chamo?</em></h2><p class="s">Sua mensagem já vai pronta com as suas respostas.</p>`)
    + field("fN","Nome",'autocomplete="name"',A.nome) + field("fW","WhatsApp com DDD",'inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999"',A.wpp)
-   + (ag? field("fC","Nome da clínica ou negócio",'autocomplete="organization"',A.cli) + field("fE","E-mail",'type="email" inputmode="email" autocomplete="email"',A.email)
+   + (ag? field("fC","Nome da clínica ou negócio",'autocomplete="organization"',A.cli) + field("fE","E-mail",'type="email" inputmode="email" autocomplete="email"',A.email) + field("fI","Instagram do negócio",'autocapitalize="off" placeholder="@suaclinica"',A.ig) + field("fS","Site, se tiver",'type="url" inputmode="url" autocapitalize="off" placeholder="suaclinica.com.br"',A.site)
      + `<label for="fF">Faturamento mensal</label><select id="fF"><option value="">Selecione</option>${FAT.map(f=>`<option value="${f[0]}"${A.fat===f[0]?" selected":""}>${f[1]}</option>`).join("")}</select>` : "")
-   + `<p class="er" id="fErr" hidden></p><button type="button" class="go" id="fGo">${ag?"Ver horários disponíveis":"Continuar"}</button><p class="fine">Seus dados ficam com a Prime Studio. <a href="/privacidade.html">Política de Privacidade</a></p>`;
+   + `<p class="er" id="fErr" hidden></p><button type="button" class="go" id="fGo">${ag?"Quero receber a ligação":"Continuar"}</button><p class="fine">Seus dados ficam com a Prime Studio. <a href="/privacidade.html">Política de Privacidade</a></p>`;
   const g=id=>document.getElementById(id);
   g("fGo").onclick=async()=>{ const nome=g("fN").value.trim(), w=g("fW").value.replace(/\D/g,"").replace(/^55(?=\d{10,11}$)/,"");
-    const cli=ag?g("fC").value.trim():"", email=ag?g("fE").value.trim():"", fat=ag?g("fF").value:A.fat;
-    const bad= nome.split(/\s+/)[0].length<2?"Informe seu nome.": !/^\d{10,11}$/.test(w)?"Informe um WhatsApp válido com DDD.": ag&&cli.length<2?"Informe o nome da clínica ou negócio.": ag&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?"Informe um e-mail válido.": ag&&!fat?"Selecione o faturamento mensal.":"";
+    const cli=ag?g("fC").value.trim():"", email=ag?g("fE").value.trim():"", fat=ag?g("fF").value:A.fat, ig=ag?"@"+g("fI").value.trim().replace(/^@+/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[/?].*$/,""):"", site=ag?g("fS").value.trim():"";
+    const bad= nome.split(/\s+/)[0].length<2?"Informe seu nome.": !/^\d{10,11}$/.test(w)?"Informe um WhatsApp válido com DDD.": ag&&cli.length<2?"Informe o nome da clínica ou negócio.": ag&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?"Informe um e-mail válido.": ag&&ig.length<3?"Informe o Instagram do negócio.": ag&&!fat?"Selecione o faturamento mensal.":"";
     const er=g("fErr"); if(bad){ er.textContent=bad; er.hidden=false; return; } er.hidden=true;
-    Object.assign(A,{nome,wpp:w,cli,email,fat}); g("fGo").disabled=true; g("fGo").textContent="Um instante…";
-    const fatT=(FAT.find(f=>f[0]===fat)||[,""])[1], q=QUAL.has(fat) && A.urg!=="pesquisando";
+    Object.assign(A,{nome,wpp:w,cli,email,fat,ig,site}); g("fGo").disabled=true; g("fGo").textContent="Um instante…";
+    const fatT=(FAT.find(f=>f[0]===fat)||[,""])[1], q=QUAL.has(fat) && (ag || A.urg!=="pesquisando");
     const segT=A.seg?SEG[A.seg_i][1]:"";
-    const payload={ nome, whatsapp:w, email, clinica: cli || `${nome} · ${segT||"bio"}`, origem: ag?"bio-agenda":"bio-whatsapp", faturamento:fat, nivel: q?"quente":"frio", fit: q?1:0,
+    const payload={ nome, whatsapp:w, email, clinica: cli || `${nome} · ${segT||"bio"}`, origem: ag?"bio-ligacao":"bio-whatsapp", faturamento:fat, instagram:ig, site, ligacao: ag&&QUAL.has(fat), nivel: q?"quente":"frio", fit: q?1:0,
       nicho_key: A.seg||"", subnicho: segT, dor: A.des!=null?DES_T[A.des_i]:"", urgencia: A.urg?URG.find(u=>u[0]===A.urg)[1]:"",
       respostas: ag?{faturamento:fatT}:{segmento:segT,faturamento:fatT,desafio:DES_T[A.des_i],urgencia:URG.find(u=>u[0]===A.urg)[1]}, atribuicao:attribution(), pagina:location.href };
     try{ const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await r.json().catch(()=>({})); A.leadId=d.id||""; }catch(_){}
@@ -125,21 +125,10 @@ function done(){ bar.style.width="100%";
     const url=`https://wa.me/${NUM}?text=${encodeURIComponent(msg)}`; A.waUrl=url;
     S.innerHTML=`<h2>Perfeito, ${esc(A.nome.split(" ")[0])}. <em>Sua mensagem está pronta.</em></h2><p class="s">É só enviar. Ela já leva as suas respostas para a conversa começar no ponto certo.</p><a class="go" id="waGo" href="${url}" target="_blank" rel="noopener">Abrir o WhatsApp</a>`;
     document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_whatsapp"}); return; }
-  S.innerHTML=`<h2>Tudo certo, ${esc(A.nome.split(" ")[0])}. <em>Escolha seu horário.</em></h2><p class="s">A agenda abre já com os seus dados preenchidos.</p><button type="button" class="go" id="calGo">Ver horários disponíveis</button>`;
-  document.getElementById("calGo").onclick=openCal; openCal(); }
-let calReady=false;
-function loadCal(){ if(calReady) return; calReady=true;
-  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-  Cal("init","diag",{origin:"https://cal.com"});
-  Cal.ns.diag("ui",{theme:"dark",cssVarsPerTheme:{dark:{"cal-brand":"#c8a25a"},light:{"cal-brand":"#c8a25a"}},hideEventTypeDetails:false,layout:"month_view"});
-  let ok=false; const fin=e=>{ if(ok) return; ok=true; const d=(e&&e.detail&&e.detail.data)||{}; px("Schedule",{content_name:"diagnostico_bio"});
-    const q=new URLSearchParams({n:A.nome.split(" ")[0], t:d.startTime||(d.booking&&d.booking.startTime)||"", u:d.uid||(d.booking&&d.booking.uid)||""}); setTimeout(()=>location.href="/confirmado.html?"+q,1200); };
-  Cal.ns.diag("on",{action:"bookingSuccessful",callback:fin}); Cal.ns.diag("on",{action:"bookingSuccessfulV2",callback:fin}); }
-function openCal(){ loadCal(); const at=attribution();
-  const c={layout:"month_view",theme:"dark",lang:"pt",name:A.nome,email:A.email,whatsapp:"+55"+A.wpp,negocio:A.cli,"metadata[origem]":"bio-agenda","metadata[faturamento]":A.fatT,"metadata[faturamento_key]":A.fat,"metadata[lead_email]":A.email};
-  if(A.leadId) c["metadata[lead_id]"]=A.leadId;
-  ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","fbc","fbp"].forEach(x=>{ if(at[x]) c["metadata["+x+"]"]=String(at[x]).slice(0,200); });
-  window.__calCfg=c; Cal.ns.diag("modal",{calLink:CAL_LINK,config:c}); }
+  const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})), h=d.getHours(), hor=d.getDay()>=1&&d.getDay()<=5&&h>=9&&h<18;
+  const msg=`Olá! Sou ${A.nome}, da ${A.cli}. Pedi o diagnóstico por ligação pela bio. Meu Instagram é ${A.ig} e faturamos ${A.fatT.replace(/^Até/,"até").replace(/^Acima/,"acima")} por mês. Quero adiantar a conversa.`;
+  S.innerHTML=`<h2>Pronto, ${esc(A.nome.split(" ")[0])}. <em>Nosso time vai te ligar ${hor?"em até 30 minutos":"no início do próximo horário de atendimento"} com seus perfis já abertos.</em></h2><p class="s">Deixe o WhatsApp por perto. Na ligação, analisamos a sua presença com você e entendemos seus objetivos.</p><a class="go gh" id="waGo" href="https://wa.me/${NUM}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a>`;
+  document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_ligacao_whatsapp"}); }
 document.querySelectorAll("[data-flow]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.flow)));
 </script>
 </body></html>

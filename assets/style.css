@@ -492,3 +492,7 @@ html.qx-on,html.qx-on body{overflow:hidden}
 .qx-ctas{display:grid;gap:14px;margin-top:24px}
 .qx-ctas .micro{text-align:center}
 .qx .ring span{background:#0f0d09}
+/* v15: diagnóstico por ligação */
+.qx-call{margin-top:26px;padding:22px 20px;border-radius:18px;border:1px solid rgba(200,162,90,.45);background:linear-gradient(160deg,rgba(200,162,90,.12),rgba(200,162,90,.03))}
+.qx-call h3{font-size:1.6rem;line-height:1.15;margin:6px 0 10px}.qx-call p{color:var(--mut);font-size:.95rem}
+.qx-call .btn{margin-top:16px;width:100%;justify-content:center;text-align:center}

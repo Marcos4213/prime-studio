@@ -132,11 +132,11 @@ addEventListener("load",()=>setTimeout(()=>{ if(!("IntersectionObserver" in wind
 /* ---------- v2: interações ---------- */
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const PRIME = [
-  ["P","Perfil","Posicionamento claro antes de qualquer post.","Raio-X da presença atual",["Definição do procedimento-âncora","Perfil do paciente ideal","Mensagem e diferenciais da clínica"]],
-  ["R","Reputação","Quem pesquisa precisa encontrar prova.","Google Meu Negócio completo",["Categorias, fotos e serviços otimizados","Rotina de pedidos de avaliação","Respostas profissionais às avaliações"]],
-  ["I","Imagem","O Instagram precisa parecer o preço que você cobra.","Bio, destaques e identidade",["Bio com promessa e chamada","Destaques que respondem objeções","Linha visual coerente com o alto padrão"]],
-  ["M","Marca no site","Um site que vende o tratamento antes da consulta.","Site mobile-first e rápido",["Páginas por procedimento","Botão de WhatsApp e agenda online","Estrutura pensada para o Google"]],
-  ["E","Escala","Mais contatos, com medição.","Crescimento previsível",["Origem dos contatos medida","Agenda e WhatsApp integrados","Tráfego pago quando a base estiver pronta"]]
+  ["P","Perfil","Perfil que responde antes da pergunta.","Estratégia e posicionamento",["Procedimento-âncora e paciente ideal definidos","Mensagem que mostra por que você, e não outro","Bio e destaques que respondem dúvidas antes do direct"]],
+  ["R","Reputação","Reputação que gera confiança.","Google e prova social",["Google Meu Negócio completo e otimizado","Rotina de avaliações e respostas profissionais","Depoimentos e casos organizados com ética"]],
+  ["I","Imagem","Imagem à altura do seu cuidado.","Identidade e conteúdo",["Identidade visual coerente com o seu ticket","Linha editorial que vende o tratamento, não o preço","Fotos e criativos que mostram o seu padrão"]],
+  ["M","Marca no site","Marca no site que confirma a escolha.","Site que converte",["Páginas por procedimento","WhatsApp sempre a um toque","Estrutura pensada para o Google"]],
+  ["E","Escala","Escala sem depender de desconto.","Vendas previsíveis",["Tráfego pago para quem pode pagar o seu valor","Processo de atendimento e follow-up no WhatsApp","Origem de cada contato medida"]]
 ];
 const tabs=document.getElementById("tabs"), panel=document.getElementById("panel");
 tabs.innerHTML=PRIME.map((t,k)=>`<button class="tab" role="tab" aria-selected="${k===0}" aria-controls="panel" aria-label="Etapa ${k+1}: ${t[0]} de ${t[1]}" data-k="${k}"><b>${t[0]}</b><span>${t[1]}</span><i class="pg"></i></button>`).join("");
@@ -229,9 +229,11 @@ const QUESTIONS = [
   {id:"google", q:"Quando alguém busca o seu serviço no Google na sua cidade, você aparece?", opts:[{t:"Sim, entre os primeiros e com boas avaliações",p:30},{t:"Aparece, mas com poucas avaliações",p:15,w:"google"},{t:"Não aparece",p:0,w:"google"},{t:"Nunca verifiquei",p:3,w:"google"}]},
   {id:"insta", q:"O seu Instagram transmite o nível do seu atendimento?", opts:[{t:"Sim, bio, destaques e feed no padrão",p:25},{t:"Mais ou menos, falta organização",p:12,w:"insta"},{t:"Não, parece amador",p:3,w:"insta"},{t:"Quase não uso",p:0,w:"insta"}]},
   {id:"site", q:"E o site?", opts:[{t:"Tenho e ele gera contatos",p:25},{t:"Tenho, mas está desatualizado",p:12,w:"site"},{t:"Só link na bio",p:5,w:"site"},{t:"Não tenho",p:0,w:"site"}]},
-  {id:"faturamento", q:"Faturamento mensal aproximado", opts:[{t:"Acima de R$ 100 mil",f:35},{t:"R$ 40 mil a R$ 100 mil",f:30},{t:"R$ 15 mil a R$ 40 mil",f:20},{t:"Até R$ 15 mil",f:5},{t:"Prefiro não informar",f:10}]},
+  {id:"faturamento", q:"Qual o faturamento mensal do negócio hoje?", opts:[{t:"Até R$10 mil",f:5,fk:"ate_10k"},{t:"R$10–30 mil",f:15,fk:"10_30k"},{t:"R$30–80 mil",f:28,fk:"30_80k"},{t:"R$80–150 mil",f:33,fk:"80_150k"},{t:"Acima de R$150 mil",f:35,fk:"acima_150k"}]},
   {id:"momento", q:"Quando você quer resolver isso?", opts:[{t:"Agora, nos próximos 30 dias",f:35},{t:"Em 1 a 3 meses",f:15},{t:"Só estou pesquisando",f:0}]}
 ];
+const QUALF = new Set(["30_80k","80_150k","acima_150k"]);
+function emHorario(){ const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})); const h=d.getHours(); return CONFIG.HORARIO.dias.includes(d.getDay()) && h>=CONFIG.HORARIO.inicio && h<CONFIG.HORARIO.fim; }
 const DOR_W = {agenda:"wpp", preco:"insta", visib:"google", valor:"site"};
 const SK="prime_rx";
 let st = (()=>{ try{ return JSON.parse(sessionStorage.getItem(SK))||{} }catch(e){ return {} } })();
@@ -283,24 +285,27 @@ function renderForm(){
   const r=compute(); prog(QUESTIONS.length, "Último passo");
   const L=st.lead||{};
   qs.innerHTML=`<div class="qx-lock"><div class="ring blur" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div><p class="k">🔒 Seu Raio-X está pronto</p></div>
-  <h2 class="qx-q">Para onde enviamos o seu diagnóstico?</h2>
-  <p class="qx-sub">Você vê o resultado na hora, nesta tela, e recebe uma cópia.</p>
+  <h2 class="qx-q">Para quem é este diagnóstico?</h2>
+  <p class="qx-sub">Você vê o resultado na hora. Com o seu Instagram em mãos, nosso time já abre os seus perfis para o diagnóstico.</p>
   <label for="nome">Seu nome</label><input id="nome" autocomplete="name" value="${esc(L.nome||"")}">
   <label for="wpp">WhatsApp (com DDD)</label><input id="wpp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${esc(L.whatsapp||"")}">
   <label for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@clinica.com.br" value="${esc(L.email||"")}">
   <label for="clinica">Nome da clínica, consultório ou studio</label><input id="clinica" value="${esc(L.clinica||"")}">
+  <label for="insta">Instagram do negócio</label><input id="insta" autocapitalize="off" autocomplete="off" placeholder="@suaclinica" value="${esc(L.instagram||"")}">
+  <label for="site">Site, se tiver</label><input id="site" type="url" inputmode="url" autocapitalize="off" placeholder="suaclinica.com.br" value="${esc(L.site||"")}">
   <p class="err" id="err"></p>
   <button class="btn" id="ver">Revelar meu Raio-X <span aria-hidden="true">→</span></button>
   <p class="micro">Sem spam. Ao continuar, você concorda com a <a href="privacidade.html" target="_blank">Política de Privacidade</a>.</p>`;
   anim();
   document.getElementById("ver").onclick=()=>{
     const v=id=>document.getElementById(id).value.trim();
-    const lead={nome:v("nome"), whatsapp:v("wpp").replace(/\D/g,""), email:v("email"), clinica:v("clinica")};
-    if(!lead.nome || lead.whatsapp.length<10 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(lead.email) || !lead.clinica){ document.getElementById("err").textContent="Preencha nome, WhatsApp com DDD, um e-mail válido e o nome do seu negócio."; return; }
+    const lead={nome:v("nome"), whatsapp:v("wpp").replace(/\D/g,"").replace(/^55(?=\d{10,11}$)/,""), email:v("email"), clinica:v("clinica"), instagram:"@"+v("insta").replace(/^@+/,"").replace(/^https?:\/\/(www\.)?instagram\.com\//i,"").replace(/[/?].*$/,""), site:v("site")};
+    if(lead.nome.length<2 || !/^\d{10,11}$/.test(lead.whatsapp) || !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(lead.email) || lead.clinica.length<2 || lead.instagram.length<3){ document.getElementById("err").textContent="Preencha nome, WhatsApp com DDD, um e-mail válido, o nome do negócio e o Instagram."; return; }
     st.lead=lead; st.view="result"; save();
     const respostas=Object.fromEntries(Object.entries(st.ans).map(([k,o])=>[k,o.t]));
     const N=NICHOS[r.nk];
-    sendLead({...lead, origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:r.nivel, ligacao:false, respostas, pagina:location.href});
+    const fat=st.ans.faturamento||{}; st.qual=QUALF.has(fat.fk); save();
+    sendLead({...lead, faturamento:fat.fk||"", origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:st.qual?"quente":"frio", ligacao:st.qual, respostas, pagina:location.href});
     const pp=pxParams(r); setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,"")).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}); if(eid){ st.leadEventId=eid; save(); } });
     renderResult();
   };
@@ -313,52 +318,22 @@ function renderResult(){
   const seg = r.nk==="outro" && st.outro ? st.outro : N.t;
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
   const perda = PERDA[r.faixa];
-  const msgWa = `Olá! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença e minha nota foi ${r.nota}/100. Minha maior dor: ${DOR[r.dk].t.toLowerCase()}. Quero entender o meu diagnóstico.`;
-  const msgAg = `Olá! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X (nota ${r.nota}/100) e quero agendar o diagnóstico gratuito. Quais horários vocês têm?`;
+  const msgWa = `Olá! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
   const wa = t=>`https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(t)}`;
-  const agHref = CONFIG.AGENDA_URL || wa(msgAg);
+  const quando = emHorario() ? "em até 30 minutos" : "no início do próximo horário de atendimento";
+  const fim = st.qual
+   ? `<div class="qx-call"><p class="k">Diagnóstico por ligação</p><h3>Pronto, ${esc(nome)}. Nosso time vai te ligar ${quando} com seus perfis já abertos.</h3><p>Na ligação, analisamos ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} com você e entendemos seus objetivos. Deixe o WhatsApp por perto.</p>
+      <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a></div>`
+   : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. Seu próximo passo é fortalecer a base.</h3><p>Pelo momento do seu negócio, o melhor caminho agora é estruturar a sua presença com o nosso guia gratuito. Quando estiver pronto para o próximo nível, estaremos aqui.</p>
+      <a class="btn" id="bGuia" href="/guia?utm_source=quiz">Ler o guia gratuito</a></div>`;
   qs.innerHTML=`<div class="score-wrap"><div class="ring" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div>
    <div><p class="k">${esc(nome)}, este é o seu Raio-X</p><span class="tag">${esc(L.clinica)} · ${esc(seg)}</span></div></div>
    <h2 class="qx-q res">${esc(head)}</h2>
    <p class="qx-diag">${esc(DOR[r.dk].d(N))}</p>
-   <div class="qx-loss"><b>${perda} ${esc(N.unid)}</b><span>por mês é o que um negócio com a sua nota costuma deixar com a concorrência <small>(estimativa)</small>.</span></div>
    <p class="k" style="margin-top:22px">3 oportunidades para ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)}</p>
    <ol class="opps">${r.opps.map(o=>`<li>${esc(OPP[r.nk][o])}</li>`).join("")}</ol>
-   <div class="qx-ctas">
-     <div><a class="btn" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Falar no WhatsApp agora</a><p class="micro">Cada semana sem ajuste são ${esc(N.ps)} que pesquisaram você e fecharam com outro. Resposta dos fundadores, sem vendedor.</p></div>
-     <div><a class="btn ghost" id="bAg" href="${esc(agHref)}" target="_blank" rel="noopener">Escolher horário do diagnóstico</a><p class="micro">Conversa curta e gratuita. Você sai com o plano ${N.local==="clínica"?"da sua":"do seu"} ${esc(N.local)}, mesmo que não contrate.</p></div>
-   </div>`;
+   ${fim}`;
   anim();
-  document.getElementById("bWa").onclick=()=>track("Contact",{content_name:"whatsapp_resultado", ...pxParams(r)});
-  document.getElementById("bAg").onclick=e=>{ e.preventDefault(); track("InitiateCheckout",{content_name:"agenda_aberta", ...pxParams(r)}); closeQuiz();
-    openAgenda({name:L.nome, email:L.email, whatsapp:"+55"+L.whatsapp.replace(/^55/,""), negocio:L.clinica, nicho:seg, score:r.nota, dor:DOR[r.dk].t}); };
+  const bw=document.getElementById("bWa"); if(bw) bw.onclick=()=>track("Contact",{content_name:"whatsapp_resultado", ...pxParams(r)});
 }
 
-/* ---------- Cal.com (agenda do diagnóstico) ---------- */
-let calReady=false;
-function loadCal(){
-  if(calReady) return; calReady=true;
-  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-  Cal("init","diag",{origin:"https://cal.com"});
-  Cal.ns.diag("ui",{theme:"dark",cssVarsPerTheme:{dark:{"cal-brand":CONFIG.CAL_BRAND},light:{"cal-brand":CONFIG.CAL_BRAND}},hideEventTypeDetails:false,layout:"month_view"});
-  let done=false; const ok=(e)=>{ if(done) return; done=true; let pp={}; try{ if(st.lead){ pp=pxParams(compute()); } }catch(_){}
-    const d=(e&&e.detail&&e.detail.data)||{}; const bu=d.uid||(d.booking&&d.booking.uid)||"";
-    track("Schedule",{content_name:"diagnostico", ...pp}, bu?"sched_"+bu:undefined); try{ st.agendado=true; save(); }catch(_){} const q=new URLSearchParams({n:(st.lead&&st.lead.nome||"").split(" ")[0]||"", t:d.startTime||(d.booking&&d.booking.startTime)||"", u:d.uid||(d.booking&&d.booking.uid)||""});
-    setTimeout(()=>{ location.href="confirmado.html?"+q.toString(); },1200); };
-  Cal.ns.diag("on",{action:"bookingSuccessful",callback:ok});
-  Cal.ns.diag("on",{action:"bookingSuccessfulV2",callback:ok});
-}
-function openAgenda(pre){
-  loadCal(); pre=pre||{}; const s=(typeof st!=="undefined"&&st.lead)?st.lead:null;
-  if(!pre.name && s){ const r=compute(); pre={name:s.nome,email:s.email,whatsapp:"+55"+s.whatsapp.replace(/^55/,""),negocio:s.clinica,nicho:(NICHOS[r.nk]||{}).t,score:r.nota,dor:(DOR[r.dk]||{}).t}; }
-  const config={layout:"month_view",theme:"dark",lang:"pt"};
-  if(pre.name) config.name=pre.name; if(pre.email) config.email=pre.email; if(pre.whatsapp) config.whatsapp=pre.whatsapp; if(pre.negocio) config.negocio=pre.negocio;
-  if(pre.nicho) config["metadata[nicho]"]=pre.nicho; if(pre.score!=null) config["metadata[score]"]=String(pre.score); if(pre.dor) config["metadata[dor]"]=pre.dor;
-  const at=attribution(); config["metadata[origem]"]= s ? "quiz" : origem(); if(document.body.dataset.origemLead) config["metadata[origem_lead]"]=document.body.dataset.origemLead;
-  ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid","fbc","fbp"].forEach(k=>{ if(at[k]) config["metadata["+k+"]"]=String(at[k]).slice(0,200); });
-  if(s && s.email) config["metadata[lead_email]"]=s.email;
-  if(s){ try{ const rr=compute(); config["metadata[faixa]"]=rr.faixa; config["metadata[nicho_key]"]=rr.nk; config["metadata[nivel]"]=rr.nivel; }catch(_){} } if(st.leadId) config["metadata[lead_id]"]=st.leadId;
-  Cal.ns.diag("modal",{calLink:CONFIG.CAL_LINK,config});
-}
-document.querySelectorAll("[data-agenda]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openAgenda();}));
-if(/[?&]agenda\b/.test(location.search) || location.hash==="#agenda") setTimeout(()=>openAgenda(),400);
