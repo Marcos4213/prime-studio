@@ -8,7 +8,7 @@ const CONFIG = {
   WHATSAPP_NUMERO: "5511913221587",
   // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
   CAL_BRAND: "#c8a25a",
-  META_PIXEL_ID: "",              // preencha para ativar o Pixel (inativo vazio)
+  META_PIXEL_ID: "997004479351209",              // preencha para ativar o Pixel (inativo vazio)
   CAPI_URL: "/api/capi",           // Conversions API (só envia se META_PIXEL_ID e, no servidor, META_CAPI_TOKEN existirem)
   CONTEUDO_URL: "#metodo"
 };
@@ -39,19 +39,20 @@ if (CONFIG.META_PIXEL_ID) {
   fbq('init', CONFIG.META_PIXEL_ID);
 }
 const STD=new Set(["PageView","ViewContent","Lead","CompleteRegistration","Contact","Schedule","InitiateCheckout"]);
-function track(ev, data, eid){
+function track(ev, data, eid, noCapi){
   if(!CONFIG.META_PIXEL_ID) return null;
   const event_id=eid||uid(), params={...(data||{})};
   try{ fbq(STD.has(ev)?"track":"trackCustom", ev, params, {eventID:event_id}); }catch(e){}
-  if(CONFIG.CAPI_URL){
+  if(CONFIG.CAPI_URL && !noCapi){
     const body=JSON.stringify({event_name:ev, event_id, params, url:location.href, user:PX_USER, fbc:cookie("_fbc"), fbp:cookie("_fbp")});
     try{ navigator.sendBeacon ? navigator.sendBeacon(CONFIG.CAPI_URL, new Blob([body],{type:"application/json"})) : fetch(CONFIG.CAPI_URL,{method:"POST",body,keepalive:true,headers:{"content-type":"application/json"}}); }catch(e){}
   }
   return event_id;
 }
-async function setMatch(email, phone){
-  PX_USER={em:await sha256(email), ph:await sha256(String(phone||"").replace(/\D/g,""))};
-  if(CONFIG.META_PIXEL_ID){ try{ fbq('init', CONFIG.META_PIXEL_ID, {em:PX_USER.em, ph:PX_USER.ph}); }catch(e){} }
+async function setMatch(email, phone, nome){
+  const [fn,...ln]=String(nome||"").trim().split(/\s+/);
+  PX_USER={em:await sha256(email), ph:await sha256(String(phone||"").replace(/\D/g,"")), fn:await sha256(fn||""), ln:await sha256(ln.join(" ")), country:await sha256("br")};
+  if(CONFIG.META_PIXEL_ID){ try{ fbq('init', CONFIG.META_PIXEL_ID, PX_USER); }catch(e){} }
 }
 track("PageView");
 // ViewContent por seção (uma vez por seção)
@@ -314,8 +315,9 @@ function renderForm(){
     const respostas=Object.fromEntries(Object.entries(st.ans).map(([k,o])=>[k,o.t]));
     const N=NICHOS[r.nk];
     const fat=st.ans.faturamento||{}; st.qual=QUALF.has(fat.fk); save();
-    sendLead({...lead, faturamento:fat.fk||"", origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:st.qual?"quente":"frio", ligacao:st.qual, respostas, pagina:location.href});
-    const pp=pxParams(r); setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,"")).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}); if(eid){ st.leadEventId=eid; save(); } });
+    const leadEid=uid(), qualEid=uid();
+    sendLead({...lead, event_id:leadEid, event_id_qual:qualEid, faturamento:fat.fk||"", origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:st.qual?"quente":"frio", ligacao:st.qual, respostas, pagina:location.href});
+    const pp={...pxParams(r), faturamento:fat.fk||"", qualificado:st.qual?"sim":"nao"}; setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,""), lead.nome).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}, leadEid, true); if(st.qual) track("LeadQualificado",{content_name:"raio_x", ...pp}, qualEid, true); if(eid){ st.leadEventId=eid; save(); } });
     renderResult();
   };
 }

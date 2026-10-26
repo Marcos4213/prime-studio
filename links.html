@@ -70,8 +70,10 @@ const ATTR = (()=>{
   try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
   return s;
 })();
-const PIXEL_ID="";
+const PIXEL_ID="997004479351209";
 if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
+const EID=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+function pxMatch(email,w,nome){ if(!window.fbq)return; const [fn,...ln]=String(nome||'').trim().split(/\s+/); const d=String(w||'').replace(/\D/g,''); try{ fbq('init',PIXEL_ID,{em:(email||'').toLowerCase()||undefined,ph:d?(d.startsWith('55')?d:'55'+d):undefined,fn:(fn||'').toLowerCase()||undefined,ln:ln.join(' ').toLowerCase()||undefined,country:'br'}); }catch(e){} }
 document.querySelectorAll('a[data-ev]').forEach(a=>a.addEventListener('click',()=>{if(window.fbq)fbq(a.dataset.ev==='whatsapp'?'track':'trackCustom',a.dataset.ev==='whatsapp'?'Contact':'LinkClick',{content_name:'bio_'+a.dataset.ev});}));
 
 const NUM="5511913221587";
@@ -83,7 +85,7 @@ const DES_T=["Poucos pacientes novos","Instagram não converte","Sem site profis
 const URG=[["agora","Quero resolver agora"],["3meses","Nos próximos 3 meses"],["pesquisando","Só pesquisando"]];
 const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
 function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{}, o={}; ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"].forEach(k=>o[k]=l[k]||f[k]||""); o.referrer=f.ref||""; o.landing=f.landing||""; o.fbc=cookie("_fbc"); o.fbp=cookie("_fbp"); return o; }
-function px(ev,p){ if(window.fbq) try{ fbq(["Lead","Contact","Schedule"].includes(ev)?"track":"trackCustom",ev,p||{}); }catch(e){} }
+function px(ev,p,eid){ if(window.fbq) try{ fbq(["Lead","Contact","Schedule","CompleteRegistration"].includes(ev)?"track":"trackCustom",ev,p||{},eid?{eventID:eid}:undefined); }catch(e){} }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ov=document.getElementById("ov"), S=document.getElementById("ovS"), bar=document.getElementById("ovBar");
 let F=null, steps=[], k=0, A={};
@@ -92,7 +94,7 @@ function close(){ ov.hidden=true; document.body.style.overflow=""; }
 document.getElementById("ovX").onclick=close;
 document.getElementById("ovBack").onclick=()=>{ if(k>0 && steps[k]!==done){ k--; render(); } else close(); };
 addEventListener("keydown",e=>{ if(e.key==="Escape"&&!ov.hidden) close(); });
-function render(){ bar.style.width=((k+1)/(steps.length+1)*100)+"%"; steps[k](); S.scrollTop=0; ov.scrollTop=0; const f=S.querySelector("button.op,input"); f&&setTimeout(()=>f.focus({preventScroll:true}),50); }
+function render(){ bar.style.width=((k+1)/(steps.length+1)*100)+"%"; steps[k](); if(k>0&&steps[k]!==done) px("FiltroEtapa",{content_name:"bio_"+F, step:k+1}); S.scrollTop=0; ov.scrollTop=0; const f=S.querySelector("button.op,input"); f&&setTimeout(()=>f.focus({preventScroll:true}),50); }
 function choice(title,sub,opts,key){ S.innerHTML=`<h2>${title}</h2><p class="s">${sub}</p>`+opts.map((o,i)=>`<button type="button" class="op" data-i="${i}">${esc(o[1]||o[0])}</button>`).join("");
   S.querySelectorAll(".op").forEach(b=>b.onclick=()=>{ A[key]=opts[+b.dataset.i][0]; A[key+"_i"]=+b.dataset.i; k++; render(); }); }
 const qSeg=()=>choice("Qual é a <em>sua área?</em>","Leva menos de um minuto.",SEG,"seg");
@@ -116,9 +118,10 @@ function form(){ const ag=F==="ag";
     const segT=A.seg?SEG[A.seg_i][1]:"";
     const payload={ nome, whatsapp:w, email, clinica: cli || `${nome} · ${segT||"bio"}`, origem: ag?"bio-ligacao":"bio-whatsapp", faturamento:fat, instagram:ig, site, ligacao: ag&&QUAL.has(fat), nivel: q?"quente":"frio", fit: q?1:0,
       nicho_key: A.seg||"", subnicho: segT, dor: A.des!=null?DES_T[A.des_i]:"", urgencia: A.urg?URG.find(u=>u[0]===A.urg)[1]:"",
-      respostas: ag?{faturamento:fatT}:{segmento:segT,faturamento:fatT,desafio:DES_T[A.des_i],urgencia:URG.find(u=>u[0]===A.urg)[1]}, atribuicao:attribution(), pagina:location.href };
+      respostas: ag?{faturamento:fatT}:{segmento:segT,faturamento:fatT,desafio:DES_T[A.des_i],urgencia:URG.find(u=>u[0]===A.urg)[1]}, atribuicao:attribution(), pagina:location.href, event_id:EID(), event_id_qual:EID() };
+    pxMatch(email,w,nome);
     try{ const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await r.json().catch(()=>({})); A.leadId=d.id||""; }catch(_){}
-    px("Lead",{content_name:"bio_"+F, qualificado:q?"sim":"nao"});
+    const pp={content_name:"bio_"+F, qualificado:q?"sim":"nao", nicho:segT, dor:payload.dor, faturamento:fat}; px("Lead",pp,payload.event_id); if(q) px("LeadQualificado",pp,payload.event_id_qual);
     A.q=q; A.fatT=fatT; A.segT=segT; k=steps.length; steps.push(done); render(); };
 }
 function done(){ bar.style.width="100%";

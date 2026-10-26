@@ -3,7 +3,7 @@
 //  - TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID (gratuito)  e/ou  NOTIFY_WEBHOOK (POST JSON)
 // GET /api/lead?key=ADMIN_KEY lista os últimos leads (só se a variável ADMIN_KEY existir).
 // + HubSpot (HUBSPOT_PRIVATE_TOKEN) e Brevo (BREVO_API_KEY) — inativos sem as envs.
-import { clean, json, TTL, hubspotSync, brevoSync, indexLead } from "../../lib/integrations.js";
+import { clean, json, TTL, hubspotSync, brevoSync, indexLead, capiSend, digits } from "../../lib/integrations.js";
 
 export async function onRequestPost({ request, env }) {
   let b; try { b = await request.json(); } catch { return json({ ok: false, error: "json" }, 400); }
@@ -27,9 +27,17 @@ export async function onRequestPost({ request, env }) {
   if (env.NOTIFY_WEBHOOK)
     jobs.push(fetch(env.NOTIFY_WEBHOOK, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, texto: txt, ...lead }) }));
   const a = lead.atribuicao, c = { nome: lead.nome, email: lead.email, whatsapp: lead.whatsapp, negocio: lead.clinica, nicho: lead.subnicho, nicho_key: lead.nicho_key, fit_nivel: lead.nivel, fbclid: a.fbclid, score: lead.nota, dor: lead.dor, faixa: lead.faixa, origem: lead.origem || "quiz", status: "lead", faturamento: lead.faturamento, instagram: lead.instagram, site: lead.site, utm_source: a.utm_source, utm_medium: a.utm_medium, utm_campaign: a.utm_campaign, utm_content: a.utm_content, utm_term: a.utm_term };
-  const res = await Promise.allSettled([hubspotSync(env, c, { stage: lead.qualificado ? "ligacao" : "lead" }), brevoSync(env, c), ...jobs]);
+  const eid = s => /^[\w-]{8,80}$/.test(s || "") ? s : "";
+  const [fn, ...ln] = lead.nome.split(/\s+/);
+  const capiBase = { url: lead.pagina, fbc: clean(a.fbc, 200), fbp: clean(a.fbp, 200), user: { em: lead.email, ph: "55" + digits(lead.whatsapp).replace(/^55(?=\d{10,11}$)/, ""), fn, ln: ln.join(" "), external_id: digits(lead.whatsapp) } };
+  const cd = { content_name: lead.origem || "site", nicho: lead.subnicho, score: lead.nota, dor: lead.dor, faixa: lead.faixa, faturamento: lead.faturamento, qualificado: lead.qualificado ? "sim" : "nao", currency: "BRL", value: lead.qualificado ? 1 : 0 };
+  const capiJobs = [];
+  if (eid(b.event_id)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "Lead", event_id: eid(b.event_id), params: cd }));
+  if (lead.qualificado && eid(b.event_id_qual)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "LeadQualificado", event_id: eid(b.event_id_qual), params: cd }));
+  const res = await Promise.allSettled([hubspotSync(env, c, { stage: lead.qualificado ? "ligacao" : "lead" }), brevoSync(env, c), ...capiJobs, ...jobs]);
+  const capi = capiJobs.length ? res.slice(2, 2 + capiJobs.length).map(x => x.value?.capi || "erro") : ["sem_event_id"];
   if (env.LEADS && res[0].value?.dealId) { lead.hubspot = { contactId: res[0].value.contactId, dealId: res[0].value.dealId }; await env.LEADS.put(id, JSON.stringify(lead), { expirationTtl: TTL, metadata: { nome: lead.nome, nivel: lead.nivel, status: lead.status } }); }
-  return json({ ok: true, id, armazenado: !!env.LEADS, integracoes: Object.assign({}, res[0].value, res[1].value) });
+  return json({ ok: true, id, armazenado: !!env.LEADS, integracoes: Object.assign({}, res[0].value, res[1].value, { capi }) });
 }
 
 export async function onRequestGet({ request, env }) {
