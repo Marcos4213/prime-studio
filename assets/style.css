@@ -651,3 +651,18 @@ html.qx-on,html.qx-on body{overflow:hidden}
 .modal .tpl .t-nav .t-cta{display:none}
 .modal .tpl .t-deps{grid-template-columns:1fr}.modal .tpl .t-sec{padding:56px 6%}.modal .tpl .t-foot{flex-direction:column;gap:6px}
 }
+
+/* v22 hero */
+.hero-h{font-size:clamp(2.3rem,5.6vw,4.4rem);line-height:1.05;margin:0 0 .45em;max-width:14ch}
+.hero-sub{margin:0 0 30px;color:var(--mut);max-width:44em}
+.rot{display:inline-block;color:var(--gold2);font-weight:500;border-bottom:1px solid rgba(200,162,90,.5);transition:opacity .35s,transform .35s}
+.rot.out{opacity:0;transform:translateY(-6px)}
+.hchip{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:7px;background:rgba(18,16,12,.88);border:1px solid rgba(200,162,90,.45);color:var(--tx);font-size:.78rem;padding:7px 13px;border-radius:999px;backdrop-filter:blur(6px);box-shadow:0 10px 24px rgba(0,0,0,.4);animation:float 5s ease-in-out infinite;white-space:nowrap}
+.hchip i{width:7px;height:7px;border-radius:50%;background:var(--gold2);box-shadow:0 0 10px var(--gold)}
+.c-ig{top:-4%;left:4%}.c-g{top:-8%;right:14%;animation-delay:-1.2s}.c-s{top:42%;left:-4%;animation-delay:-2.4s}.c-b{top:30%;right:-3%;animation-delay:-3.6s}
+.hconv{margin:22px auto 0;display:table;border:1px solid rgba(200,162,90,.6);background:linear-gradient(135deg,rgba(200,162,90,.16),rgba(200,162,90,.04));color:var(--gold2);padding:10px 20px;border-radius:999px;font-size:.88rem;position:relative}
+.hconv span{color:var(--gold);font-size:.6rem;margin-right:6px;vertical-align:2px}
+.hconv::before{content:"";position:absolute;left:50%;bottom:100%;width:1px;height:18px;background:linear-gradient(transparent,var(--gold))}
+@media(max-width:760px){.hero{padding:104px 0 46px}.hero-grid{gap:34px}.hero-h{font-size:clamp(2rem,9vw,2.6rem)}.hero-sub{font-size:1rem;margin-bottom:22px}
+ .hchip{font-size:.68rem;padding:5px 10px}.c-ig{top:-6%;left:0}.c-g{top:-10%;right:6%}.c-s{top:46%;left:-2%}.c-b{top:22%;right:0}.hconv{font-size:.8rem;padding:8px 16px}}
+@media(prefers-reduced-motion:reduce){.hchip{animation:none}}

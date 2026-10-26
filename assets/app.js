@@ -157,7 +157,7 @@ function onScroll(){ const h=document.documentElement; sb.style.width=(h.scrollT
 addEventListener("scroll",onScroll,{passive:true});
 
 const rot=document.getElementById("rot");
-if(rot && !RM){ const W=["harmonização","lentes de contato dental","implantes","tricologia","nutrição","dermatologia","studios de beleza premium"]; let wi=0;
+if(rot && !RM){ const W=["dentistas","dermatologistas","nutricionistas","tricologistas","esteticistas","harmonizadoras"]; let wi=0;
   setInterval(()=>{ rot.classList.add("out"); setTimeout(()=>{ wi=(wi+1)%W.length; rot.textContent=W[wi]; rot.classList.remove("out"); },350); },2400); }
 /* ---------- Quiz (overlay dedicado) ---------- */
 // Nichos e banco de copies: nicho x faixa de nota x dor principal
