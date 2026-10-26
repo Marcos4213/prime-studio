@@ -204,6 +204,9 @@ const QUESTIONS = [
   {id:"faturamento", q:"Qual o faturamento mensal do negócio hoje?", opts:[{t:"Até R$10 mil",f:5,fk:"ate_10k"},{t:"R$10–30 mil",f:15,fk:"10_30k"},{t:"R$30–80 mil",f:28,fk:"30_80k"},{t:"R$80–150 mil",f:33,fk:"80_150k"},{t:"Acima de R$150 mil",f:35,fk:"acima_150k"}]},
   {id:"momento", q:"Quando você quer resolver isso?", opts:[{t:"Agora, nos próximos 30 dias",f:35},{t:"Em 1 a 3 meses",f:15},{t:"Só estou pesquisando",f:0}]}
 ];
+const LPQ=document.body.classList.contains("lp-quiz");
+if(LPQ){ const keep=["nicho","dor","site","google","faturamento"]; for(let i=QUESTIONS.length-1;i>=0;i--) if(!keep.includes(QUESTIONS[i].id)) QUESTIONS.splice(i,1); }
+const MAXP=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.p||0)),0)||100, MAXF=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.f||0)),0)||70;
 const QUALF = new Set(["30_80k","80_150k","acima_150k"]);
 function emHorario(){ const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})); const h=d.getHours(); return CONFIG.HORARIO.dias.includes(d.getDay()) && h>=CONFIG.HORARIO.inicio && h<CONFIG.HORARIO.fim; }
 const DOR_W = {agenda:"wpp", preco:"insta", visib:"google", valor:"site"};
@@ -218,14 +221,15 @@ function openQuiz(src){
   lastFocus=document.activeElement; qx.hidden=false; document.documentElement.classList.add("qx-on");
   if(!st.started){ st.started=true; save(); track("QuizStart",{content_name:"raio_x"}); } render(); setTimeout(()=>qx.querySelector("button.opt, input, .btn")?.focus(),60);
 }
-function closeQuiz(){ qx.hidden=true; document.documentElement.classList.remove("qx-on"); lastFocus&&lastFocus.focus&&lastFocus.focus(); }
+function closeQuiz(){ if(LPQ) return; qx.hidden=true; document.documentElement.classList.remove("qx-on"); lastFocus&&lastFocus.focus&&lastFocus.focus(); }
 document.querySelectorAll("[data-quiz]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openQuiz(b.dataset.cta||"quiz");}));
 document.getElementById("qxClose").onclick=closeQuiz;
 addEventListener("keydown",e=>{ if(e.key==="Escape" && !qx.hidden) closeQuiz(); });
+if(LPQ){ qx.hidden=false; if(!st.started){ st.started=true; save(); track("QuizStart",{content_name:"raio_x"}); } render(); }
 qback.onclick=()=>{ if(st.view==="result"){ st.view="form"; } else if(st.view==="form"){ st.view=null; st.i=QUESTIONS.length-1; } else if(st.i>0){ st.i--; } save(); render(); };
 function prog(n,label){ qbar.style.width=(n/TOTAL*100)+"%"; qstep.textContent=label; qback.style.visibility=(n>0)?"visible":"hidden"; }
 function render(){ if(st.view==="result" && st.lead) return renderResult(); if(st.view==="form") return renderForm(); renderQ(); }
-function anim(){ qs.classList.remove("in"); void qs.offsetWidth; qs.classList.add("in"); qx.scrollTop=0; }
+function anim(){ qs.classList.remove("in"); void qs.offsetWidth; qs.classList.add("in"); qx.scrollTop=0; if(LPQ && scrollY>qx.offsetTop) scrollTo(0,qx.offsetTop-70); }
 function renderQ(){
   const Q=QUESTIONS[st.i]; prog(st.i, `Pergunta ${st.i+1} de ${QUESTIONS.length}`);
   const cur=st.ans[Q.id];
@@ -249,7 +253,7 @@ function compute(){
   QUESTIONS.forEach(Q=>{const a=st.ans[Q.id]||{}; p+=a.p||0; f+=a.f||0; if(a.w && !weak.includes(a.w)) weak.push(a.w);});
   const nk=(st.ans.nicho||{}).k||"outro", dk=(st.ans.dor||{}).k||"visib";
   const order=[DOR_W[dk], ...weak, "google","insta","site","wpp","canal"]; const opps=[...new Set(order)].slice(0,3);
-  const nota=Math.min(100,p), fit=Math.min(100,f);
+  const nota=Math.min(100,Math.round(p*100/MAXP)), fit=Math.min(100,LPQ?Math.round(f*70/MAXF):f);
   const faixa = nota<40?"baixa":nota<70?"media":"alta";
   return {nota, fit, nivel: fit>=60?"quente":fit>=30?"morno":"frio", nk, dk, faixa, opps};
 }
