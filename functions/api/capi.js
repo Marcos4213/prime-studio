@@ -1,7 +1,8 @@
 // POST /api/capi — espelha eventos do Pixel na Conversions API (dedup por event_id).
 // Inativo até existirem META_PIXEL_ID e META_CAPI_TOKEN nas variáveis do Pages.
 import { json, capiSend } from "../../lib/integrations.js";
-const OK = new Set(["PageView", "ViewContent", "Lead", "CompleteRegistration", "Contact", "Schedule", "InitiateCheckout", "QuizStart", "QuizStep", "LeadQualificado", "FiltroInicio", "FiltroEtapa"]);
+// Lead e SubmitApplication NÃO entram aqui: são enviados pelo /api/lead (evita Lead duplicado)
+const OK = new Set(["PageView", "ViewContent", "Contact", "QuizStart"]);
 export async function onRequestPost({ request, env }) {
   if (!env.META_CAPI_TOKEN) return json({ ok: true, capi: "inativo" });
   const origin = request.headers.get("origin") || ""; if (origin && !/prime\.devbrasil\.online|prime-studio\.pages\.dev|localhost/.test(origin)) return json({ ok: false }, 403);

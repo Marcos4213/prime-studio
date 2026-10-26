@@ -59,22 +59,12 @@ button.lk{width:100%;font:inherit;cursor:pointer}
 <footer>PRIME STUDIO</footer>
 </main>
 <div class="ov" id="ov" role="dialog" aria-modal="true" hidden><div class="ov-top"><button type="button" id="ovBack" aria-label="Voltar">←</button><div class="ov-bar"><i id="ovBar"></i></div><button type="button" id="ovX" aria-label="Fechar">✕</button></div><div class="ov-st" id="ovS" aria-live="polite"></div></div>
+<script src="/assets/px.js?v=20"></script>
 <script>
-const ATTR = (()=>{
-  const q=new URLSearchParams(location.search), keys=["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"];
-  let s={}; try{ s=JSON.parse(localStorage.getItem("prime_attr"))||{}; }catch(e){}
-  const now={}; keys.forEach(k=>{ const v=q.get(k); if(v) now[k]=v.slice(0,200); });
-  if(Object.keys(now).length){ s.last={...now, ts:Date.now(), landing:location.pathname}; if(!s.first) s.first=s.last; }
-  if(!s.first) s.first={ref:document.referrer.slice(0,200), ts:Date.now(), landing:location.pathname};
-  if(now.fbclid){ const fbc=`fb.1.${Date.now()}.${now.fbclid}`; document.cookie=`_fbc=${fbc};path=/;max-age=7776000;SameSite=Lax`; }
-  try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
-  return s;
-})();
-const PIXEL_ID="997004479351209";
-if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
-const EID=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
-function pxMatch(email,w,nome){ if(!window.fbq)return; const [fn,...ln]=String(nome||'').trim().split(/\s+/); const d=String(w||'').replace(/\D/g,''); try{ fbq('init',PIXEL_ID,{em:(email||'').toLowerCase()||undefined,ph:d?(d.startsWith('55')?d:'55'+d):undefined,fn:(fn||'').toLowerCase()||undefined,ln:ln.join(' ').toLowerCase()||undefined,country:'br'}); }catch(e){} }
-document.querySelectorAll('a[data-ev]').forEach(a=>a.addEventListener('click',()=>{if(window.fbq)fbq(a.dataset.ev==='whatsapp'?'track':'trackCustom',a.dataset.ev==='whatsapp'?'Contact':'LinkClick',{content_name:'bio_'+a.dataset.ev});}));
+const ATTR=PRIME.attr, cookie=PRIME.cookie;
+const EID=PRIME.uid;
+const pxMatch=(e,w,n)=>PRIME.match(e,w,n);
+document.querySelectorAll('a[data-ev="whatsapp"]').forEach(a=>a.addEventListener('click',()=>PRIME.track('Contact',{content_name:'bio_whatsapp_link'})));
 
 const NUM="5511913221587";
 const FAT=[["ate_10k","Até R$10 mil"],["10_30k","R$10–30 mil"],["30_80k","R$30–80 mil"],["80_150k","R$80–150 mil"],["acima_150k","Acima de R$150 mil"]];
@@ -83,18 +73,17 @@ const SEG=[["estetica","Estética"],["odonto","Odontologia"],["fisio","Saúde"],
 const DES=[["poucos pacientes novos"],["Instagram que não converte"],["não ter um site profissional"],["preço que não é valorizado"]];
 const DES_T=["Poucos pacientes novos","Instagram não converte","Sem site profissional","Preço não valorizado"];
 const URG=[["agora","Quero resolver agora"],["3meses","Nos próximos 3 meses"],["pesquisando","Só pesquisando"]];
-const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
 function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{}, o={}; ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"].forEach(k=>o[k]=l[k]||f[k]||""); o.referrer=f.ref||""; o.landing=f.landing||""; o.fbc=cookie("_fbc"); o.fbp=cookie("_fbp"); return o; }
-function px(ev,p,eid){ if(window.fbq) try{ fbq(["Lead","Contact","Schedule","CompleteRegistration"].includes(ev)?"track":"trackCustom",ev,p||{},eid?{eventID:eid}:undefined); }catch(e){} }
+function px(ev,p,eid,srv){ return PRIME.track(ev,p,{eventId:eid,serverSends:srv}); }
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ov=document.getElementById("ov"), S=document.getElementById("ovS"), bar=document.getElementById("ovBar");
 let F=null, steps=[], k=0, A={};
-function show(flow){ F=flow; A={}; k=0; steps = flow==="ag" ? [form] : [qSeg,qFat,qDes,qUrg,form]; ov.hidden=false; document.body.style.overflow="hidden"; render(); px("FiltroInicio",{content_name:"bio_"+flow}); }
+function show(flow){ F=flow; A={}; k=0; steps = flow==="ag" ? [form] : [qSeg,qFat,qDes,qUrg,form]; ov.hidden=false; document.body.style.overflow="hidden"; render(); if(!window._qs){ window._qs=1; px("QuizStart",{content_name:"bio_"+flow}); } }
 function close(){ ov.hidden=true; document.body.style.overflow=""; }
 document.getElementById("ovX").onclick=close;
 document.getElementById("ovBack").onclick=()=>{ if(k>0 && steps[k]!==done){ k--; render(); } else close(); };
 addEventListener("keydown",e=>{ if(e.key==="Escape"&&!ov.hidden) close(); });
-function render(){ bar.style.width=((k+1)/(steps.length+1)*100)+"%"; steps[k](); if(k>0&&steps[k]!==done) px("FiltroEtapa",{content_name:"bio_"+F, step:k+1}); S.scrollTop=0; ov.scrollTop=0; const f=S.querySelector("button.op,input"); f&&setTimeout(()=>f.focus({preventScroll:true}),50); }
+function render(){ bar.style.width=((k+1)/(steps.length+1)*100)+"%"; steps[k](); S.scrollTop=0; ov.scrollTop=0; const f=S.querySelector("button.op,input"); f&&setTimeout(()=>f.focus({preventScroll:true}),50); }
 function choice(title,sub,opts,key){ S.innerHTML=`<h2>${title}</h2><p class="s">${sub}</p>`+opts.map((o,i)=>`<button type="button" class="op" data-i="${i}">${esc(o[1]||o[0])}</button>`).join("");
   S.querySelectorAll(".op").forEach(b=>b.onclick=()=>{ A[key]=opts[+b.dataset.i][0]; A[key+"_i"]=+b.dataset.i; k++; render(); }); }
 const qSeg=()=>choice("Qual é a <em>sua área?</em>","Leva menos de um minuto.",SEG,"seg");
@@ -121,7 +110,7 @@ function form(){ const ag=F==="ag";
       respostas: ag?{faturamento:fatT}:{segmento:segT,faturamento:fatT,desafio:DES_T[A.des_i],urgencia:URG.find(u=>u[0]===A.urg)[1]}, atribuicao:attribution(), pagina:location.href, event_id:EID(), event_id_qual:EID() };
     pxMatch(email,w,nome);
     try{ const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await r.json().catch(()=>({})); A.leadId=d.id||""; }catch(_){}
-    const pp={content_name:"bio_"+F, qualificado:q?"sim":"nao", nicho:segT, dor:payload.dor, faturamento:fat}; px("Lead",pp,payload.event_id); if(q) px("LeadQualificado",pp,payload.event_id_qual);
+    if(!A.sent){ A.sent=1; const pp={content_name:"bio_"+F, faixa_faturamento:fat, lead_type:q?"qualificado":"nao_qualificado"}; px("Lead",pp,payload.event_id,true); if(q) px("SubmitApplication",pp,payload.event_id_qual,true); }
     A.q=q; A.fatT=fatT; A.segT=segT; k=steps.length; steps.push(done); render(); };
 }
 function done(){ bar.style.width="100%";

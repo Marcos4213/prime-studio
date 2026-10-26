@@ -14,49 +14,12 @@ const CONFIG = {
 };
 /* ======================================================================= */
 
-/* ---------- Atribuição (UTMs, fbclid, _fbc/_fbp) ---------- */
-const ATTR = (()=>{
-  const q=new URLSearchParams(location.search), keys=["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"];
-  let s={}; try{ s=JSON.parse(localStorage.getItem("prime_attr"))||{}; }catch(e){}
-  const now={}; keys.forEach(k=>{ const v=q.get(k); if(v) now[k]=v.slice(0,200); });
-  if(Object.keys(now).length){ s.last={...now, ts:Date.now(), landing:location.pathname}; if(!s.first) s.first=s.last; }
-  if(!s.first) s.first={ref:document.referrer.slice(0,200), ts:Date.now(), landing:location.pathname};
-  if(now.fbclid){ const fbc=`fb.1.${Date.now()}.${now.fbclid}`; document.cookie=`_fbc=${fbc};path=/;max-age=7776000;SameSite=Lax`; }
-  try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
-  return s;
-})();
-const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
-function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{};
-  return { utm_source:l.utm_source||f.utm_source||"", utm_medium:l.utm_medium||f.utm_medium||"", utm_campaign:l.utm_campaign||f.utm_campaign||"", utm_content:l.utm_content||f.utm_content||"", utm_term:l.utm_term||f.utm_term||"", fbclid:l.fbclid||f.fbclid||"", gclid:l.gclid||f.gclid||"", referrer:f.ref||"", landing:f.landing||"", fbc:cookie("_fbc"), fbp:cookie("_fbp") }; }
+/* ---------- Atribuição + Pixel/CAPI: ver assets/px.js (window.PRIME) ---------- */
+const attribution=()=>window.PRIME.attribution(), cookie=window.PRIME.cookie;
 function origem(){ const lp=document.body.dataset.origemLead; if(lp) return lp; const a=attribution(); return a.utm_source ? `utm:${a.utm_source}` : a.fbclid ? "meta_ads" : a.gclid ? "google_ads" : a.referrer && !a.referrer.includes(location.host) ? "referral" : "direto"; }
-async function sha256(v){ if(!v||!crypto.subtle) return ""; const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(v).trim().toLowerCase())); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-const uid=()=> (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
 
-/* ---------- Meta Pixel + Conversions API (inativos sem META_PIXEL_ID) ---------- */
-let PX_USER={};   // em/ph já em SHA-256 (Advanced Matching)
-if (CONFIG.META_PIXEL_ID) {
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', CONFIG.META_PIXEL_ID);
-}
-const STD=new Set(["PageView","ViewContent","Lead","CompleteRegistration","Contact","Schedule","InitiateCheckout"]);
-function track(ev, data, eid, noCapi){
-  if(!CONFIG.META_PIXEL_ID) return null;
-  const event_id=eid||uid(), params={...(data||{})};
-  try{ fbq(STD.has(ev)?"track":"trackCustom", ev, params, {eventID:event_id}); }catch(e){}
-  if(CONFIG.CAPI_URL && !noCapi){
-    const body=JSON.stringify({event_name:ev, event_id, params, url:location.href, user:PX_USER, fbc:cookie("_fbc"), fbp:cookie("_fbp")});
-    try{ navigator.sendBeacon ? navigator.sendBeacon(CONFIG.CAPI_URL, new Blob([body],{type:"application/json"})) : fetch(CONFIG.CAPI_URL,{method:"POST",body,keepalive:true,headers:{"content-type":"application/json"}}); }catch(e){}
-  }
-  return event_id;
-}
-async function setMatch(email, phone, nome){
-  const [fn,...ln]=String(nome||"").trim().split(/\s+/);
-  PX_USER={em:await sha256(email), ph:await sha256(String(phone||"").replace(/\D/g,"")), fn:await sha256(fn||""), ln:await sha256(ln.join(" ")), country:await sha256("br")};
-  if(CONFIG.META_PIXEL_ID){ try{ fbq('init', CONFIG.META_PIXEL_ID, PX_USER); }catch(e){} }
-}
-track("PageView");
-// ViewContent por seção (uma vez por seção)
-if("IntersectionObserver" in window){ const seen=new Set(); const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting && !seen.has(e.target.id)){ seen.add(e.target.id); track("ViewContent",{content_name:"secao_"+e.target.id, content_category:"secao"}); } }),{threshold:.4}); document.querySelectorAll("section[id]").forEach(s=>io.observe(s)); }
+const uid=window.PRIME.uid;
+function track(ev, data, eid, serverSends){ return window.PRIME.track(ev, data, {eventId:eid, serverSends}); }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 /* ---------- UI geral ---------- */
@@ -65,7 +28,7 @@ const nav = document.getElementById("nav");
 addEventListener("scroll", ()=>nav.classList.toggle("scrolled", scrollY>30), {passive:true});
 const footWa = document.getElementById("footWa");
 footWa.href = `https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent("Olá, time Prime Studio! Vim pelo site e quero saber mais sobre o Método PRIME.")}`;
-footWa.onclick = ()=>track("Contact",{content_name:"whatsapp_rodape", origem:origem()});
+footWa.onclick = ()=>track("Contact",{content_name:"whatsapp_rodape"});
 
 /* ---------- Cases (EXEMPLOS de projeto — substitua por cases reais) ---------- */
 const CASES = [
@@ -192,7 +155,6 @@ const sb=document.getElementById("scrollbar"), nv=document.getElementById("nav")
 function onScroll(){ const h=document.documentElement; sb.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";
   nv.classList.toggle("scrolled", scrollY>10); }
 addEventListener("scroll",onScroll,{passive:true});
-document.querySelectorAll("[data-cta]").forEach(a=>a.addEventListener("click",()=>track("ViewContent",{content_name:"cta_"+a.dataset.cta})));
 
 const rot=document.getElementById("rot");
 if(rot && !RM){ const W=["harmonização","lentes de contato dental","implantes","tricologia","nutrição","dermatologia","studios de beleza premium"]; let wi=0;
@@ -254,7 +216,7 @@ const TOTAL = QUESTIONS.length + 1;
 let lastFocus=null;
 function openQuiz(src){
   lastFocus=document.activeElement; qx.hidden=false; document.documentElement.classList.add("qx-on");
-  if(!st.started){ st.started=true; save(); track("QuizStart",{src, origem:origem()}); } render(); setTimeout(()=>qx.querySelector("button.opt, input, .btn")?.focus(),60);
+  if(!st.started){ st.started=true; save(); track("QuizStart",{content_name:"raio_x"}); } render(); setTimeout(()=>qx.querySelector("button.opt, input, .btn")?.focus(),60);
 }
 function closeQuiz(){ qx.hidden=true; document.documentElement.classList.remove("qx-on"); lastFocus&&lastFocus.focus&&lastFocus.focus(); }
 document.querySelectorAll("[data-quiz]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();openQuiz(b.dataset.cta||"quiz");}));
@@ -277,11 +239,11 @@ function renderQ(){
       const go=()=>{ const t=inp.value.trim(); if(t.length<2){document.getElementById("errQ").textContent="Conte qual é o seu segmento.";return;} st.outro=t; st.ans.nicho=o; st.i++; save(); render(); };
       document.getElementById("okQ").onclick=go; inp.onkeydown=e=>{ if(e.key==="Enter") go(); }; return;
     }
-    b.classList.add("sel"); st.ans[Q.id]=o; save(); track("QuizStep",{step:st.i+1, pergunta:Q.id, resposta:o.t});
+    b.classList.add("sel"); st.ans[Q.id]=o; save();
     setTimeout(()=>{ if(st.i<QUESTIONS.length-1){ st.i++; } else { st.view="form"; } save(); render(); },180);
   });
 }
-function pxParams(r){ return {nicho:(NICHOS[r.nk]||{}).t||"", score:r.nota, value:r.nota, currency:"BRL", dor:(DOR[r.dk]||{}).t||"", faixa:r.faixa, status:r.nivel}; }
+function pxParams(r){ const fk=(st.ans.faturamento||{}).fk||""; return {content_name:"raio_x", faixa_faturamento:fk, lead_type:QUALF.has(fk)?"qualificado":"nao_qualificado"}; }
 function compute(){
   let p=0,f=0; const weak=[];
   QUESTIONS.forEach(Q=>{const a=st.ans[Q.id]||{}; p+=a.p||0; f+=a.f||0; if(a.w && !weak.includes(a.w)) weak.push(a.w);});
@@ -315,9 +277,9 @@ function renderForm(){
     const respostas=Object.fromEntries(Object.entries(st.ans).map(([k,o])=>[k,o.t]));
     const N=NICHOS[r.nk];
     const fat=st.ans.faturamento||{}; st.qual=QUALF.has(fat.fk); save();
-    const leadEid=uid(), qualEid=uid();
+    st.leadEid=st.leadEid||uid(); st.qualEid=st.qualEid||uid(); save(); const leadEid=st.leadEid, qualEid=st.qualEid;
     sendLead({...lead, event_id:leadEid, event_id_qual:qualEid, faturamento:fat.fk||"", origem_lead:document.body.dataset.origemLead||"site", nicho_key:r.nk, origem:origem(), atribuicao:attribution(), faixa:r.faixa, subnicho: r.nk==="outro" ? "Outro: "+(st.outro||"") : N.t, segmento_outro: st.outro||"", dor: DOR[r.dk].t, nota:r.nota, fit:r.fit, nivel:st.qual?"quente":"frio", ligacao:st.qual, respostas, pagina:location.href});
-    const pp={...pxParams(r), faturamento:fat.fk||"", qualificado:st.qual?"sim":"nao"}; setMatch(lead.email, "55"+lead.whatsapp.replace(/^55/,""), lead.nome).then(()=>{ const eid=track("Lead",{content_name:"raio_x", ...pp}, leadEid, true); if(st.qual) track("LeadQualificado",{content_name:"raio_x", ...pp}, qualEid, true); if(eid){ st.leadEventId=eid; save(); } });
+    if(!st.leadSent){ st.leadSent=true; save(); const pp=pxParams(r); window.PRIME.match(lead.email, lead.whatsapp, lead.nome); track("Lead",pp,leadEid,true); if(st.qual) track("SubmitApplication",pp,qualEid,true); }
     renderResult();
   };
 }
@@ -325,7 +287,6 @@ async function sendLead(payload){ try{ const x=await fetch(CONFIG.LEAD_API,{meth
 function renderResult(){
   const r=compute(), L=st.lead, N=NICHOS[r.nk], nome=L.nome.split(" ")[0];
   prog(TOTAL, "Seu Raio-X");
-  if(!st.crSent){ st.crSent=true; save(); track("CompleteRegistration",{content_name:"raio_x_resultado", ...pxParams(r)}); }
   const seg = r.nk==="outro" && st.outro ? st.outro : N.t;
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
   const msgWa = `Olá, time Prime Studio! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
@@ -344,6 +305,6 @@ function renderResult(){
    <ol class="opps">${r.opps.map(o=>`<li>${esc(OPP[r.nk][o])}</li>`).join("")}</ol>
    ${fim}`;
   anim();
-  const bw=document.getElementById("bWa"); if(bw) bw.onclick=()=>track("Contact",{content_name:"whatsapp_resultado", ...pxParams(r)});
+  const bw=document.getElementById("bWa"); if(bw) bw.onclick=()=>track("Contact",{content_name:"whatsapp_resultado", faixa_faturamento:pxParams(r).faixa_faturamento});
 }
 

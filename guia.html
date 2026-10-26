@@ -153,26 +153,15 @@ a{color:#d4b06a}
 <p class="print-only">Fale com a Prime Studio: prime.devbrasil.online · WhatsApp (11) 91322-1587</p></section></main>
 </div>
 <footer class="foot"><p>PRIME STUDIO</p></footer>
+<script src="/assets/px.js?v=20"></script>
 <script>
-const ATTR = (()=>{
-  const q=new URLSearchParams(location.search), keys=["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"];
-  let s={}; try{ s=JSON.parse(localStorage.getItem("prime_attr"))||{}; }catch(e){}
-  const now={}; keys.forEach(k=>{ const v=q.get(k); if(v) now[k]=v.slice(0,200); });
-  if(Object.keys(now).length){ s.last={...now, ts:Date.now(), landing:location.pathname}; if(!s.first) s.first=s.last; }
-  if(!s.first) s.first={ref:document.referrer.slice(0,200), ts:Date.now(), landing:location.pathname};
-  if(now.fbclid){ const fbc=`fb.1.${Date.now()}.${now.fbclid}`; document.cookie=`_fbc=${fbc};path=/;max-age=7776000;SameSite=Lax`; }
-  try{ localStorage.setItem("prime_attr",JSON.stringify(s)); }catch(e){}
-  return s;
-})();
-const cookie=n=>(document.cookie.match(new RegExp("(?:^|; )"+n+"=([^;]*)"))||[])[1]||"";
-const PIXEL_ID="997004479351209";
-if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',PIXEL_ID);fbq('track','PageView');}
-const EID=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
-function pxMatch(email,w,nome){ if(!window.fbq)return; const [fn,...ln]=String(nome||'').trim().split(/\s+/); const d=String(w||'').replace(/\D/g,''); try{ fbq('init',PIXEL_ID,{em:(email||'').toLowerCase()||undefined,ph:d?(d.startsWith('55')?d:'55'+d):undefined,fn:(fn||'').toLowerCase()||undefined,ln:ln.join(' ').toLowerCase()||undefined,country:'br'}); }catch(e){} }
+const ATTR=PRIME.attr, cookie=PRIME.cookie;
+const EID=PRIME.uid;
+const pxMatch=(e,w,n)=>PRIME.match(e,w,n);
 const WA="https://wa.me/5511913221587?text=Ol%C3%A1%2C%20time%20Prime%20Studio%21%20Li%20o%20guia%20%22O%20Paciente%20Decide%20em%207%20Segundos%22%20e%20quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20do%20meu%20neg%C3%B3cio.";
 const $=id=>document.getElementById(id), KEY="prime_guia", CK="prime_guia_ck";
 const MSG=[[0,"Sua presença ainda não mostra o negócio que você tem. O paciente de alto padrão está decidindo por outro antes de falar com você. Comece pelo passo com a menor nota: é ali que a primeira impressão está quebrando."],[40,"Você já tem uma base, mas há lacunas visíveis que custam pacientes todos os dias. Corrija primeiro o passo com a menor nota: é ali que a decisão está escapando."],[70,"Sua presença está acima da média. Agora o ganho está nos detalhes e na escala: consistência, prova e um atendimento que transforma atenção em pacientes certas."],[90,"Presença de alto padrão. O próximo nível é crescer sem perder o padrão que você construiu."]];
-function track(ev,p,eid){ if(window.fbq) try{ fbq(["Lead","Contact","ViewContent"].includes(ev)?"track":"trackCustom",ev,p||{},eid?{eventID:eid}:undefined); }catch(e){} }
+function track(ev,p,eid,srv){ return PRIME.track(ev,p,{eventId:eid,serverSends:srv}); }
 function open(){ $("gate").hidden=true; $("book").hidden=false; score(); spy(); }
 let saved={}; try{ saved=JSON.parse(localStorage.getItem(CK))||{}; }catch(e){}
 document.querySelectorAll(".ck input").forEach(i=>{ i.checked=!!saved[i.dataset.k]; i.onchange=()=>{ saved[i.dataset.k]=i.checked; try{localStorage.setItem(CK,JSON.stringify(saved));}catch(e){} score(); }; });
@@ -183,8 +172,8 @@ function spy(){ const secs=[...document.querySelectorAll(".ch")], links=[...docu
     let cur=0; secs.forEach((s,k)=>{ if(s.getBoundingClientRect().top<innerHeight*.4) cur=k; });
     links.forEach((a,k)=>{ a.classList.toggle("on",k===cur); a.classList.toggle("done",k<cur); }); const on=links[cur]; if(on&&on.dataset.c!=cur){ on.dataset.c=cur; on.scrollIntoView({inline:"center",block:"nearest"}); } };
   addEventListener("scroll",f,{passive:true}); f(); }
-$("pdf").onclick=()=>{ track("GuiaPDF"); window.print(); };
-document.querySelectorAll("[data-ev]").forEach(a=>a.addEventListener("click",()=>track(a.dataset.ev==="whatsapp"?"Contact":"GuiaClick",{content_name:"guia_"+a.dataset.ev})));
+$("pdf").onclick=()=>window.print();
+document.querySelectorAll("[data-ev]").forEach(a=>a.addEventListener("click",()=>{ if(a.dataset.ev==="whatsapp") track("Contact",{content_name:"guia_whatsapp"}); }));
 function attribution(){ const l=ATTR.last||{}, f=ATTR.first||{}; const o={}; ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"].forEach(k=>o[k]=l[k]||f[k]||""); o.referrer=f.ref||""; o.landing=f.landing||""; o.fbc=cookie("_fbc"); o.fbp=cookie("_fbp"); return o; }
 $("gf").onsubmit=async e=>{ e.preventDefault(); const nome=$("gn").value.trim(), w=$("gw").value.replace(/\D/g,""), email=$("ge").value.trim(), nicho=$("gs").value, er=$("gerr");
   const bad = nome.length<2?"Informe seu nome.": w.length<10||w.length>13?"Informe um WhatsApp válido com DDD.": !/^\S+@\S+\.\S+$/.test(email)?"Informe um e-mail válido.": !nicho?"Selecione seu segmento.":"";
@@ -193,7 +182,7 @@ $("gf").onsubmit=async e=>{ e.preventDefault(); const nome=$("gn").value.trim(),
   pxMatch(email,w,nome);
   try{ const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const d=await r.json().catch(()=>({})); if(d.id) payload.id=d.id; }catch(_){}
   try{ localStorage.setItem(KEY,JSON.stringify({ts:Date.now(),nome})); }catch(_){}
-  track("Lead",{content_name:"ebook_guia", nicho},payload.event_id); open(); $("book").scrollIntoView(); };
+  track("Lead",{content_name:"ebook_guia", lead_type:"nao_qualificado"},payload.event_id,true); open(); $("book").scrollIntoView(); };
 try{ if(localStorage.getItem(KEY)) open(); }catch(e){}
 
 </script>
