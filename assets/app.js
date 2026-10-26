@@ -257,10 +257,14 @@ function compute(){
   const faixa = nota<40?"baixa":nota<70?"media":"alta";
   return {nota, fit, nivel: fit>=60?"quente":fit>=30?"morno":"frio", nk, dk, faixa, opps};
 }
+function ringSvg(v,locked){ const C=2*Math.PI*54, off=locked?C*.75:C*(1-Math.max(0,Math.min(100,v))/100);
+  const ticks=Array.from({length:60},(_,i)=>{const a=i*6*Math.PI/180, r1=i%5?61:59.5; return `<line x1="${(70+r1*Math.sin(a)).toFixed(2)}" y1="${(70-r1*Math.cos(a)).toFixed(2)}" x2="${(70+63*Math.sin(a)).toFixed(2)}" y2="${(70-63*Math.cos(a)).toFixed(2)}"/>`;}).join("");
+  const mid = locked ? `<svg class="sr-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>` : `<b>${v}</b><small>de 100</small>`;
+  return `<div class="sring${locked?" locked":""}" role="img" aria-label="${locked?"Nota pronta":"Nota "+v+" de 100"}"><svg viewBox="0 0 140 140" aria-hidden="true"><g class="sr-ticks">${ticks}</g><circle class="sr-track" cx="70" cy="70" r="54"/><circle class="sr-arc" cx="70" cy="70" r="54" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="--c:${C.toFixed(2)}"/></svg><div class="sr-mid">${mid}</div></div>`; }
 function renderForm(){
   const r=compute(); prog(QUESTIONS.length, "Último passo");
   const L=st.lead||{};
-  qs.innerHTML=`<div class="qx-lock"><div class="ring blur" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div><p class="k">🔒 Seu Raio-X está pronto</p></div>
+  qs.innerHTML=`<div class="qx-lock">${ringSvg(r.nota,true)}<p class="k">Seu Raio-X está pronto</p></div>
   <h2 class="qx-q">Para quem é este diagnóstico?</h2>
   <p class="qx-sub">Você vê o resultado na hora. Com o seu Instagram em mãos, nosso time já abre os seus perfis para o diagnóstico.</p>
   <label for="nome">Seu nome</label><input id="nome" autocomplete="name" value="${esc(L.nome||"")}">
@@ -301,7 +305,7 @@ function renderResult(){
       <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a></div>`
    : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. Seu próximo passo é fortalecer a base.</h3><p>Pelo momento do seu negócio, o melhor caminho agora é estruturar a sua presença com o nosso guia gratuito. Quando estiver pronto para o próximo nível, estaremos aqui.</p>
       <a class="btn" id="bGuia" href="/guia?utm_source=quiz">Ler o guia gratuito</a></div>`;
-  qs.innerHTML=`<div class="score-wrap"><div class="ring" style="--v:${r.nota}"><span>${r.nota}<small>/100</small></span></div>
+  qs.innerHTML=`<div class="score-wrap">${ringSvg(r.nota,false)}
    <div><p class="k">${esc(nome)}, este é o seu Raio-X</p><span class="tag">${esc(L.clinica)} · ${esc(seg)}</span></div></div>
    <h2 class="qx-q res">${esc(head)}</h2>
    <p class="qx-diag">${esc(DOR[r.dk].d(N))}</p>

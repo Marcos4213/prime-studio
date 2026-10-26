@@ -666,3 +666,19 @@ html.qx-on,html.qx-on body{overflow:hidden}
 @media(max-width:760px){.hero{padding:104px 0 46px}.hero-grid{gap:34px}.hero-h{font-size:clamp(2rem,9vw,2.6rem)}.hero-sub{font-size:1rem;margin-bottom:22px}
  .hchip{font-size:.68rem;padding:5px 10px}.c-ig{top:-6%;left:0}.c-g{top:-10%;right:6%}.c-s{top:46%;left:-2%}.c-b{top:22%;right:0}.hconv{font-size:.8rem;padding:8px 16px}}
 @media(prefers-reduced-motion:reduce){.hchip{animation:none}}
+
+/* v24 score ring */
+.sring{position:relative;width:132px;height:132px;flex:none}
+.sring svg{width:100%;height:100%;display:block}
+.sr-ticks line{stroke:rgba(200,162,90,.28);stroke-width:.8}
+.sr-track{fill:none;stroke:rgba(236,210,154,.12);stroke-width:1.5}
+.sr-arc{fill:none;stroke:var(--gold2);stroke-width:2.5;stroke-linecap:round;transform:rotate(-90deg);transform-origin:70px 70px;animation:srIn 1.1s cubic-bezier(.2,.7,.2,1) both}
+.sring.locked .sr-arc{stroke:rgba(236,210,154,.55);animation:srSpin 2.6s linear infinite}
+@keyframes srIn{from{stroke-dashoffset:var(--c)}}
+@keyframes srSpin{to{transform:rotate(270deg)}}
+.sr-mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.sr-mid b{font-family:var(--serif);font-weight:500;font-size:2.9rem;line-height:1;color:var(--tx);letter-spacing:-.01em}
+.sr-mid small{display:block;margin-top:4px;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.sring .sr-lock{width:22px;height:22px;fill:none;stroke:var(--gold2);stroke-width:1.3;stroke-linejoin:round}
+.qx-lock .sring{width:84px;height:84px}
+@media(prefers-reduced-motion:reduce){.sr-arc{animation:none!important}}
