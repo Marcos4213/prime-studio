@@ -1,0 +1,5 @@
+# GitHub Pages (build legacy, branch main, path /) usa Jekyll.
+# Sem este exclude, clientes/ iria para https://marcos4213.github.io/prime-studio/.
+# O site de produção é o Cloudflare Pages e publica dist/, também sem clientes/.
+exclude:
+  - clientes

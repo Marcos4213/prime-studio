@@ -1,0 +1,22 @@
+---
+description: Frente Clientes da Prime Studio. Modelo de onboarding, entregáveis e o que não publicar.
+alwaysApply: true
+---
+
+# Clientes
+
+A pasta fica em `clientes/` neste repositório (`prime-studio`). A referência completa das cinco frentes está em `AGENTS.md`. Como abrir um cliente novo está em `clientes/README.md`.
+
+O modelo reutilizável é `clientes/_modelo`:
+
+- `briefing.md`
+- `checklist-onboarding.md` do Método PRIME (Perfil, Reputação, Imagem, Marca no site, Escala)
+- `entregaveis/site.md`, `entregaveis/instagram.md`, `entregaveis/google.md`, `entregaveis/link-na-bio.md`
+- `tracking.md`
+- `relatorio-mensal.md`
+
+Para abrir um cliente, copiar `clientes/_modelo` para `clientes/<slug>`. Não criar cliente real. Não inventar dado de clínica, faturamento, avaliação, audiência nem resultado. Preencher só com o que a clínica informou. Não gravar secret no arquivo.
+
+O Cloudflare Pages publica `dist/`, gerado por `node tools/prepare-pages-output.mjs`. A pasta `clientes/` não entra nesse output. Não fazer deploy da raiz. No GitHub Pages legacy, o `_config.yml` exclui `clientes/`; não recriar `.nojekyll`.
+
+Comunicação do trabalho com a clínica: presença digital integrada, tom premium e humanizado, fala como "nosso time" ou "a gente". Fica de fora: promessa de faturamento, antes e depois, dado de saúde em anúncio, número inventado, disclaimer ou rótulo explicando bloco.

@@ -1,0 +1,23 @@
+---
+description: Frente Trackeamento Avançado da Prime Studio. Pixel, CAPI, eventos e deduplicação.
+alwaysApply: true
+---
+
+# Trackeamento Avançado
+
+Repositório `prime-studio-tracking`. No site, as funções são `/api/lead` e `/api/capi`. A referência completa das cinco frentes está em `AGENTS.md`.
+
+Seguir as boas práticas oficiais da Meta. Deduplicação por `event_id`. Sem dado sensível. Secret (`META_CAPI_TOKEN` e os demais) só por variável de ambiente, nunca no código.
+
+Eventos padrão:
+
+- `PageView`
+- `ViewContent`
+- `Lead`
+- `SubmitApplication`, somente para lead qualificado
+- `Contact`
+- `QuizStart`, evento customizado
+
+Pixel da Prime Studio: `997004479351209`. Não tratar esse id como pixel de uma clínica. No tracking de cliente, o id fica em branco até existir um valor real.
+
+Não invente número, evento extra nem dado de clínica. Deploy e publicação só com o OK do Marcos.

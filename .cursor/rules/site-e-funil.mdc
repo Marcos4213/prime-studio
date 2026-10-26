@@ -1,0 +1,24 @@
+---
+description: Frente Site e Funil da Prime Studio. Páginas, funil, comunicação e o que o Cloudflare Pages publica.
+alwaysApply: true
+---
+
+# Site e Funil
+
+Repositório `prime-studio`. Site https://prime.devbrasil.online, Cloudflare Pages, projeto `prime-studio`. Páginas: home, `/raio-x`, `/links`, `/guia`. Funções: `/api/lead` e `/api/capi`. A referência completa das cinco frentes está em `AGENTS.md`.
+
+O Método PRIME tem cinco passos: Perfil, Reputação, Imagem, Marca no site, Escala.
+
+Site, Instagram, Google e link na bio formam uma presença só, entendida em 3 segundos. A oferta é presença digital integrada. A comunicação fala como "nosso time" ou "a gente", tom premium e humanizado, presença digital agressiva.
+
+O funil não tem agenda nem calendário. O lead cai no HubSpot e o time entra em contato. O único botão opcional é o WhatsApp. Os anúncios levam direto para `/raio-x`, com o quiz na primeira tela. O site longo serve para remarketing e tráfego orgânico.
+
+Em vídeo e anúncio, a fala é: "um especialista do nosso time analisa sua presença e entra em contato em instantes". As palavras "ligação" e "30 minutos" ficam fora de vídeo e anúncio. "Ligação" continua sendo o nome do estágio no HubSpot.
+
+Fotos reais, de banco gratuito, coerentes com o nicho. Sem ilustração. No mobile, layout compacto e sem rolagem horizontal. O visual da Prime Studio é escuro com dourado.
+
+Fica de fora da comunicação: promessa de faturamento, antes e depois, dado de saúde em anúncio, número inventado, disclaimer ou rótulo explicando bloco.
+
+Não invente número nem dado de clínica. Secret só por variável de ambiente, nunca no código. Deploy, envio de mensagem e publicação só com o OK do Marcos. A entrega é por pull request.
+
+O Pages publica `dist/`, gerado por `node tools/prepare-pages-output.mjs`. A pasta `clientes/` não entra nesse output. Não fazer deploy da raiz.

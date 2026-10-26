@@ -14,9 +14,12 @@ HTML/CSS/JS estático, sem build, hospedado no Cloudflare Pages (projeto `prime-
 - `emails/`, `lib/`, `shots/`
 
 ## Deploy
+O Pages publica `dist/`, não a raiz. O script deixa `clientes/` de fora. Não fazer deploy de `.`.
+
 ```
-wrangler pages deploy . --project-name prime-studio            # produção
-wrangler pages deploy . --project-name prime-studio --branch X # prévia em https://X.prime-studio-953.pages.dev
+node tools/prepare-pages-output.mjs
+wrangler pages deploy dist --project-name prime-studio            # produção
+wrangler pages deploy dist --project-name prime-studio --branch X # prévia em https://X.prime-studio-953.pages.dev
 ```
 Secrets (nunca no código): `META_CAPI_TOKEN`, `HUBSPOT_PRIVATE_TOKEN`, `ADMIN_KEY`, `NOTIFY_WEBHOOK`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, opcional `META_TEST_EVENT_CODE`.
 

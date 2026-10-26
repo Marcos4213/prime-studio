@@ -1,0 +1,18 @@
+---
+description: Frente Prospecção e Vendas da Prime Studio. Playbook, qualificação e HubSpot.
+alwaysApply: true
+---
+
+# Prospecção e Vendas
+
+Repositório `prime-studio-prospeccao`: prospecção, apresentação para clientes e roteiro de vendas. A referência completa das cinco frentes está em `AGENTS.md`.
+
+A ordem do playbook é: lista, abordagem, diagnóstico pelo `/raio-x`, qualificação, HubSpot, proposta.
+
+A qualificação começa em R$ 30 mil de faturamento por mês. No HubSpot o estágio é "Ligação". O diagnóstico usa https://prime.devbrasil.online/raio-x.
+
+O funil não tem agenda nem calendário. O lead cai no HubSpot e o time entra em contato. O único botão opcional é o WhatsApp. Em vídeo e anúncio, a fala é: "um especialista do nosso time analisa sua presença e entra em contato em instantes". As palavras "ligação" e "30 minutos" ficam fora de vídeo e anúncio.
+
+Fica de fora da comunicação: promessa de faturamento, antes e depois, dado de saúde em anúncio, número inventado, disclaimer ou rótulo explicando bloco.
+
+Não invente número nem dado de clínica. Não criar cliente real: o modelo fica em `clientes/_modelo` no repositório `prime-studio`. Envio de mensagem e publicação só com o OK do Marcos.

@@ -1,5 +1,6 @@
 name = "prime-studio"
-pages_build_output_dir = "."
+# Output de tools/prepare-pages-output.mjs. A pasta clientes/ não entra aqui.
+pages_build_output_dir = "dist"
 compatibility_date = "2026-04-01"
 
 [[kv_namespaces]]
