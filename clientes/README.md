@@ -30,3 +30,17 @@ O checklist segue o Método PRIME: Perfil, Reputação, Imagem, Marca no site, E
 - `entregaveis/link-na-bio.md`
 - `tracking.md`
 - `relatorio-mensal.md`
+- `contrato.md`
+- `comprovantes.md`
+- `aceite.md`
+
+## Ordem da entrega
+
+Contrato, comprovante, onboarding, produção, aceite, relatório.
+
+1. Contrato — `contrato.md`
+2. Comprovante — `comprovantes.md`
+3. Onboarding — `briefing.md` e `checklist-onboarding.md`
+4. Produção — `entregaveis/` na ordem do Método PRIME
+5. Aceite — `aceite.md`
+6. Relatório — `relatorio-mensal.md`
