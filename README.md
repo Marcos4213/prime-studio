@@ -6,7 +6,8 @@ HTML/CSS/JS estático, sem build, hospedado no Cloudflare Pages (projeto `prime-
 
 ## Estrutura
 - `index.html` – página longa (remarketing e orgânico)
-- `raio-x.html` – quiz do Raio-X de Presença (destino dos anúncios)
+- `contato.html` – página curta de contato, destino dos anúncios (`/contato`). Sem quiz e sem agenda. O nicho vem da URL: `?nicho=estetica`, `?nicho=odontologia` ou `?nicho=saude`
+- `raio-x.html` – quiz do Raio-X de Presença, no ar para tráfego orgânico
 - `confirmado.html`, `links.html`, `guia.html`, `privacidade.html`
 - `assets/` – CSS, JS (`app.js`) e `px.js` (Meta Pixel)
 - `functions/api/lead.js` – lead → KV + HubSpot + Meta CAPI

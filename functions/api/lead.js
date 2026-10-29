@@ -11,16 +11,20 @@ export async function onRequestPost({ request, env }) {
     nome: clean(b.nome, 80), whatsapp: clean(b.whatsapp, 20).replace(/\D/g, ""), clinica: clean(b.clinica, 120),
     subnicho: clean(b.subnicho, 120), segmento_outro: clean(b.segmento_outro, 80), instagram: clean(b.instagram, 60), email: clean(b.email, 120), dor: clean(b.dor, 80), nota: +b.nota || 0, fit: +b.fit || 0,
     nivel: clean(b.nivel, 10), ligacao: !!b.ligacao, respostas: b.respostas && typeof b.respostas === "object" ? Object.fromEntries(Object.entries(b.respostas).slice(0, 10).map(([k, v]) => [clean(k, 30), clean(v, 120)])) : {},
-    faixa: clean(b.faixa, 10), nicho_key: clean(b.nicho_key, 12), origem: clean(b.origem, 40), status: "novo", faturamento: clean(b.faturamento, 20), site: clean(b.site, 120), qualificado: /^(30_80k|80_150k|acima_150k)$/.test(clean(b.faturamento, 20)), urgencia: clean(b.urgencia, 40),
+    faixa: clean(b.faixa, 10), nicho_key: clean(b.nicho_key, 12), origem: clean(b.origem, 40), status: "novo", faturamento: clean(b.faturamento, 20), site: clean(b.site, 120), urgencia: clean(b.urgencia, 40),
     atribuicao: b.atribuicao && typeof b.atribuicao === "object" ? Object.fromEntries(Object.entries(b.atribuicao).slice(0, 15).map(([k, v]) => [clean(k, 20), clean(v, 200)])) : {},
     pagina: clean(b.pagina, 200), ua: clean(request.headers.get("user-agent"), 160), data: new Date().toISOString()
   };
+  const rota = roteamentoDoLead(lead);
+  lead.qualificado = rota.qualificado;
   if (!lead.nome || lead.whatsapp.length < 10 || !lead.clinica) return json({ ok: false, error: "campos" }, 422);
   const id = /^[\w:.-]{10,80}$/.test(b.id || "") ? b.id : `lead:${Date.now()}:${crypto.randomUUID().slice(0, 8)}`;
   if (env.LEADS) await env.LEADS.put(id, JSON.stringify(lead), { expirationTtl: TTL, metadata: { nome: lead.nome, nivel: lead.nivel, status: lead.status } });
   await indexLead(env, id, lead.email, lead.whatsapp);
 
-  const txt = `${lead.qualificado ? "📞 LIGAR EM ATÉ 30 MIN" : lead.ligacao ? "📞 PEDIU LIGAÇÃO" : "🆕 Novo lead"} · ${lead.origem} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\nNota ${lead.nota}/100 · fit ${lead.fit}\nWhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
+  const txt = lead.origem === "contato"
+    ? `Novo contato · estágio Ligação\n${lead.nome} · ${lead.clinica}\nWhatsApp: https://wa.me/${lead.whatsapp}`
+    : `${lead.qualificado ? "📞 LIGAR EM ATÉ 30 MIN" : lead.ligacao ? "📞 PEDIU LIGAÇÃO" : "🆕 Novo lead"} · ${lead.origem} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\nNota ${lead.nota}/100 · fit ${lead.fit}\nWhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
   const jobs = [];
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID)
     jobs.push(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: txt, disable_web_page_preview: true }) }));
@@ -30,15 +34,28 @@ export async function onRequestPost({ request, env }) {
   const eid = s => /^[\w-]{8,80}$/.test(s || "") ? s : "";
   const capiBase = { test: b.teste_rastreio === true, url: lead.pagina, fbc: clean(a.fbc, 200), fbp: clean(a.fbp, 200), user: { em: lead.email, ph: lead.whatsapp, fn: lead.nome.split(/\s+/)[0], ln: lead.nome.split(/\s+/).slice(1).join(""), external_id: lead.whatsapp } };
   // custom_data neutro (sem saúde, dor ou procedimento): só faixa de faturamento e tipo de lead
-  const cd = { content_name: /^bio|ebook|raio|quiz|site/.test(lead.origem) ? lead.origem.replace(/[^\w-]/g, "").slice(0, 30) : "site", faixa_faturamento: lead.faturamento, lead_type: lead.qualificado ? "qualificado" : "nao_qualificado" };
+  const cd = { content_name: /^bio|ebook|raio|quiz|site|contato/.test(lead.origem) ? lead.origem.replace(/[^\w-]/g, "").slice(0, 30) : "site", faixa_faturamento: lead.faturamento, lead_type: rota.leadType };
   if (!cd.faixa_faturamento) delete cd.faixa_faturamento;
+  if (!cd.lead_type) delete cd.lead_type;
   const capiJobs = [];
   if (eid(b.event_id)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "Lead", event_id: eid(b.event_id), params: cd }));
-  if (lead.qualificado && eid(b.event_id_qual)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "SubmitApplication", event_id: eid(b.event_id_qual), params: cd }));
-  const res = await Promise.allSettled([hubspotSync(env, c, { stage: lead.qualificado ? "ligacao" : "lead" }), brevoSync(env, c), ...capiJobs, ...jobs]);
+  if (rota.submitApplication && eid(b.event_id_qual)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "SubmitApplication", event_id: eid(b.event_id_qual), params: cd }));
+  const res = await Promise.allSettled([hubspotSync(env, c, { stage: rota.stage, ...(lead.origem === "contato" ? { dealname: `Presença Prime — ${c.negocio || c.nome}` } : {}) }), brevoSync(env, c), ...capiJobs, ...jobs]);
   const capi = capiJobs.length ? res.slice(2, 2 + capiJobs.length).map(x => (x.value?.capi || "erro") + (x.value?.capi_recebidos != null ? ":" + x.value.capi_recebidos : "")) : ["sem_event_id"];
   if (env.LEADS && res[0].value?.dealId) { lead.hubspot = { contactId: res[0].value.contactId, dealId: res[0].value.dealId }; await env.LEADS.put(id, JSON.stringify(lead), { expirationTtl: TTL, metadata: { nome: lead.nome, nivel: lead.nivel, status: lead.status } }); }
   return json({ ok: true, id, armazenado: !!env.LEADS, integracoes: Object.assign({}, res[0].value, res[1].value, { capi }) });
+}
+
+/** Página de contato entra no estágio Ligação sem faixa. O quiz orgânico segue qualificando pelo faturamento. */
+export function roteamentoDoLead(lead) {
+  const contato = lead.origem === "contato";
+  const qualificado = !contato && /^(30_80k|80_150k|acima_150k)$/.test(lead.faturamento || "");
+  return {
+    qualificado,
+    stage: contato || qualificado ? "ligacao" : "lead",
+    submitApplication: qualificado,
+    leadType: contato ? "" : (qualificado ? "qualificado" : "nao_qualificado")
+  };
 }
 
 export async function onRequestGet({ request, env }) {
