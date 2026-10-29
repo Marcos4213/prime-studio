@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Presença integrada — Prime Studio</title>
+<meta name="description" content="A gente junta site, Instagram, Google e link na bio numa presença só. Nosso time entra em contato.">
+<meta name="theme-color" content="#0b0a08">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://prime.devbrasil.online/contato">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css?v=26">
+<style>
+.contato{min-height:100dvh;display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+.contato .top{display:flex;justify-content:center;padding:4px 0 8px}
+.contato main{width:min(440px,100%);margin:auto}
+.contato h1{font-size:clamp(1.85rem,7.4vw,2.55rem);line-height:1.12;margin:8px 0 12px}
+.contato .lead{font-size:1rem;margin:0 0 18px}
+.contato form,.contato .ok{background:linear-gradient(180deg,#19160f,#14110c);border:1px solid var(--line);border-radius:22px;padding:18px 16px 16px}
+.contato label{margin:12px 0 6px}
+.contato label:first-of-type{margin-top:0}
+.contato input{font-size:16px;padding:14px}
+.contato .btn{width:100%;justify-content:center;margin-top:16px}
+.contato .micro a{color:var(--gold2)}
+.contato .wa{margin-top:12px}
+.contato .ok{display:none}
+.contato.sent form{display:none}
+.contato.sent .ok{display:block}
+.contato .ok h2{font-size:clamp(1.7rem,6vw,2.2rem);margin:0 0 10px}
+</style>
+</head>
+<body class="contato">
+<header class="top"><a class="logo" href="/">PRIME<span>STUDIO</span></a></header>
+<main>
+  <p class="eyebrow">Presença integrada</p>
+  <h1>Site, Instagram, Google e bio <em>numa presença só.</em></h1>
+  <p class="lead">Em 3 segundos a clínica aparece no nível do trabalho. Nosso time entra em contato.</p>
+  <form id="form" novalidate>
+    <label for="nome">Nome</label>
+    <input id="nome" name="nome" autocomplete="name" required>
+    <label for="wpp">WhatsApp</label>
+    <input id="wpp" name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" required>
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required>
+    <label for="clinica">Nome da clínica</label>
+    <input id="clinica" name="clinica" autocomplete="organization" required>
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn" id="go" type="submit">Pedir contato do time</button>
+    <p class="micro">Sem spam. Ao continuar, você concorda com a <a href="/privacidade.html">Política de Privacidade</a>.</p>
+  </form>
+  <div class="ok" id="ok">
+    <h2>Pronto. Nosso time entra em contato.</h2>
+    <p class="lead">O pedido ficou com a gente.</p>
+    <a class="btn ghost" id="waOk" href="#" target="_blank" rel="noopener">Se preferir, fale no WhatsApp</a>
+  </div>
+  <a class="btn ghost wa" id="wa" href="#" target="_blank" rel="noopener">WhatsApp, se preferir escrever agora</a>
+</main>
+<script src="/assets/px.js?v=21" defer></script>
+<script>
+const WA = "5511913221587";
+const NICHO = {
+  estetica: { key: "estetica", label: "Estética" },
+  odontologia: { key: "odonto", label: "Odontologia" },
+  odonto: { key: "odonto", label: "Odontologia" },
+  saude: { key: "", label: "Saúde" }
+};
+const q = new URLSearchParams(location.search);
+const nicho = NICHO[(q.get("nicho") || "").toLowerCase()] || null;
+const textoWa = "Olá, time Prime Studio! Quero falar sobre a presença integrada da clínica.";
+const linkWa = "https://wa.me/" + WA + "?text=" + encodeURIComponent(textoWa);
+document.getElementById("wa").href = linkWa;
+document.getElementById("waOk").href = linkWa;
+function trackContato(ev, params, id){
+  if (!window.PRIME) return;
+  window.PRIME.track(ev, params, { eventId: id, serverSends: ev === "Lead" });
+}
+document.getElementById("wa").onclick = () => trackContato("Contact", { content_name: "whatsapp_contato" });
+document.getElementById("waOk").onclick = () => trackContato("Contact", { content_name: "whatsapp_contato_ok" });
+document.getElementById("form").onsubmit = async (e) => {
+  e.preventDefault();
+  const nome = document.getElementById("nome").value.trim();
+  const w = document.getElementById("wpp").value.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  const email = document.getElementById("email").value.trim();
+  const clinica = document.getElementById("clinica").value.trim();
+  const err = document.getElementById("err");
+  const bad = nome.length < 2 ? "Informe o nome."
+    : !/^\d{10,11}$/.test(w) ? "Informe um WhatsApp válido com DDD."
+    : !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email) ? "Informe um e-mail válido."
+    : clinica.length < 2 ? "Informe o nome da clínica." : "";
+  if (bad) { err.textContent = bad; return; }
+  err.textContent = "";
+  const btn = document.getElementById("go");
+  btn.disabled = true;
+  const eventId = window.PRIME ? window.PRIME.uid() : (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+  const payload = {
+    nome, whatsapp: w, email, clinica,
+    origem: "contato",
+    nicho_key: nicho && nicho.key ? nicho.key : "",
+    subnicho: nicho ? nicho.label : "",
+    atribuicao: window.PRIME ? window.PRIME.attribution() : {},
+    pagina: location.href,
+    event_id: eventId
+  };
+  let ok = false;
+  try {
+    const r = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    ok = r.ok;
+  } catch (_) { ok = false; }
+  if (!ok) { err.textContent = "Não foi possível enviar agora. Tente de novo ou fale no WhatsApp."; btn.disabled = false; return; }
+  if (window.PRIME) window.PRIME.match(email, w, nome);
+  trackContato("Lead", { content_name: "contato" }, eventId);
+  document.body.classList.add("sent");
+  document.getElementById("wa").hidden = true;
+};
+</script>
+</body>
+</html>
