@@ -8,7 +8,8 @@ Separado do site de marketing (que é Pages, na raiz do repo). Conceito: `docs/c
 > **Não fazer deploy sem o OK do Marcos.** Nenhum secret no código: chaves só via ambiente.
 
 ## O que entra neste MVP
-- Casca com **login** do cliente (sessão em cookie, validada no D1).
+- Casca com **login** do cliente (sessão em cookie, validada no D1), **primeiro acesso** curto e menu das frentes.
+- **Menu:** `features/load.js` lê `features/<frente>/feature.json` (`title`, `href`, `order`) e a casca monta a navegação. Cada frente mantém o próprio `feature.json`. O primeiro segmento do `href` abre a seção da casca quando ela já existe (`/estudio`, `/marca`, `/historico`); um caminho novo fica no menu até a tela da frente existir.
 - **Estúdio**: escolha de formato (post, carrossel, vídeo) → tema → peça montada no tom da clínica.
 - **Perfil de marca** por cliente (cores, fontes, tom, o que evitar, destaques) — a memória da marca.
 - **Histórico** do que foi gerado, por cliente. Nada publica sozinho (status `rascunho` → `aprovado`, ação humana).
@@ -19,7 +20,7 @@ Separado do site de marketing (que é Pages, na raiz do repo). Conceito: `docs/c
 - `src/lib/http.js` — helpers HTTP, cookies, comparação em tempo constante.
 - `src/lib/auth.js` — senha PBKDF2 (Web Crypto) + sessões opacas no D1.
 - `src/lib/ai.js` — geração (IA real OpenAI-compatível ou mock) + guarda de regras de marca.
-- `public/` — SPA (HTML/CSS/JS, sem build), visual escuro com dourado, mobile compacto.
+- `public/` — SPA (HTML/CSS/JS, sem build), mobile compacto. A cor fica só em `public/assets/tokens.css` (paleta provisória, não aprovada). As frentes usam os nomes `--color-bg`, `--color-surface`, `--color-surface-2`, `--color-text`, `--color-muted`, `--color-accent`, `--color-accent-text`, `--color-line`, `--color-danger`.
 - `migrations/0001_init.sql` — schema do D1.
 
 ## Bindings (wrangler.toml)
@@ -35,7 +36,8 @@ npm install
 npx wrangler d1 create prime-central        # preenche database_id no wrangler.toml
 npm run db:migrate:local                     # aplica o schema no D1 local
 cp .dev.vars.example .dev.vars               # opcional: preencher AI_API_KEY e ADMIN_KEY
-npm run dev                                   # http://localhost:8787
+npm test                                      # menu das frentes
+npm run dev                                   # http://localhost:8787 (grava o menu e sobe o worker; não publica)
 ```
 Sem `AI_API_KEY`, o estúdio gera um exemplo (mock). Com a chave, gera de verdade.
 

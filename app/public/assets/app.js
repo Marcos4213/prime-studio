@@ -1,4 +1,18 @@
 // Central do Cliente — SPA. Vanilla JS, sem build.
+function syncScheme() {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue("--color-bg").trim();
+  const hex = raw.replace("#", "");
+  const theme = document.querySelector('meta[name="theme-color"]');
+  if (theme && raw) theme.content = raw;
+  if (hex.length !== 6) return;
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  document.documentElement.style.colorScheme = lum > 0.6 ? "light" : "dark";
+}
+syncScheme();
+
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s) =>
@@ -10,7 +24,21 @@ const FORMATS = [
   { key: "video", ic: "▷", nm: "Vídeo", ds: "reels / story" },
 ];
 
-const state = { me: null, aiOn: false, format: "post", profile: null };
+const VIEWS = new Set(["hoje", "estudio", "marca", "historico"]);
+const EXISTING = [
+  { id: "estudio", title: "Estúdio", href: "/estudio", order: 10 },
+  { id: "marca", title: "Marca", href: "/marca", order: 20 },
+  { id: "historico", title: "Histórico", href: "/historico", order: 30 },
+];
+
+const state = {
+  me: null,
+  aiOn: false,
+  format: "post",
+  profile: null,
+  onboarding: { completo: false, tema_amanha: "" },
+  menu: [],
+};
 
 async function api(path, opts = {}) {
   const res = await fetch(path, {
@@ -26,46 +54,289 @@ async function api(path, opts = {}) {
   return { ok: res.ok, status: res.status, data };
 }
 
+function slugOf(href) {
+  const raw = String(href || "");
+  const path = raw.startsWith("#") ? raw.slice(1) : raw.replace(/^\//, "");
+  return (path.split("/")[0] || "hoje").toLowerCase();
+}
+
+function saudacao(name) {
+  let hour = 12;
+  try {
+    hour = Number(
+      new Intl.DateTimeFormat("pt-BR", {
+        hour: "numeric",
+        hourCycle: "h23",
+        timeZone: "America/Sao_Paulo",
+      }).format(new Date())
+    );
+  } catch {}
+  const part = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const n = String(name || "").trim();
+  return n ? `${part}, ${n}` : part;
+}
+
+function assemble(fromFiles) {
+  const features = Array.isArray(fromFiles) ? fromFiles : [];
+  const slugs = new Set(features.map((f) => slugOf(f.href)));
+  const extras = EXISTING.filter((e) => !slugs.has(e.id));
+  const rest = [...features, ...extras].sort(
+    (a, b) => a.order - b.order || String(a.title).localeCompare(String(b.title), "pt")
+  );
+  return [{ id: "hoje", title: "Hoje", href: "/hoje", order: 0 }, ...rest];
+}
+
 // ---------- Boot ----------
 async function boot() {
   const { ok, data } = await api("/api/me");
   if (ok && data.ok) {
     state.me = data.client;
     state.aiOn = data.ai_configurada;
-    showApp();
+    state.onboarding = data.onboarding || { completo: false, tema_amanha: "" };
+    if (!state.onboarding.completo) showOnboarding();
+    else showApp();
   } else {
     showLogin();
   }
 }
 
 function showLogin() {
+  $("#boot").hidden = true;
+  $("#onboardingView").hidden = true;
   $("#app").hidden = true;
   $("#loginView").hidden = false;
 }
 
-function showApp() {
+function showOnboarding() {
+  $("#boot").hidden = true;
   $("#loginView").hidden = true;
+  $("#app").hidden = true;
+  $("#onboardingView").hidden = false;
+  paintOnb(0);
+}
+
+async function showApp() {
+  $("#boot").hidden = true;
+  $("#loginView").hidden = true;
+  $("#onboardingView").hidden = true;
   const app = $("#app");
   app.hidden = false;
   app.innerHTML = "";
   app.appendChild($("#appShell").content.cloneNode(true));
-  $("[data-who]").textContent = state.me.name || state.me.email;
-  $("[data-logout]").addEventListener("click", logout);
-  $$(".tab").forEach((t) =>
-    t.addEventListener("click", () => switchTab(t.dataset.tab))
-  );
+  const who = state.me.name || state.me.email;
+  $$("[data-who]").forEach((el) => {
+    el.textContent = who;
+  });
+  $$("[data-logout]").forEach((el) => el.addEventListener("click", logout));
+  wireNav();
+  const { ok, data } = await api("/api/features");
+  const fromFiles = ok && data.ok && Array.isArray(data.menu) ? data.menu : [];
+  state.menu = assemble(fromFiles);
+  renderMenu();
   renderEstudio();
   renderMarca();
   renderHistorico();
+  switchTab("hoje");
 }
 
-function switchTab(tab) {
-  $$(".tab").forEach((t) => t.classList.toggle("is-active", t.dataset.tab === tab));
+function wireNav() {
+  const toggle = $("[data-nav-toggle]");
+  const scrim = $("[data-nav-scrim]");
+  if (toggle) toggle.addEventListener("click", () => setNav(!$("[data-rail]").classList.contains("is-open")));
+  if (scrim) scrim.addEventListener("click", () => setNav(false));
+}
+
+function setNav(open) {
+  const rail = $("[data-rail]");
+  if (!rail) return;
+  rail.classList.toggle("is-open", open);
+  const scrim = $("[data-nav-scrim]");
+  const toggle = $("[data-nav-toggle]");
+  if (scrim) scrim.hidden = !open;
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.textContent = open ? "Fechar" : "Menu";
+  }
+  document.body.classList.toggle("nav-open", open);
+}
+
+function setActive(id) {
+  $$("[data-nav]").forEach((a) => {
+    const on = a.dataset.nav === id;
+    a.classList.toggle("is-active", on);
+    if (on) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+}
+
+function renderMenu() {
+  const box = $("[data-menu]");
+  if (!box) return;
+  box.innerHTML = state.menu
+    .map(
+      (item) =>
+        `<a class="nav-link" href="${esc(item.href)}" data-nav="${esc(slugOf(item.href))}" data-href="${esc(item.href)}">${esc(item.title)}</a>`
+    )
+    .join("");
+  $$("a", box).forEach((a) =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      openHref(a.dataset.href);
+    })
+  );
+}
+
+function switchTab(tab, activeId = tab) {
   $$(".view").forEach((v) => v.classList.toggle("is-active", v.dataset.view === tab));
+  setActive(activeId);
+  setNav(false);
   if (tab === "historico") renderHistorico();
+  if (tab === "hoje") renderHoje();
+}
+
+function openHref(href) {
+  const id = slugOf(href);
+  if (VIEWS.has(id)) {
+    switchTab(id, id);
+    return;
+  }
+  const item = state.menu.find((m) => slugOf(m.href) === id);
+  const title = item ? item.title : "Frente";
+  const view = $('[data-view="externa"]');
+  if (view) {
+    view.innerHTML = `<div class="block">
+      <span class="eyebrow">Frente</span>
+      <h2>${esc(title)}</h2>
+      <p class="hint">O caminho já está no menu. A tela desta frente ainda não foi ligada.</p>
+      <button type="button" class="btn-ghost" id="backHoje">Voltar para hoje</button>
+    </div>`;
+    const back = $("#backHoje");
+    if (back) back.addEventListener("click", () => openHref("/hoje"));
+  }
+  switchTab("externa", id);
+}
+
+function renderHoje() {
+  const v = $('[data-view="hoje"]');
+  if (!v) return;
+  const tema = state.onboarding.tema_amanha || "";
+  const temaBlock = tema
+    ? `<p class="hoje-tema">Para amanhã: <em>${esc(tema)}</em>.</p>
+       <button type="button" class="btn-ghost btn-xs" id="temaEdit">Ajustar tema</button>
+       <div class="form hoje-edit" id="temaEditor" hidden>
+         <label for="hojeTema">Tema de amanhã</label>
+         <input id="hojeTema" maxlength="140" autocomplete="off" value="${esc(tema)}">
+         <button type="button" class="btn-ghost" id="temaSave">Guardar tema</button>
+       </div>`
+    : `<div class="form hoje-edit">
+         <label for="hojeTema">Tema de amanhã</label>
+         <input id="hojeTema" maxlength="140" autocomplete="off" placeholder="Ex.: um detalhe do espaço da clínica">
+         <button type="button" class="btn-ghost" id="temaSave">Guardar tema</button>
+       </div>`;
+  const fronts = state.menu.filter((m) => slugOf(m.href) !== "hoje" && slugOf(m.href) !== "estudio");
+  const list = fronts.length
+    ? `<ul class="hoje-frentes">${fronts
+        .map((f) => `<li><button type="button" data-go="${esc(f.href)}">${esc(f.title)}</button></li>`)
+        .join("")}</ul>`
+    : "";
+  v.innerHTML = `
+    <div class="block hoje">
+      <span class="eyebrow">Hoje</span>
+      <h2>${esc(saudacao(state.me && state.me.name))}</h2>
+      <p class="hoje-q">O que a clínica posta hoje?</p>
+      <p class="hint">Abra o estúdio, monte a peça e deixe para o ok. Amanhã, faça de novo.</p>
+      <div class="row"><button class="btn" id="goEstudio" type="button">Abrir o estúdio</button></div>
+      ${temaBlock}
+    </div>
+    <div class="block">
+      <span class="eyebrow">Neste acesso</span>
+      <h2>O resto da central</h2>
+      ${list}
+      <p class="note">Presença, link na bio, educação, comunidade e indicação aparecem no menu quando cada frente está ligada.</p>
+    </div>`;
+  $("#goEstudio").addEventListener("click", () => openHref("/estudio"));
+  const edit = $("#temaEdit");
+  if (edit) {
+    edit.addEventListener("click", () => {
+      $("#temaEditor").hidden = false;
+      edit.hidden = true;
+    });
+  }
+  const save = $("#temaSave");
+  if (save) save.addEventListener("click", saveTema);
+  $$("[data-go]", v).forEach((b) => b.addEventListener("click", () => openHref(b.dataset.go)));
+}
+
+async function saveTema() {
+  const input = $("#hojeTema");
+  const btn = $("#temaSave");
+  if (!input || !btn) return;
+  btn.disabled = true;
+  const { ok, data } = await api("/api/onboarding", {
+    method: "POST",
+    body: { tema_amanha: input.value },
+  });
+  btn.disabled = false;
+  if (ok && data.ok) {
+    state.onboarding = data.onboarding;
+    renderHoje();
+    return;
+  }
+  if (!$("#temaErr")) input.insertAdjacentHTML("afterend", `<p class="err" id="temaErr">Não foi possível guardar.</p>`);
+}
+
+let onbStep = 0;
+function paintOnb(step) {
+  onbStep = step;
+  $$("[data-step]").forEach((el) => {
+    el.hidden = Number(el.dataset.step) !== step;
+  });
+  $$("#onbBar i").forEach((bar, i) => bar.classList.toggle("is-on", i <= step));
+  const count = $("#onbCount");
+  if (count) count.textContent = `${step + 1} de 3`;
+  const back = $("#onbBack");
+  if (back) back.hidden = step === 0;
+  const next = $("#onbNext");
+  if (next) next.textContent = step === 2 ? "Entrar na central" : "Continuar";
+  const err = $("#onbErr");
+  if (err) err.hidden = true;
+}
+
+async function finishOnboarding() {
+  const btn = $("#onbNext");
+  const err = $("#onbErr");
+  const tema = $("#temaAmanha");
+  if (err) err.hidden = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Entrando…";
+  }
+  const { ok, data } = await api("/api/onboarding", {
+    method: "POST",
+    body: { tema_amanha: tema ? tema.value : "" },
+  });
+  if (btn) btn.disabled = false;
+  if (ok && data.ok) {
+    state.onboarding = data.onboarding;
+    showApp();
+    return;
+  }
+  if (btn) btn.textContent = "Entrar na central";
+  if (err) {
+    err.textContent = "Não foi possível guardar a entrada. Tente de novo.";
+    err.hidden = false;
+  }
 }
 
 // ---------- Login ----------
+$("#togglePass").addEventListener("click", () => {
+  const input = $("#password");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  $("#togglePass").textContent = show ? "Ocultar" : "Mostrar";
+  $("#togglePass").setAttribute("aria-pressed", show ? "true" : "false");
+});
+
 $("#loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = $("#loginErr");
@@ -87,6 +358,20 @@ $("#loginForm").addEventListener("submit", async (e) => {
   }
 });
 
+$("#onbBack").addEventListener("click", () => {
+  if (onbStep > 0) paintOnb(onbStep - 1);
+});
+
+$("#onbForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (onbStep < 2) paintOnb(onbStep + 1);
+  else finishOnboarding();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") setNav(false);
+});
+
 async function logout() {
   await api("/api/logout", { method: "POST" });
   location.reload();
@@ -100,7 +385,7 @@ function renderEstudio() {
       <span class="eyebrow">O que você posta hoje?</span>
       <h2>Estúdio</h2>
       <p class="hint">Escolha o formato, diga o tema, e o estúdio monta a peça no tom da sua clínica.${
-        state.aiOn ? "" : " <b style='color:var(--warn)'>IA não configurada: gera um exemplo.</b>"
+        state.aiOn ? "" : " <b style='color:var(--color-accent)'>IA não configurada: gera um exemplo.</b>"
       }</p>
       <div class="formats">
         ${FORMATS.map(
@@ -111,7 +396,7 @@ function renderEstudio() {
         ).join("")}
       </div>
       <label class="form" style="display:block">
-        <span style="font-size:.78rem;color:var(--mut)">Tema</span>
+        <span style="font-size:.78rem;color:var(--color-muted)">Tema</span>
         <input id="theme" type="text" maxlength="400" placeholder="Ex.: a estrutura da clínica, o cuidado no atendimento…" style="margin-top:6px">
       </label>
       <div class="row">
@@ -230,11 +515,11 @@ async function renderMarca() {
       <h2>Marca da clínica</h2>
       <p class="hint">Cores, fontes e tom que a IA respeita ao montar cada peça. Quanto mais completo, mais parece sua clínica.</p>
 
-      <div class="lbl" style="color:var(--gold);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:10px 0 4px">Cores</div>
+      <div class="lbl" style="color:var(--color-accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:10px 0 4px">Cores</div>
       <div class="chips" id="colorChips"></div>
-      <div class="inline"><input id="colorIn" type="text" placeholder="#c8a25a ou nome" maxlength="24"><button class="btn-ghost btn-xs" id="addColor">Adicionar</button></div>
+      <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor">Adicionar</button></div>
 
-      <div class="lbl" style="color:var(--gold);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:16px 0 4px">Fontes</div>
+      <div class="lbl" style="color:var(--color-accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:16px 0 4px">Fontes</div>
       <div class="chips" id="fontChips"></div>
       <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont">Adicionar</button></div>
 

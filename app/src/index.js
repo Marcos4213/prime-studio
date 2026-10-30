@@ -9,6 +9,8 @@ import {
   createClient,
 } from "./lib/auth.js";
 import { generatePiece, FORMATS } from "./lib/ai.js";
+import { findFeaturesDir, loadFeatures, toMenu } from "../features/load.js";
+import bakedMenu from "./feature-menu.json";
 
 export default {
   async fetch(request, env, ctx) {
@@ -43,7 +45,18 @@ async function handleApi(request, env, url, ctx) {
   if (!client) return json({ ok: false, error: "nao_autenticado" }, 401);
 
   if (path === "/api/me" && method === "GET") {
-    return json({ ok: true, client: publicClient(client), ai_configurada: !!env.AI_API_KEY });
+    const onboarding = await readOnboarding(env, client.id);
+    return json({
+      ok: true,
+      client: publicClient(client),
+      ai_configurada: !!env.AI_API_KEY,
+      onboarding,
+    });
+  }
+
+  if (path === "/api/onboarding" && method === "POST") return postOnboarding(request, env, client);
+  if (path === "/api/features" && method === "GET") {
+    return json({ ok: true, menu: await featureMenu() });
   }
 
   if (path === "/api/profile" && method === "GET") return getProfile(env, client);
@@ -92,6 +105,47 @@ async function login(request, env, secure) {
     200,
     { "set-cookie": sessionCookie(token, secure, ttl * 3600) }
   );
+}
+
+async function featureMenu() {
+  try {
+    const dir = await findFeaturesDir();
+    if (dir) return await loadFeatures(dir);
+  } catch (err) {
+    console.log(
+      JSON.stringify({
+        level: "warn",
+        msg: "menu em disco indisponivel",
+        detail: String(err?.message || err),
+      })
+    );
+  }
+  const baked = Array.isArray(bakedMenu) ? bakedMenu : [];
+  return toMenu(baked);
+}
+
+async function readOnboarding(env, clientId) {
+  const row = await env.DB.prepare(
+    "SELECT completed_at, tema_amanha FROM client_onboarding WHERE client_id = ?"
+  )
+    .bind(clientId)
+    .first();
+  return { completo: !!row, tema_amanha: row?.tema_amanha || "" };
+}
+
+async function postOnboarding(request, env, client) {
+  const body = await readJson(request);
+  const tema = clean(body.tema_amanha, 140);
+  await env.DB.prepare(
+    `INSERT INTO client_onboarding (client_id, completed_at, tema_amanha)
+     VALUES (?, ?, ?)
+     ON CONFLICT(client_id) DO UPDATE SET
+       completed_at = excluded.completed_at,
+       tema_amanha = excluded.tema_amanha`
+  )
+    .bind(client.id, nowIso(), tema)
+    .run();
+  return json({ ok: true, onboarding: { completo: true, tema_amanha: tema } });
 }
 
 async function logout(request, env, secure) {
