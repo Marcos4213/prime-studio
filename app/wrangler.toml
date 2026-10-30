@@ -16,7 +16,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "prime-central"
-database_id = "PLACEHOLDER_RUN_WRANGLER_D1_CREATE"
+database_id = "4a75b3bf-e784-4c0c-95ae-919f6f31d491"
 migrations_dir = "migrations"
 
 # Reservado para o banco de vídeos da clínica (Fase 5). Ainda não usado no código.
