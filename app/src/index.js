@@ -13,6 +13,12 @@ import { generatePiece, FORMATS } from "./lib/ai.js";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    /* feature:presenca */
+    if (url.pathname === "/presenca" || url.pathname === "/presenca/" || url.pathname.startsWith("/api/presenca")) {
+      const { handlePresenca } = await import("../features/presenca/routes.js");
+      return handlePresenca(request, env, url);
+    }
+    /* end feature:presenca */
     if (url.pathname.startsWith("/api/")) {
       try {
         return await handleApi(request, env, url, ctx);
