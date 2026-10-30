@@ -15,6 +15,14 @@ import bakedMenu from "./feature-menu.json";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    try {
+      const front = await routeFront(request, env, url);
+      if (front) return front;
+    } catch (err) {
+      console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
+      if (url.pathname.startsWith("/api/")) return json({ ok: false, error: "erro interno" }, 500);
+      return new Response("erro interno", { status: 500, headers: { "content-type": "text/plain; charset=utf-8" } });
+    }
     if (url.pathname.startsWith("/api/")) {
       try {
         return await handleApi(request, env, url, ctx);
@@ -26,6 +34,81 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+// A casca registra as frentes. O miolo de cada uma continua no próprio módulo.
+async function routeFront(request, env, url) {
+  const path = url.pathname;
+
+  if (path === "/api/hoje" && request.method === "GET") return hojeResumo(request, env);
+
+  if (path === "/estudio" || path === "/estudio/" || path === "/api/estudio/generate") {
+    const mod = await import("../features/estudio/server.js");
+    if (path === "/api/estudio/generate") {
+      if (request.method !== "POST") return json({ ok: false, error: "metodo" }, 405);
+      return mod.handleEstudioGenerate(request, env);
+    }
+    return mod.handleEstudioPage(request);
+  }
+
+  if (path === "/presenca" || path === "/presenca/" || path.startsWith("/api/presenca")) {
+    const { handlePresenca } = await import("../features/presenca/routes.js");
+    return handlePresenca(request, env, url);
+  }
+
+  if (path === "/link-na-bio" || path.startsWith("/api/link-na-bio")) {
+    const { handleLinkNaBio } = await import("../features/link-na-bio/handle.js");
+    return handleLinkNaBio(request, env, url);
+  }
+
+  if (path === "/educacao" || path.startsWith("/educacao/")) {
+    const { handleEducacao } = await import("../features/educacao/handler.js");
+    return handleEducacao(request);
+  }
+
+  if (
+    path === "/indicacao" ||
+    path.startsWith("/indicacao/") ||
+    path === "/api/indicacao" ||
+    path.startsWith("/api/indicacao/")
+  ) {
+    const { handleIndicacao } = await import("../features/indicacao/route.js");
+    return handleIndicacao(request, env, url);
+  }
+
+  return null;
+}
+
+async function hojeResumo(request, env) {
+  const cookies = parseCookies(request);
+  const client = await getClientFromSession(env, cookies.central_session);
+  if (!client) return json({ ok: false, error: "nao_autenticado" }, 401);
+
+  const { dailyPair } = await import("../features/estudio/logic.js");
+  const pair = dailyPair(new Date());
+  let presenca = "Nenhuma porta vista hoje.";
+  try {
+    const { handlePresenca } = await import("../features/presenca/routes.js");
+    const presencaUrl = new URL(request.url);
+    presencaUrl.pathname = "/api/presenca";
+    const res = await handlePresenca(request, env, presencaUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data.summary === "string" && data.summary) presenca = data.summary;
+    }
+  } catch {
+    presenca = "A presença ainda não respondeu.";
+  }
+
+  const onboarding = await readOnboarding(env, client.id);
+  return json({
+    ok: true,
+    weekday: pair.today.label,
+    angle: pair.today.angle,
+    tomorrow: pair.tomorrow.angle,
+    presenca,
+    tema_amanha: onboarding.tema_amanha || "",
+  });
+}
 
 async function handleApi(request, env, url, ctx) {
   const path = url.pathname;

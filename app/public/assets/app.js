@@ -24,12 +24,31 @@ const FORMATS = [
   { key: "video", ic: "▷", nm: "Vídeo", ds: "reels / story" },
 ];
 
-const VIEWS = new Set(["hoje", "estudio", "marca", "historico"]);
-const EXISTING = [
-  { id: "estudio", title: "Estúdio", href: "/estudio", order: 10 },
-  { id: "marca", title: "Marca", href: "/marca", order: 20 },
-  { id: "historico", title: "Histórico", href: "/historico", order: 30 },
+const NAV = [
+  { id: "hoje", title: "Início", href: "/hoje", icon: "inicio" },
+  { id: "estudio", title: "Estúdio", href: "/estudio", icon: "estudio" },
+  { id: "presenca", title: "Presença", href: "/presenca", icon: "presenca" },
+  { id: "link-na-bio", title: "Link na bio", href: "/link-na-bio", icon: "link" },
+  { id: "educacao", title: "Educação", href: "/educacao", icon: "educacao" },
+  { id: "comunidade", title: "Comunidade", href: "/comunidade", icon: "comunidade" },
+  { id: "indicacao", title: "Indicação", href: "/indicacao", icon: "indicacao" },
 ];
+const FRONTS = new Set(NAV.filter((item) => item.id !== "hoje").map((item) => item.id));
+const MAIS = new Set(["educacao", "comunidade", "indicacao"]);
+
+function icon(name) {
+  const paths = {
+    inicio: '<path d="M4 11.2 12 4l8 7.2V20a1 1 0 0 1-1 1h-5.2v-6.2H10.2V21H5a1 1 0 0 1-1-1z"/>',
+    estudio: '<rect x="4" y="4" width="16" height="16" rx="3"/>',
+    presenca: '<circle cx="12" cy="12" r="7"/>',
+    link: '<path d="M10 13.2a4.6 4.6 0 0 0 6.5.1l1.8-1.8a4.6 4.6 0 0 0-6.5-6.5L10.6 6.2"/><path d="M14 10.8a4.6 4.6 0 0 0-6.5-.1l-1.8 1.8a4.6 4.6 0 0 0 6.5 6.5l1.2-1.2"/>',
+    educacao: '<path d="M3.5 7 12 3.5 20.5 7 12 10.5z"/><path d="M6.5 10.2V16c0 .4 2.4 2.5 5.5 2.5s5.5-2.1 5.5-2.5v-5.8"/>',
+    comunidade: '<circle cx="8" cy="9" r="2.2"/><circle cx="16" cy="9" r="2.2"/><path d="M4.2 18.2c.5-2.3 2.1-3.6 3.8-3.6h.4c1.6 0 3.2 1.3 3.6 3.6"/><path d="M12.2 18.2c.4-2.3 2-3.6 3.6-3.6h.4c1.7 0 3.3 1.3 3.8 3.6"/>',
+    indicacao: '<path d="M12 4.5v15"/><path d="M8 8.5h5.5a2.8 2.8 0 0 1 0 5.6H8.8a2.8 2.8 0 0 0 0 5.6H16"/>',
+    mais: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || ""}</svg>`;
+}
 
 const state = {
   me: null,
@@ -76,14 +95,14 @@ function saudacao(name) {
   return n ? `${part}, ${n}` : part;
 }
 
-function assemble(fromFiles) {
-  const features = Array.isArray(fromFiles) ? fromFiles : [];
-  const slugs = new Set(features.map((f) => slugOf(f.href)));
-  const extras = EXISTING.filter((e) => !slugs.has(e.id));
-  const rest = [...features, ...extras].sort(
-    (a, b) => a.order - b.order || String(a.title).localeCompare(String(b.title), "pt")
-  );
-  return [{ id: "hoje", title: "Hoje", href: "/hoje", order: 0 }, ...rest];
+function menuItems(fromFiles) {
+  const byId = new Map((Array.isArray(fromFiles) ? fromFiles : []).map((item) => [slugOf(item.href), item]));
+  return NAV.map((item) => {
+    if (item.id === "hoje") return item;
+    const file = byId.get(item.id);
+    if (!file) return item;
+    return { ...item, title: file.title || item.title, href: file.href || item.href };
+  });
 }
 
 // ---------- Boot ----------
@@ -127,37 +146,98 @@ async function showApp() {
   $$("[data-who]").forEach((el) => {
     el.textContent = who;
   });
+  $$("[data-mail]").forEach((el) => {
+    el.textContent = state.me.email || "";
+  });
   $$("[data-logout]").forEach((el) => el.addEventListener("click", logout));
-  wireNav();
+  $$("[data-perfil]").forEach((el) => el.addEventListener("click", () => openHref("/marca")));
+  wireChrome();
   const { ok, data } = await api("/api/features");
   const fromFiles = ok && data.ok && Array.isArray(data.menu) ? data.menu : [];
-  state.menu = assemble(fromFiles);
+  state.menu = menuItems(fromFiles);
   renderMenu();
-  renderEstudio();
   renderMarca();
   renderHistorico();
-  switchTab("hoje");
+  openHref(hrefFor(paneFromHash()), { replace: true });
 }
 
-function wireNav() {
-  const toggle = $("[data-nav-toggle]");
-  const scrim = $("[data-nav-scrim]");
-  if (toggle) toggle.addEventListener("click", () => setNav(!$("[data-rail]").classList.contains("is-open")));
-  if (scrim) scrim.addEventListener("click", () => setNav(false));
-}
-
-function setNav(open) {
-  const rail = $("[data-rail]");
-  if (!rail) return;
-  rail.classList.toggle("is-open", open);
-  const scrim = $("[data-nav-scrim]");
-  const toggle = $("[data-nav-toggle]");
-  if (scrim) scrim.hidden = !open;
-  if (toggle) {
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    toggle.textContent = open ? "Fechar" : "Menu";
+function wireChrome() {
+  const shell = $("[data-shell]");
+  const collapse = $("[data-collapse]");
+  setCollapsed(localStorage.getItem("prime.casca.rail") === "1");
+  if (collapse) {
+    collapse.addEventListener("click", () => setCollapsed(!(shell && shell.classList.contains("is-collapsed"))));
   }
-  document.body.classList.toggle("nav-open", open);
+  $$("[data-tab]").forEach((btn) => {
+    const id = btn.dataset.tab;
+    if (id === "mais") {
+      btn.innerHTML = `${icon("mais")}<span>Mais</span>`;
+      btn.addEventListener("click", () => toggleMais());
+      return;
+    }
+    const item = NAV.find((entry) => entry.id === id);
+    if (!item) return;
+    const label = item.id === "link-na-bio" ? "Link" : item.title;
+    const glyph = item.id === "estudio" ? `<span class="tab-orb">${icon(item.icon)}</span>` : icon(item.icon);
+    btn.innerHTML = `${glyph}<span>${esc(label)}</span>`;
+    btn.addEventListener("click", () => openHref(item.href));
+  });
+  const mais = $("[data-mais]");
+  if (mais) {
+    mais.addEventListener("click", (e) => {
+      if (e.target === mais) toggleMais(false);
+    });
+    $$("[data-go]", mais).forEach((btn) => btn.addEventListener("click", () => openHref(btn.dataset.go)));
+  }
+  const frame = $("[data-front]");
+  if (frame) frame.addEventListener("load", () => dressFrame(frame));
+  window.addEventListener("popstate", () => openHref(hrefFor(paneFromHash()), { quiet: true }));
+}
+
+function setCollapsed(collapsed) {
+  const shell = $("[data-shell]");
+  const collapse = $("[data-collapse]");
+  if (!shell) return;
+  shell.classList.toggle("is-collapsed", collapsed);
+  try {
+    localStorage.setItem("prime.casca.rail", collapsed ? "1" : "0");
+  } catch {}
+  if (collapse) {
+    collapse.setAttribute("aria-pressed", collapsed ? "true" : "false");
+    collapse.setAttribute("aria-label", collapsed ? "Abrir menu" : "Recolher menu");
+    collapse.textContent = collapsed ? "Abrir" : "Recolher";
+  }
+}
+
+function toggleMais(force) {
+  const mais = $("[data-mais]");
+  const tab = $('[data-tab="mais"]');
+  if (!mais) return;
+  const open = typeof force === "boolean" ? force : mais.hidden;
+  mais.hidden = !open;
+  if (tab) tab.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+function paneFromHash() {
+  const raw = location.hash.replace(/^#\/?/, "").split(/[/?]/)[0];
+  if (raw === "perfil") return "marca";
+  if (raw === "historico" || raw === "marca") return raw;
+  if (raw === "inicio" || raw === "hoje" || !raw) return "hoje";
+  if (FRONTS.has(raw)) return raw;
+  return "hoje";
+}
+
+function hrefFor(id) {
+  if (id === "hoje") return "/hoje";
+  if (id === "marca") return "/marca";
+  if (id === "historico") return "/historico";
+  return `/${id}`;
+}
+
+function hashFor(id) {
+  if (id === "hoje") return "#inicio";
+  if (id === "marca") return "#perfil";
+  return `#${id}`;
 }
 
 function setActive(id) {
@@ -167,6 +247,19 @@ function setActive(id) {
     if (on) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
+  $$("[data-tab]").forEach((btn) => {
+    const tab = btn.dataset.tab;
+    const on = tab === "mais" ? MAIS.has(id) : tab === id;
+    btn.classList.toggle("is-active", on);
+    if (on) btn.setAttribute("aria-current", "page");
+    else btn.removeAttribute("aria-current");
+  });
+  $$("[data-perfil]").forEach((btn) => {
+    const on = id === "marca";
+    btn.classList.toggle("is-active", on);
+    if (on) btn.setAttribute("aria-current", "page");
+    else btn.removeAttribute("aria-current");
+  });
 }
 
 function renderMenu() {
@@ -175,7 +268,7 @@ function renderMenu() {
   box.innerHTML = state.menu
     .map(
       (item) =>
-        `<a class="nav-link" href="${esc(item.href)}" data-nav="${esc(slugOf(item.href))}" data-href="${esc(item.href)}">${esc(item.title)}</a>`
+        `<a class="nav-link" href="${esc(hashFor(item.id))}" data-nav="${esc(item.id)}" data-href="${esc(item.href)}">${icon(item.icon)}<span class="nav-label">${esc(item.title)}</span></a>`
     )
     .join("");
   $$("a", box).forEach((a) =>
@@ -186,85 +279,141 @@ function renderMenu() {
   );
 }
 
-function switchTab(tab, activeId = tab) {
-  $$(".view").forEach((v) => v.classList.toggle("is-active", v.dataset.view === tab));
-  setActive(activeId);
-  setNav(false);
-  if (tab === "historico") renderHistorico();
-  if (tab === "hoje") renderHoje();
+function showPane(id) {
+  const front = FRONTS.has(id);
+  $$(".view").forEach((view) => view.classList.toggle("is-active", !front && view.dataset.view === id));
+  const frame = $("[data-front]");
+  const shell = $("[data-shell]");
+  if (shell) shell.classList.toggle("is-front", front);
+  if (frame) {
+    if (front) {
+      const item = state.menu.find((entry) => entry.id === id) || NAV.find((entry) => entry.id === id);
+      const src = item ? item.href : `/${id}`;
+      frame.hidden = false;
+      frame.title = item ? item.title : "Frente";
+      if (frame.dataset.src !== src) {
+        frame.dataset.src = src;
+        frame.src = src;
+      }
+    } else {
+      frame.hidden = true;
+    }
+  }
+  setActive(id);
+  if (id === "historico") renderHistorico();
+  if (id === "hoje") renderHoje();
 }
 
-function openHref(href) {
+function openHref(href, opts = {}) {
   const id = slugOf(href);
-  if (VIEWS.has(id)) {
-    switchTab(id, id);
+  const pane = id === "inicio" ? "hoje" : id;
+  showPane(pane);
+  toggleMais(false);
+  if (opts.quiet) return;
+  const hash = hashFor(pane);
+  if (location.hash === hash) return;
+  const method = opts.replace ? "replaceState" : "pushState";
+  history[method](null, "", hash);
+}
+
+function dressFrame(frame) {
+  let doc;
+  try {
+    doc = frame.contentDocument;
+  } catch {
     return;
   }
-  const item = state.menu.find((m) => slugOf(m.href) === id);
-  const title = item ? item.title : "Frente";
-  const view = $('[data-view="externa"]');
-  if (view) {
-    view.innerHTML = `<div class="block">
-      <span class="eyebrow">Frente</span>
-      <h2>${esc(title)}</h2>
-      <p class="hint">O caminho já está no menu. A tela desta frente ainda não foi ligada.</p>
-      <button type="button" class="btn-ghost" id="backHoje">Voltar para hoje</button>
-    </div>`;
-    const back = $("#backHoje");
-    if (back) back.addEventListener("click", () => openHref("/hoje"));
-  }
-  switchTab("externa", id);
+  if (!doc || !doc.head || doc.getElementById("casca-dress")) return;
+  const style = doc.createElement("style");
+  style.id = "casca-dress";
+  style.textContent = `
+    header.top, header.edu-top, .theme-bar, a.central-link, .edu-toplink { display: none !important; }
+    .circulo, .wrap, .ind, .edu { max-width: none !important; width: 100% !important; }
+    body { background: var(--color-bg); }
+  `;
+  doc.head.appendChild(style);
+  doc.addEventListener("click", (event) => {
+    const link = event.target.closest && event.target.closest("a[href]");
+    if (!link) return;
+    let url;
+    try {
+      url = new URL(link.getAttribute("href"), location.origin);
+    } catch {
+      return;
+    }
+    if (url.origin !== location.origin) return;
+    if (url.pathname === "/") {
+      event.preventDefault();
+      openHref("/estudio");
+    }
+  });
 }
 
-function renderHoje() {
+let hojeTicket = 0;
+async function renderHoje() {
   const v = $('[data-view="hoje"]');
   if (!v) return;
-  const tema = state.onboarding.tema_amanha || "";
-  const temaBlock = tema
-    ? `<p class="hoje-tema">Para amanhã: <em>${esc(tema)}</em>.</p>
-       <button type="button" class="btn-ghost btn-xs" id="temaEdit">Ajustar tema</button>
-       <div class="form hoje-edit" id="temaEditor" hidden>
-         <label for="hojeTema">Tema de amanhã</label>
-         <input id="hojeTema" maxlength="140" autocomplete="off" value="${esc(tema)}">
-         <button type="button" class="btn-ghost" id="temaSave">Guardar tema</button>
-       </div>`
-    : `<div class="form hoje-edit">
-         <label for="hojeTema">Tema de amanhã</label>
-         <input id="hojeTema" maxlength="140" autocomplete="off" placeholder="Ex.: um detalhe do espaço da clínica">
-         <button type="button" class="btn-ghost" id="temaSave">Guardar tema</button>
-       </div>`;
-  const fronts = state.menu.filter((m) => slugOf(m.href) !== "hoje" && slugOf(m.href) !== "estudio");
-  const list = fronts.length
-    ? `<ul class="hoje-frentes">${fronts
-        .map((f) => `<li><button type="button" data-go="${esc(f.href)}">${esc(f.title)}</button></li>`)
-        .join("")}</ul>`
-    : "";
+  const ticket = ++hojeTicket;
+  const nome = state.me && state.me.name;
   v.innerHTML = `
-    <div class="block hoje">
-      <span class="eyebrow">Hoje</span>
-      <h2>${esc(saudacao(state.me && state.me.name))}</h2>
-      <p class="hoje-q">O que a clínica posta hoje?</p>
-      <p class="hint">Abra o estúdio, monte a peça e deixe para o ok. Amanhã, faça de novo.</p>
-      <div class="row"><button class="btn" id="goEstudio" type="button">Abrir o estúdio</button></div>
-      ${temaBlock}
-    </div>
-    <div class="block">
-      <span class="eyebrow">Neste acesso</span>
-      <h2>O resto da central</h2>
-      ${list}
-      <p class="note">Presença, link na bio, educação, comunidade e indicação aparecem no menu quando cada frente está ligada.</p>
+    <div class="hub">
+      <header class="hub-intro">
+        <p class="eyebrow">Início</p>
+        <h2>${esc(saudacao(nome))}</h2>
+      </header>
+      <article class="block hub-card hub-task">
+        <p class="eyebrow">Tarefa do dia</p>
+        <h3>Montar a peça de hoje</h3>
+        <p class="hint">Deixe pronta para o ok da clínica. Nada vai ao ar sozinho.</p>
+      </article>
+      <article class="block hub-card hub-angle">
+        <p class="eyebrow">Ângulo do dia</p>
+        <h3>Abrindo o ângulo…</h3>
+      </article>
+      <article class="block hub-card hub-presence">
+        <p class="eyebrow">Presença</p>
+        <h3>Olhando as portas…</h3>
+      </article>
+      <article class="block hub-card hub-create">
+        <p class="eyebrow">Atalho</p>
+        <h3>Criar post</h3>
+        <p class="hint">O estúdio monta a peça no tom da clínica.</p>
+        <button class="btn" id="goEstudio" type="button">Criar post</button>
+      </article>
     </div>`;
-  $("#goEstudio").addEventListener("click", () => openHref("/estudio"));
-  const edit = $("#temaEdit");
-  if (edit) {
-    edit.addEventListener("click", () => {
-      $("#temaEditor").hidden = false;
-      edit.hidden = true;
-    });
+  const go = $("#goEstudio");
+  if (go) go.addEventListener("click", () => openHref("/estudio"));
+  const { ok, data } = await api("/api/hoje");
+  if (ticket !== hojeTicket || !v.isConnected) return;
+  const angle = ok && data.ok ? data.angle : "O ângulo de hoje volta quando a central responder.";
+  const weekday = ok && data.ok && data.weekday ? data.weekday : "";
+  const tomorrow = ok && data.ok ? data.tomorrow : "";
+  const presenca = ok && data.ok ? data.presenca : "A presença ainda não respondeu.";
+  const tema = (ok && data.ok && data.tema_amanha) || state.onboarding.tema_amanha || "";
+  const task = $(".hub-task", v);
+  const angleCard = $(".hub-angle", v);
+  const presence = $(".hub-presence", v);
+  if (task) {
+    task.innerHTML = `
+      <p class="eyebrow">Tarefa do dia</p>
+      <h3>Montar a peça de hoje</h3>
+      <p class="hint">Deixe pronta para o ok da clínica. Nada vai ao ar sozinho.</p>
+      ${tema ? `<p class="hoje-tema">Tema combinado: <em>${esc(tema)}</em>.</p>` : ""}`;
   }
-  const save = $("#temaSave");
-  if (save) save.addEventListener("click", saveTema);
-  $$("[data-go]", v).forEach((b) => b.addEventListener("click", () => openHref(b.dataset.go)));
+  if (angleCard) {
+    angleCard.innerHTML = `
+      <p class="eyebrow">Ângulo do dia${weekday ? ` · ${esc(weekday)}` : ""}</p>
+      <h3>${esc(angle)}</h3>
+      ${tomorrow ? `<p class="hint">Amanhã muda para: ${esc(tomorrow)}</p>` : ""}`;
+  }
+  if (presence) {
+    presence.innerHTML = `
+      <p class="eyebrow">Presença</p>
+      <h3>${esc(presenca)}</h3>
+      <button class="btn-ghost" type="button" data-go="/presenca">Ver a presença</button>`;
+    const button = $("[data-go]", presence);
+    if (button) button.addEventListener("click", () => openHref(button.dataset.go));
+  }
 }
 
 async function saveTema() {
@@ -380,12 +529,13 @@ async function logout() {
 // ---------- Estúdio ----------
 function renderEstudio() {
   const v = $('[data-view="estudio"]');
+  if (!v) return;
   v.innerHTML = `
     <div class="block">
       <span class="eyebrow">O que você posta hoje?</span>
       <h2>Estúdio</h2>
       <p class="hint">Escolha o formato, diga o tema, e o estúdio monta a peça no tom da sua clínica.${
-        state.aiOn ? "" : " <b style='color:var(--color-accent)'>IA não configurada: gera um exemplo.</b>"
+        state.aiOn ? "" : " <b class=\"warn-note\">IA não configurada: gera um exemplo.</b>"
       }</p>
       <div class="formats">
         ${FORMATS.map(
@@ -511,15 +661,16 @@ async function renderMarca() {
   state.profile = p;
   v.innerHTML = `
     <div class="block">
-      <span class="eyebrow">Memória da marca</span>
-      <h2>Marca da clínica</h2>
+      <span class="eyebrow">Conta</span>
+      <h2>Perfil da clínica</h2>
       <p class="hint">Cores, fontes e tom que a IA respeita ao montar cada peça. Quanto mais completo, mais parece sua clínica.</p>
+      <p class="row"><button type="button" class="btn-ghost btn-xs" id="goHist">Peças guardadas</button></p>
 
-      <div class="lbl" style="color:var(--color-accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:10px 0 4px">Cores</div>
+      <div class="eyebrow" style="margin:10px 0 4px">Cores</div>
       <div class="chips" id="colorChips"></div>
       <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor">Adicionar</button></div>
 
-      <div class="lbl" style="color:var(--color-accent);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin:16px 0 4px">Fontes</div>
+      <div class="eyebrow" style="margin:16px 0 4px">Fontes</div>
       <div class="chips" id="fontChips"></div>
       <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont">Adicionar</button></div>
 
@@ -554,6 +705,8 @@ async function renderMarca() {
   };
   drawColors();
   drawFonts();
+  const hist = $("#goHist");
+  if (hist) hist.addEventListener("click", () => openHref("/historico"));
   $("#addColor").addEventListener("click", () => {
     const val = $("#colorIn").value.trim();
     if (val && colors.length < 8) { colors.push(val); $("#colorIn").value = ""; drawColors(); }

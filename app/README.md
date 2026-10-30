@@ -9,18 +9,19 @@ Separado do site de marketing (que é Pages, na raiz do repo). Conceito: `docs/c
 
 ## O que entra neste MVP
 - Casca com **login** do cliente (sessão em cookie, validada no D1), **primeiro acesso** curto e menu das frentes.
-- **Menu:** `features/load.js` lê `features/<frente>/feature.json` (`title`, `href`, `order`) e a casca monta a navegação. Cada frente mantém o próprio `feature.json`. O primeiro segmento do `href` abre a seção da casca quando ela já existe (`/estudio`, `/marca`, `/historico`); um caminho novo fica no menu até a tela da frente existir.
+- **Casca:** no desktop, sidebar fixa e retrátil com Início, Estúdio, Presença, Link na bio, Educação, Comunidade e Indicação. Embaixo, a conta e o perfil da clínica. No mobile, barra inferior com o Estúdio no centro e Mais para o resto. O Início é o hub do dia. Cada frente abre dentro dessa navegação, sem uma página solta.
+- **Menu:** `features/load.js` lê `features/<frente>/feature.json` (`title`, `href`, `order`). Cada frente mantém o próprio miolo.
 - **Estúdio**: escolha de formato (post, carrossel, vídeo) → tema → peça montada no tom da clínica.
 - **Perfil de marca** por cliente (cores, fontes, tom, o que evitar, destaques) — a memória da marca.
 - **Histórico** do que foi gerado, por cliente. Nada publica sozinho (status `rascunho` → `aprovado`, ação humana).
 - IA numa rota de API que lê a chave do ambiente; **sem chave, responde um exemplo (mock)**, para rodar sem publicar.
 
 ## Arquitetura
-- `src/index.js` — Worker: roteia `/api/*` e serve o front (`public/`) via binding `ASSETS`.
+- `src/index.js` — Worker: registra as frentes, roteia `/api/*` e serve o front (`public/`) via binding `ASSETS`.
 - `src/lib/http.js` — helpers HTTP, cookies, comparação em tempo constante.
 - `src/lib/auth.js` — senha PBKDF2 (Web Crypto) + sessões opacas no D1.
 - `src/lib/ai.js` — geração (IA real OpenAI-compatível ou mock) + guarda de regras de marca.
-- `public/` — SPA (HTML/CSS/JS, sem build), mobile compacto. A cor fica só em `public/assets/tokens.css` (paleta provisória, não aprovada). As frentes usam os nomes `--color-bg`, `--color-surface`, `--color-surface-2`, `--color-text`, `--color-muted`, `--color-accent`, `--color-accent-text`, `--color-line`, `--color-danger`.
+- `public/` — SPA (HTML/CSS/JS, sem build), mobile compacto. A cor fica só em `public/assets/tokens.css` (Petróleo Clínico; modo claro é o padrão). As frentes usam `--color-bg`, `--color-surface`, `--color-surface-2`, `--color-text`, `--color-primary`, `--color-on-primary`, `--color-success`, `--color-gold`, `--color-accent`, `--color-accent-text`, `--color-muted`, `--color-line`, `--color-danger`. No modo claro o CTA é `--color-accent` (petróleo). O dourado é assinatura e detalhe. No escuro opcional, `--color-accent` vira o dourado do CTA.
 - `migrations/0001_init.sql` — schema do D1.
 
 ## Bindings (wrangler.toml)
