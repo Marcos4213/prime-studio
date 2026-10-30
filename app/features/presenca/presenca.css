@@ -10,7 +10,7 @@ body {
 img { max-width: 100%; display: block; }
 button, input, summary { font: inherit; color: inherit; }
 .mark, .save, summary, .open { scroll-margin-top: 76px; }
-a { color: var(--color-accent); }
+a { color: var(--color-primary); }
 
 .wrap {
   width: min(640px, 100%);
@@ -36,9 +36,9 @@ a { color: var(--color-accent); }
   letter-spacing: .28em;
   font-size: .78rem;
 }
-.logo span { color: var(--color-accent); font-weight: 400; margin-left: .35em; }
+.logo span { color: var(--color-primary); font-weight: 400; margin-left: .35em; }
 .back {
-  color: var(--color-accent);
+  color: var(--color-primary);
   text-decoration: none;
   letter-spacing: .14em;
   text-transform: uppercase;
@@ -49,7 +49,7 @@ a { color: var(--color-accent); }
 
 .loading { color: var(--color-muted); padding: 28px 0; font-size: .92rem; }
 .eyebrow {
-  color: var(--color-accent);
+  color: var(--color-primary);
   letter-spacing: .22em;
   text-transform: uppercase;
   font-size: .68rem;
@@ -72,7 +72,7 @@ h1 {
 .lede { color: var(--color-muted); margin: 8px 0 0; max-width: 36ch; font-size: .95rem; }
 .clinic {
   margin-top: 8px;
-  color: var(--color-accent);
+  color: var(--color-primary);
   font-size: .92rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -88,7 +88,7 @@ h1 {
   position: relative;
   margin-top: 22px;
   padding: 16px 14px 8px;
-  background: linear-gradient(180deg, var(--color-surface-2), var(--color-surface) 56px);
+  background: var(--color-surface);
 }
 .habit::before {
   content: "";
@@ -97,7 +97,7 @@ h1 {
   right: 22px;
   top: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
 }
 .habit h2, .doors-title {
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -128,7 +128,7 @@ h1 {
   border-radius: 12px;
 }
 .mark:focus-visible, .open:focus-visible, .save:focus-visible, .back:focus-visible, .logo:focus-visible, summary:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 .mark:disabled { opacity: .55; cursor: default; }
@@ -136,26 +136,26 @@ h1 {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--color-accent) 75%, transparent);
+  border: 1.5px solid var(--color-primary);
   display: grid;
   place-items: center;
 }
 .mark[aria-pressed="true"] .tick {
-  background: var(--color-accent);
+  background: var(--color-primary);
   border-color: transparent;
 }
 .mark[aria-pressed="true"] .tick::after {
   content: "";
   width: 5px;
   height: 9px;
-  border: solid var(--color-accent-text);
+  border: solid var(--color-on-primary);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg) translate(-1px, -1px);
 }
 .mark strong { display: block; font-weight: 600; font-size: .98rem; }
 .mark small { display: block; color: var(--color-muted); font-size: .78rem; line-height: 1.35; margin-top: 1px; }
 .open {
-  color: var(--color-accent);
+  color: var(--color-primary);
   text-decoration: none;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -211,7 +211,7 @@ h1 {
   line-height: 1;
 }
 .role {
-  color: var(--color-accent);
+  color: var(--color-primary);
   letter-spacing: .14em;
   text-transform: uppercase;
   font-size: .66rem;
@@ -235,7 +235,7 @@ h1 {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  border: 1.5px solid var(--color-accent);
+  border: 1.5px solid var(--color-primary);
   display: block;
 }
 .addr {
@@ -248,7 +248,7 @@ h1 {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.addr a { text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent); }
+.addr a { text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent); }
 .addr.is-empty { color: var(--color-muted); }
 .addr-form { border-top: 1px solid transparent; }
 .addr-form summary {
@@ -257,7 +257,7 @@ h1 {
   min-height: 44px;
   display: flex;
   align-items: center;
-  color: var(--color-accent);
+  color: var(--color-primary);
   font-size: .82rem;
 }
 .addr-form summary::-webkit-details-marker { display: none; }
@@ -273,7 +273,7 @@ h1 {
   color: var(--color-text);
   font-size: 16px;
 }
-.field input:focus { outline: none; border-color: var(--color-accent); }
+.field input:focus { outline: none; border-color: var(--color-primary); }
 .save {
   min-height: 44px;
   border: 0;
@@ -285,7 +285,7 @@ h1 {
   font-size: .92rem;
 }
 .save:disabled { opacity: .55; cursor: default; }
-.form-note { min-height: 1.2em; font-size: .8rem; color: var(--color-accent); }
+.form-note { min-height: 1.2em; font-size: .8rem; color: var(--color-primary); }
 .form-note.is-err { color: var(--color-danger); }
 .note { padding: 16px 14px; color: var(--color-muted); font-size: .92rem; }
 .note a { display: inline-block; margin-top: 8px; }
