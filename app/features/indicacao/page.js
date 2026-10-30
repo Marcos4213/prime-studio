@@ -112,8 +112,8 @@ export function gateHtml() {
   ${hero()}
   <p class="lede">Quem indica ganha. Quem chega também.</p>
   <div class="pair">
-    <article class="reward"><p class="who">${c.indicadorTitulo}</p><p class="forma">${c.indicadorForma}</p><p class="valor">${"A definir"}</p></article>
-    <article class="reward"><p class="who">${c.indicadoTitulo}</p><p class="forma">${c.indicadoForma}</p><p class="valor">A definir</p></article>
+    <article class="reward"><p class="who">${c.indicadorTitulo}</p><p class="forma">${c.indicadorForma}</p><p class="valor">${c.indicadorValor}</p></article>
+    <article class="reward"><p class="who">${c.indicadoTitulo}</p><p class="forma">${c.indicadoForma}</p><p class="valor">${c.indicadoValor}</p></article>
   </div>
   <p class="nota">${c.nota}</p>
   <a class="btn" href="/">Entrar na central</a>
@@ -136,12 +136,12 @@ export function pageHtml(clinicName) {
     <article class="reward">
       <p class="who" id="whoA">${c.indicadorTitulo}</p>
       <p class="forma" id="formaA">${c.indicadorForma}</p>
-      <p class="valor">A definir</p>
+      <p class="valor" id="valorA">${c.indicadorValor}</p>
     </article>
     <article class="reward">
       <p class="who" id="whoB">${c.indicadoTitulo}</p>
       <p class="forma" id="formaB">${c.indicadoForma}</p>
-      <p class="valor">A definir</p>
+      <p class="valor" id="valorB">${c.indicadoValor}</p>
     </article>
   </div>
   <p class="nota" id="nota">${c.nota}</p>
@@ -186,8 +186,10 @@ export const BROWSER_JS = String.raw`
     text("hint", copy.hint);
     text("whoA", copy.indicadorTitulo);
     text("formaA", copy.indicadorForma);
+    text("valorA", copy.indicadorValor);
     text("whoB", copy.indicadoTitulo);
     text("formaB", copy.indicadoForma);
+    text("valorB", copy.indicadoValor);
     text("nota", copy.nota);
     var steps = document.querySelectorAll(".passos span");
     for (var i = 0; i < steps.length; i++) steps[i].textContent = copy.passos[i] || "";

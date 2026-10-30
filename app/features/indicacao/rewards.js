@@ -1,56 +1,57 @@
 // Indicação dos dois lados (fase 6).
-// Cliente: tempo de central, nunca desconto no serviço.
-// Profissional (contador, parceiro, fornecedor): comissão em dinheiro ou permuta.
-// Meses, percentual, valor e serviço extra ficam nulos até o Marcos fechar. Não inventar.
+// Fechado pelo Marcos: quem indica (cliente) ganha 60 dias; a clínica indicada ganha 15%.
+// Serviço extra, order bump/upsell e indicador profissional seguem em discussão.
+// Sem comissão em dinheiro. Não inventar outro número.
 
 import { clean } from "../../src/lib/http.js";
 
-export const A_DEFINIR = "A definir";
-
 export const REWARDS = {
   cliente: {
-    indicador: { forma: "tempo_de_central", meses: null, rotulo: A_DEFINIR },
-    indicado: { forma: "tempo_de_central", meses: null, rotulo: A_DEFINIR },
-    desconto: false,
+    indicador: { forma: "tempo_de_central", dias: 60, rotulo: "60 dias" },
+    indicado: { forma: "desconto", percentual: 15, rotulo: "15%" },
     servico_extra: null,
   },
   profissional: {
     indicador: {
-      forma: "comissao_dinheiro_ou_permuta",
+      forma: "em_discussao",
       percentual: null,
       valor: null,
-      rotulo: A_DEFINIR,
+      comissao_dinheiro: false,
+      rotulo: "Em discussão",
     },
-    indicado: { forma: "tempo_de_central", meses: null, rotulo: A_DEFINIR },
-    desconto: false,
+    indicado: { forma: "desconto", percentual: 15, rotulo: "15%" },
   },
 };
 
 export const COPY = {
   cliente: {
     indicadorTitulo: "Você",
-    indicadorForma: "Tempo de central",
+    indicadorForma: "Central",
+    indicadorValor: "60 dias",
     indicadoTitulo: "A clínica indicada",
-    indicadoForma: "Tempo de central",
-    nota: "Sem desconto no serviço. A quantidade de tempo a Prime confirma.",
-    hint: "Você e a clínica indicada ganham tempo de central.",
+    indicadoForma: "Desconto",
+    indicadoValor: "15%",
+    nota: "Você ganha 60 dias de Central. A clínica indicada ganha 15% de desconto.",
+    hint: "Quem indica ganha tempo. Quem chega ganha desconto.",
     passos: [
       "Diga o nome e o WhatsApp da clínica",
       "O nosso time entra em contato",
-      "Os dois ganham tempo de central",
+      "Você ganha 60 dias e a clínica, 15% de desconto",
     ],
   },
   profissional: {
     indicadorTitulo: "Você",
-    indicadorForma: "Comissão em dinheiro ou permuta",
+    indicadorForma: "Recompensa",
+    indicadorValor: "Em discussão",
     indicadoTitulo: "A clínica indicada",
-    indicadoForma: "Tempo de central",
-    nota: "O valor da comissão a Prime confirma. A clínica indicada ganha tempo de central, sem desconto.",
-    hint: "Contador, parceiro ou fornecedor.",
+    indicadoForma: "Desconto",
+    indicadoValor: "15%",
+    nota: "A recompensa de quem indica como profissional segue em discussão. Sem comissão em dinheiro. A clínica indicada tem 15% de desconto.",
+    hint: "Contador, parceiro ou fornecedor. Sem comissão em dinheiro.",
     passos: [
       "Diga o nome e o WhatsApp da clínica",
       "O nosso time entra em contato",
-      "Você recebe comissão; a clínica ganha tempo de central",
+      "A clínica indicada tem 15% de desconto",
     ],
   },
 };

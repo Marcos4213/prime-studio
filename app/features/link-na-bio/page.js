@@ -36,9 +36,12 @@ h1{font-size:clamp(2rem,7vw,2.7rem);margin:6px 0 8px}
 .habit{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:7px 12px;border-radius:999px;border:1px solid var(--color-line);color:var(--color-text);font-size:.78rem;max-width:100%}
 .habit::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--color-gold);flex:none}
 .habit.is-fresh::before{background:var(--color-success)}
-.stage{display:flex;flex-direction:column;gap:14px;min-width:0}
+.stage{display:flex;flex-direction:column;gap:16px;min-width:0;align-items:stretch}
+.editor{display:contents}
 .editor,.preview{min-width:0}
-.preview{order:-1}
+.stage>.editor>.card,.stage>.editor>.actions{order:3;margin-bottom:0}
+.stage>.editor>.ritual{order:1}
+.preview{order:2;position:static;top:auto;z-index:auto;margin:0}
 .card{
   background:linear-gradient(180deg,var(--wash),transparent 48px),var(--color-surface);
   border:1px solid var(--color-line);border-radius:18px;padding:16px;margin-bottom:12px;min-width:0;
@@ -108,7 +111,7 @@ h1{font-size:clamp(2rem,7vw,2.7rem);margin:6px 0 8px}
 .phone{
   width:min(100%,270px);margin:8px auto 0;background:var(--color-surface);
   border:1px solid var(--rule);border-radius:28px;padding:8px;
-  box-shadow:0 24px 50px -28px var(--wash);
+  box-shadow:0 8px 18px -14px var(--wash);position:static;
 }
 .screen{background:var(--color-bg);border-radius:22px;overflow:hidden}
 .ear{width:64px;height:4px;border-radius:4px;background:var(--color-line);margin:8px auto}
@@ -133,8 +136,11 @@ h1{font-size:clamp(2rem,7vw,2.7rem);margin:6px 0 8px}
   .actions .btn,.actions .btn-ghost{width:auto;flex:1 1 180px}
 }
 @media (min-width:900px){
-  .stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;column-gap:22px;align-items:start}
-  .preview{order:0;position:sticky;top:76px}
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;column-gap:22px;row-gap:0;align-items:start}
+  .editor{display:block}
+  .stage>.editor>.ritual,.stage>.editor>.card{order:0;margin-bottom:12px}
+  .stage>.editor>.actions{order:0;margin-bottom:0}
+  .preview{order:0;position:sticky;top:76px;z-index:1;align-self:start;justify-self:stretch;max-width:100%}
   .phone{width:100%}
   .cover{height:118px}
 }
