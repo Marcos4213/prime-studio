@@ -190,6 +190,7 @@ a{color:var(--color-primary)}
 .tabbar{display:none}
 .mais{display:none}
 @media (max-width:899px){
+  :root{--tabbar-clear:calc(96px + env(safe-area-inset-bottom))}
   .shell{grid-template-columns:minmax(0,1fr);height:100dvh}
   .rail{display:none}
   .top{
@@ -199,7 +200,7 @@ a{color:var(--color-primary)}
   }
   .top .logo{font-size:.72rem;letter-spacing:.14em}
   .top .who{text-align:right;max-width:46vw}
-  .stage-body{padding:8px 16px 12px}
+  .stage-body{padding:8px 16px var(--tabbar-clear)}
   .hub{grid-template-columns:minmax(0,1fr)}
   .hub-task,.hub-angle,.hub-presence,.hub-create{grid-column:auto}
   .tabbar{
@@ -208,7 +209,6 @@ a{color:var(--color-primary)}
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     background:var(--color-surface);border-top:1px solid var(--color-line);
   }
-  .stage{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
   .tabbar button{
     min-width:0;border:0;background:transparent;color:var(--color-muted);
     font:600 .68rem var(--sans);display:flex;flex-direction:column;align-items:center;gap:2px;

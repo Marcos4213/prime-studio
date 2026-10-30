@@ -330,6 +330,11 @@ function dressFrame(frame) {
     header.top, header.edu-top, .theme-bar, a.central-link, .edu-toplink { display: none !important; }
     .circulo, .wrap, .ind, .edu { max-width: none !important; width: 100% !important; }
     body { background: var(--color-bg); }
+    @media (max-width: 899px) {
+      .circulo, .wrap, .ind, .edu, .page, main {
+        padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+      }
+    }
   `;
   doc.head.appendChild(style);
   doc.addEventListener("click", (event) => {
