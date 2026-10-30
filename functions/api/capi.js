@@ -1,7 +1,8 @@
 // POST /api/capi — espelha eventos do Pixel na Conversions API (dedup por event_id).
 // Inativo até existirem META_PIXEL_ID e META_CAPI_TOKEN nas variáveis do Pages.
 import { json, capiSend } from "../../lib/integrations.js";
-// Lead e SubmitApplication NÃO entram aqui: são enviados pelo /api/lead (evita Lead duplicado)
+// Lead e SubmitApplication NÃO entram aqui: são enviados pelo /api/lead (evita Lead duplicado).
+// Schedule saiu com o webhook do Cal.com: este endpoint não aceita esse evento.
 const OK = new Set(["PageView", "ViewContent", "Contact", "QuizStart"]);
 export async function onRequestPost({ request, env }) {
   if (!env.META_CAPI_TOKEN) return json({ ok: true, capi: "inativo" });

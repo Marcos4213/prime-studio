@@ -3,11 +3,7 @@ const CONFIG = {
   // Endpoint que salva o lead (Cloudflare Pages Function em /functions/api/lead.js).
   // No GitHub Pages não existe; o site cai automaticamente no WhatsApp.
   LEAD_API: "/api/lead",
-  // Horário comercial (America/Sao_Paulo) para a promessa "ligação em até 30 minutos"
-  HORARIO: { dias:[1,2,3,4,5,6], inicio:9, fim:18 },   // seg–sáb, 9h–18h (sábado a confirmar)
   WHATSAPP_NUMERO: "5511913221587",
-  // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
-  CAL_BRAND: "#c8a25a",
   META_PIXEL_ID: "997004479351209",              // preencha para ativar o Pixel (inativo vazio)
   CAPI_URL: "/api/capi",           // Conversions API (só envia se META_PIXEL_ID e, no servidor, META_CAPI_TOKEN existirem)
   CONTEUDO_URL: "#metodo"
@@ -208,7 +204,6 @@ const LPQ=document.body.classList.contains("lp-quiz");
 if(LPQ){ const keep=["nicho","dor","site","google","faturamento"]; for(let i=QUESTIONS.length-1;i>=0;i--) if(!keep.includes(QUESTIONS[i].id)) QUESTIONS.splice(i,1); }
 const MAXP=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.p||0)),0)||100, MAXF=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.f||0)),0)||70;
 const QUALF = new Set(["30_80k","80_150k","acima_150k"]);
-function emHorario(){ const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})); const h=d.getHours(); return CONFIG.HORARIO.dias.includes(d.getDay()) && h>=CONFIG.HORARIO.inicio && h<CONFIG.HORARIO.fim; }
 const DOR_W = {agenda:"wpp", preco:"insta", visib:"google", valor:"site"};
 const SK="prime_rx";
 let st = (()=>{ try{ return JSON.parse(sessionStorage.getItem(SK))||{} }catch(e){ return {} } })();
@@ -299,9 +294,8 @@ function renderResult(){
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
   const msgWa = `Olá, time Prime Studio! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
   const wa = t=>`https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(t)}`;
-  const quando = emHorario() ? "em até 30 minutos" : "no início do próximo horário de atendimento";
   const fim = st.qual
-   ? `<div class="qx-call"><p class="k">Diagnóstico por ligação</p><h3>Pronto, ${esc(nome)}. Nosso time vai te ligar ${quando} com seus perfis já abertos.</h3><p>Na ligação, analisamos ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} com você e entendemos seus objetivos. Deixe o WhatsApp por perto.</p>
+   ? `<div class="qx-call"><p class="k">Diagnóstico por ligação</p><h3>Pronto, ${esc(nome)}. Nosso time vai te ligar com seus perfis já abertos.</h3><p>Na ligação, analisamos ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} com você e entendemos seus objetivos. Deixe o WhatsApp por perto.</p>
       <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a></div>`
    : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. Seu próximo passo é fortalecer a base.</h3><p>Pelo momento do seu negócio, o melhor caminho agora é estruturar a sua presença com o nosso guia gratuito. Quando estiver pronto para o próximo nível, estaremos aqui.</p>
       <a class="btn" id="bGuia" href="/guia?utm_source=quiz">Ler o guia gratuito</a></div>`;
