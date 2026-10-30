@@ -9,6 +9,8 @@ import {
   createClient,
 } from "./lib/auth.js";
 import { generatePiece, FORMATS } from "./lib/ai.js";
+/* feature:educacao */
+import { handleEducacao } from "../features/educacao/handler.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -20,6 +22,10 @@ export default {
         console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
         return json({ ok: false, error: "erro interno" }, 500);
       }
+    }
+    /* feature:educacao */
+    if (url.pathname === "/educacao" || url.pathname.startsWith("/educacao/")) {
+      return handleEducacao(request);
     }
     return env.ASSETS.fetch(request);
   },
