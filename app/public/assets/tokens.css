@@ -1,0 +1,31 @@
+/* Petróleo Clínico. Modo claro é o padrão.
+   Modo escuro é opcional: html[data-tema="escuro"]. */
+:root {
+  --color-bg: #F7F5F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F5F0;
+  --color-text: #1A2328;
+  --color-primary: #0F4C5C;
+  --color-on-primary: #FFFFFF;
+  --color-success: #2E7D5B;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-primary);
+  --color-accent-text: var(--color-on-primary);
+  --color-cta: var(--color-primary);
+  --color-on-cta: var(--color-on-primary);
+  --color-muted: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
+  --color-line: color-mix(in srgb, var(--color-primary) 62%, var(--color-bg));
+  --color-danger: color-mix(in srgb, var(--color-text) 72%, var(--color-gold));
+}
+
+:root[data-tema="escuro"] {
+  --color-bg: color-mix(in srgb, var(--color-primary) 32%, black);
+  --color-text: #F7F5F0;
+  --color-surface: color-mix(in srgb, var(--color-text) 10%, var(--color-bg));
+  --color-surface-2: color-mix(in srgb, var(--color-text) 16%, var(--color-bg));
+  --color-muted: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
+  --color-line: color-mix(in srgb, var(--color-text) 42%, var(--color-bg));
+  --color-danger: color-mix(in srgb, var(--color-text) 72%, var(--color-gold));
+  --color-cta: var(--color-gold);
+  --color-on-cta: #1A2328;
+}

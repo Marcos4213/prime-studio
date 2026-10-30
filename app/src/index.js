@@ -59,6 +59,8 @@ async function handleApi(request, env, url, ctx) {
   const approveMatch = path.match(/^\/api\/pieces\/([\w-]+)\/approve$/);
   if (approveMatch && method === "POST") return approvePiece(env, client, approveMatch[1]);
 
+  /* feature:comunidade */
+
   return json({ ok: false, error: "rota_nao_encontrada" }, 404);
 }
 
