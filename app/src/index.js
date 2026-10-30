@@ -13,6 +13,22 @@ import { generatePiece, FORMATS } from "./lib/ai.js";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    /* feature:indicacao */
+    if (
+      url.pathname === "/indicacao" ||
+      url.pathname.startsWith("/indicacao/") ||
+      url.pathname === "/api/indicacao" ||
+      url.pathname.startsWith("/api/indicacao/")
+    ) {
+      try {
+        const { handleIndicacao } = await import("../features/indicacao/route.js");
+        return await handleIndicacao(request, env, url);
+      } catch (err) {
+        console.log(JSON.stringify({ level: "error", feature: "indicacao", msg: String(err?.message || err), path: url.pathname }));
+        return json({ ok: false, error: "erro interno" }, 500);
+      }
+    }
+    /* end feature:indicacao */
     if (url.pathname.startsWith("/api/")) {
       try {
         return await handleApi(request, env, url, ctx);
