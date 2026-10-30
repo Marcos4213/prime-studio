@@ -1,0 +1,521 @@
+const boot = JSON.parse(document.getElementById("studio-boot").textContent);
+const qs = (s, el = document) => el.querySelector(s);
+const ORDINALS = ["Primeira", "Segunda", "Terceira", "Quarta", "Quinta", "Sexta", "Sétima", "Oitava"];
+
+const state = {
+  me: null,
+  aiOn: false,
+  format: "",
+  mode: "",
+  busy: false,
+  colors: [],
+  fonts: [],
+};
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    method: opts.method || "GET",
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  let data = {};
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+  return { ok: res.ok, status: res.status, data };
+}
+
+function spDay(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
+function formatName(k) {
+  if (k === "carousel") return "Carrossel";
+  if (k === "video") return "Vídeo";
+  if (k === "post") return "Post";
+  return k || "";
+}
+
+function safeColor(c) {
+  const s = String(c || "").trim();
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(s)) return s;
+  if (/^[a-zA-Z]{3,20}$/.test(s)) return s;
+  return "";
+}
+
+function showLogin() {
+  qs("#studio").hidden = true;
+  qs("#login").hidden = false;
+}
+
+function showStudio() {
+  qs("#login").hidden = true;
+  qs("#studio").hidden = false;
+  qs("#who").textContent = state.me.name || state.me.email || "";
+  const note = qs("#aiNote");
+  if (!state.aiOn) {
+    note.hidden = false;
+    note.textContent = "Sem chave de IA: o estúdio monta um exemplo e guarda no acervo do mesmo jeito.";
+  } else {
+    note.hidden = true;
+  }
+  qs("#todayLabel").textContent = boot.today.label;
+  qs("#todayAngle").textContent = boot.today.angle;
+  qs("#tomorrowLabel").textContent = boot.tomorrow.label;
+  qs("#tomorrowAngle").textContent = boot.tomorrow.angle;
+  qs("#habitWhy").textContent =
+    "Amanhã o ângulo muda para “" + boot.tomorrow.angle + "”. A peça de hoje fica no acervo — é o motivo de abrir de novo.";
+  loadBrand();
+  loadHistory();
+}
+
+async function start() {
+  const { ok, data } = await api("/api/me");
+  if (ok && data.ok) {
+    state.me = data.client;
+    state.aiOn = !!data.ai_configurada;
+    showStudio();
+  } else {
+    showLogin();
+  }
+}
+
+function syncGen() {
+  const videoNeedsMode = state.format === "video" && state.mode !== "camera" && state.mode !== "narracao";
+  const btn = qs("#gen");
+  btn.disabled = state.busy || !state.format || videoNeedsMode;
+}
+
+function setTodayStatus(has) {
+  qs("#todayStatus").textContent = has ? "A peça de hoje já está no acervo." : "Ainda não há peça hoje.";
+}
+
+async function copyText(text, btn) {
+  const value = String(text || "");
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;inset:0;opacity:0;pointer-events:none";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  const prev = btn.textContent;
+  btn.textContent = "Copiado";
+  setTimeout(() => {
+    btn.textContent = prev;
+  }, 1400);
+}
+
+function buildPiece(piece) {
+  const o = piece.output || {};
+  const copies = [];
+  const copyBtn = (label, text) => {
+    const i = copies.length;
+    copies.push(String(text || ""));
+    return '<button type="button" class="btn-ghost btn-xs" data-copy-i="' + i + '">Copiar ' + esc(label) + "</button>";
+  };
+  const field = (label, text) =>
+    '<p class="lbl">' + label + '</p><p class="copy">' + (text ? esc(text) : "—") + "</p>";
+
+  let body = "";
+  if (piece.format === "video") {
+    const sc = o.script || {};
+    const rec = o.recording || {};
+    const modeLabel = rec.mode === "narracao" ? "Narração sobre a imagem do espaço" : "Na câmera";
+    const tips = Array.isArray(rec.tips) ? rec.tips : [];
+    const scriptText = [sc.hook, sc.body, sc.cta].filter(Boolean).join("\n\n");
+    body =
+      field("Gancho", sc.hook) +
+      field("Desenvolvimento", sc.body) +
+      field("Chamada", sc.cta) +
+      '<p class="lbl">Como gravar — ' + esc(modeLabel) + "</p>" +
+      '<ul class="tips">' + tips.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
+      '<div class="actions">' + copyBtn("roteiro", scriptText) + "</div>";
+  } else if (piece.format === "carousel") {
+    const slides = Array.isArray(o.slides) ? o.slides : [];
+    body =
+      field("Legenda", o.caption) +
+      '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
+      slides
+        .map((s, i) => {
+          const name = ORDINALS[i] ? ORDINALS[i] + " tela" : "Tela";
+          const title = s && s.title ? " — " + esc(s.title) : "";
+          return (
+            '<article class="slide"><p class="lbl">' + esc(name) + title + "</p>" +
+            '<p class="prompt">' + esc(s && s.imagePrompt) + "</p>" +
+            '<div class="actions">' + copyBtn("prompt", s && s.imagePrompt) + "</div></article>"
+          );
+        })
+        .join("");
+  } else {
+    body =
+      field("Legenda", o.caption) +
+      '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
+      '<p class="lbl">Prompt de imagem</p><p class="prompt">' + esc(o.imagePrompt) + "</p>" +
+      '<div class="actions">' + copyBtn("prompt", o.imagePrompt) + "</div>";
+  }
+
+  const warns = Array.isArray(o.warnings) && o.warnings.length
+    ? '<div class="warns"><p><strong>Revisar antes de aprovar</strong></p><ul>' +
+      o.warnings.map((w) => "<li>" + esc(w) + "</li>").join("") + "</ul></div>"
+    : "";
+  const src = piece.source === "ia" ? "Gerado por IA" : "Exemplo";
+  const srcClass = piece.source === "ia" ? "ok" : "wait";
+  const approved = piece.status === "aprovado";
+  const st = approved ? "Aprovado" : "Rascunho";
+  const title = formatName(piece.format) + (piece.theme ? " · " + piece.theme : "");
+  const approve = approved
+    ? ""
+    : '<div class="actions"><button type="button" class="btn" data-approve>Marcar como aprovado</button></div>' +
+      '<p class="note">Isso não publica. A peça espera o ok da Prime e da clínica.</p>';
+  const html =
+    '<article class="sheet"><p class="badges"><span class="badge ' + srcClass + '">' + esc(src) +
+    '</span><span class="badge ' + (approved ? "ok" : "") + '">' + esc(st) + "</span></p><h3>" +
+    esc(title) + "</h3>" + body + warns + approve + "</article>";
+  return { html, copies };
+}
+
+function mountPiece(el, piece) {
+  const built = buildPiece(piece);
+  el.innerHTML = built.html;
+  el.querySelectorAll("[data-copy-i]").forEach((btn) => {
+    btn.addEventListener("click", () => copyText(built.copies[Number(btn.getAttribute("data-copy-i"))], btn));
+  });
+  const approveBtn = el.querySelector("[data-approve]");
+  if (!approveBtn) return;
+  approveBtn.addEventListener("click", async () => {
+    approveBtn.disabled = true;
+    const res = await api("/api/pieces/" + encodeURIComponent(piece.id) + "/approve", { method: "POST" });
+    if (res.status === 401) return showLogin();
+    if (!res.ok || !res.data.ok) {
+      approveBtn.disabled = false;
+      return;
+    }
+    piece.status = "aprovado";
+    mountPiece(el, piece);
+    loadHistory();
+  });
+}
+
+async function generate() {
+  if (state.busy || !state.format) return;
+  if (state.format === "video" && state.mode !== "camera" && state.mode !== "narracao") return;
+  state.busy = true;
+  syncGen();
+  qs("#gen").textContent = "Montando a peça…";
+  qs("#genErr").hidden = true;
+  const typed = qs("#theme").value.trim();
+  const theme = typed || boot.today.angle;
+  const body = { format: state.format, theme };
+  if (state.format === "video") body.recordingMode = state.mode;
+  const res = await api("/api/estudio/generate", { method: "POST", body });
+  state.busy = false;
+  qs("#gen").textContent = "Montar a peça";
+  syncGen();
+  if (res.status === 401) return showLogin();
+  if (!res.ok || !res.data.ok) {
+    const err = qs("#genErr");
+    err.hidden = false;
+    err.textContent = res.data.error === "modo_invalido"
+      ? "Escolha câmera ou narração antes de montar o vídeo."
+      : res.data.error === "formato_invalido"
+        ? "Escolha o formato de novo."
+        : "Não foi possível montar a peça. Nada foi publicado.";
+    return;
+  }
+  const box = qs("#result");
+  box.hidden = false;
+  mountPiece(box, res.data.piece);
+  setTodayStatus(true);
+  loadHistory();
+  box.scrollIntoView({ block: "nearest" });
+}
+
+function drawColors() {
+  const box = qs("#colorChips");
+  box.replaceChildren();
+  state.colors.forEach((c, i) => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    const sw = document.createElement("span");
+    sw.className = "sw";
+    const safe = safeColor(c);
+    if (safe) sw.style.background = safe;
+    const label = document.createElement("span");
+    label.textContent = c;
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.textContent = "×";
+    rm.setAttribute("aria-label", "Remover cor");
+    rm.addEventListener("click", () => {
+      state.colors.splice(i, 1);
+      drawColors();
+    });
+    chip.append(sw, label, rm);
+    box.append(chip);
+  });
+}
+
+function drawFonts() {
+  const box = qs("#fontChips");
+  box.replaceChildren();
+  state.fonts.forEach((f, i) => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    const label = document.createElement("span");
+    label.textContent = f;
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.textContent = "×";
+    rm.setAttribute("aria-label", "Remover fonte");
+    rm.addEventListener("click", () => {
+      state.fonts.splice(i, 1);
+      drawFonts();
+    });
+    chip.append(label, rm);
+    box.append(chip);
+  });
+}
+
+async function loadBrand() {
+  const res = await api("/api/profile");
+  if (res.status === 401) return showLogin();
+  const p = res.ok && res.data.ok ? res.data.profile : {};
+  state.colors = Array.isArray(p.colors) ? p.colors.slice() : [];
+  state.fonts = Array.isArray(p.fonts) ? p.fonts.slice() : [];
+  qs("#tone").value = p.tone || "";
+  qs("#avoid").value = p.avoid || "";
+  qs("#highlights").value = p.highlights || "";
+  drawColors();
+  drawFonts();
+}
+
+async function loadHistory() {
+  const list = qs("#histList");
+  const res = await api("/api/history");
+  if (res.status === 401) return showLogin();
+  if (!res.ok || !res.data.ok) {
+    list.textContent = "Não foi possível abrir o acervo.";
+    return;
+  }
+  const items = res.data.items || [];
+  setTodayStatus(items.some((it) => spDay(it.created_at) === boot.todayKey));
+  list.replaceChildren();
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Nada no acervo ainda. A primeira peça fica guardada aqui, e amanhã você continua daí.";
+    list.append(p);
+    return;
+  }
+  items.forEach((it) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "hitem";
+    const title = document.createElement("span");
+    title.className = "hitem-title";
+    title.textContent = formatName(it.format) + (it.theme ? " · " + it.theme : "");
+    const meta = document.createElement("span");
+    meta.className = "hitem-meta";
+    const when = new Date(it.created_at).toLocaleString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+    const st = it.status === "aprovado" ? "Aprovado" : "Rascunho";
+    const src = it.source === "ia" ? "IA" : "exemplo";
+    meta.textContent = when + " · " + st + " · " + src;
+    btn.append(title, meta);
+    btn.addEventListener("click", () => openPiece(it.id));
+    list.append(btn);
+  });
+}
+
+async function openPiece(id) {
+  const detail = qs("#histPiece");
+  const close = qs("#histClose");
+  detail.textContent = "Abrindo…";
+  close.hidden = false;
+  const res = await api("/api/pieces/" + encodeURIComponent(id));
+  if (res.status === 401) return showLogin();
+  if (!res.ok || !res.data.ok) {
+    detail.textContent = "Não foi possível abrir esta peça.";
+    return;
+  }
+  mountPiece(detail, res.data.piece);
+  detail.scrollIntoView({ block: "nearest" });
+}
+
+function applyTheme(theme) {
+  if (theme === "dark") document.documentElement.dataset.theme = "dark";
+  else delete document.documentElement.dataset.theme;
+  document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+    btn.textContent = theme === "dark" ? "Claro" : "Escuro";
+  });
+}
+
+function wire() {
+  let saved = "";
+  try {
+    saved = localStorage.getItem("estudio-theme") || "";
+  } catch {
+    saved = "";
+  }
+  applyTheme(saved === "dark" ? "dark" : "light");
+  document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try {
+        localStorage.setItem("estudio-theme", next);
+      } catch {
+        /* preferência fica só nesta visita */
+      }
+    });
+  });
+
+  qs("#loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = qs("#loginErr");
+    const btn = qs("#loginBtn");
+    err.hidden = true;
+    btn.disabled = true;
+    btn.textContent = "Entrando…";
+    const res = await api("/api/login", {
+      method: "POST",
+      body: { email: qs("#loginEmail").value, password: qs("#loginPassword").value },
+    });
+    btn.disabled = false;
+    btn.textContent = "Entrar";
+    if (res.ok && res.data.ok) start();
+    else {
+      err.hidden = false;
+      err.textContent = res.data.error === "credenciais" ? "E-mail ou senha não conferem." : "Não foi possível entrar.";
+    }
+  });
+
+  qs("#logout").addEventListener("click", async () => {
+    await api("/api/logout", { method: "POST" });
+    location.reload();
+  });
+
+  qs("#useAngle").addEventListener("click", () => {
+    qs("#theme").value = boot.today.angle;
+    if (state.format) qs("#theme").focus();
+  });
+
+  document.querySelectorAll(".fmt").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.format = btn.dataset.format;
+      document.querySelectorAll(".fmt").forEach((b) => {
+        const on = b === btn;
+        b.setAttribute("aria-checked", on ? "true" : "false");
+        b.classList.toggle("is-on", on);
+      });
+      const composer = qs("#composer");
+      composer.hidden = false;
+      qs("#delivers").textContent = btn.dataset.delivers || "";
+      const isVideo = state.format === "video";
+      qs("#modeBox").hidden = !isVideo;
+      if (!isVideo) {
+        state.mode = "";
+        document.querySelectorAll(".mode").forEach((m) => {
+          m.setAttribute("aria-checked", "false");
+          m.classList.remove("is-on");
+        });
+      }
+      syncGen();
+      composer.scrollIntoView({ block: "nearest" });
+    });
+  });
+
+  document.querySelectorAll(".mode").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.mode = btn.dataset.mode;
+      document.querySelectorAll(".mode").forEach((m) => {
+        const on = m === btn;
+        m.setAttribute("aria-checked", on ? "true" : "false");
+        m.classList.toggle("is-on", on);
+      });
+      syncGen();
+    });
+  });
+
+  qs("#gen").addEventListener("click", generate);
+
+  const addColor = () => {
+    const val = qs("#colorIn").value.trim();
+    if (!val || state.colors.length >= 8) return;
+    state.colors.push(val.slice(0, 24));
+    qs("#colorIn").value = "";
+    drawColors();
+  };
+  const addFont = () => {
+    const val = qs("#fontIn").value.trim();
+    if (!val || state.fonts.length >= 6) return;
+    state.fonts.push(val.slice(0, 60));
+    qs("#fontIn").value = "";
+    drawFonts();
+  };
+  qs("#addColor").addEventListener("click", addColor);
+  qs("#addFont").addEventListener("click", addFont);
+  qs("#colorIn").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addColor();
+    }
+  });
+  qs("#fontIn").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addFont();
+    }
+  });
+
+  qs("#saveBrand").addEventListener("click", async () => {
+    const btn = qs("#saveBrand");
+    const msg = qs("#brandMsg");
+    btn.disabled = true;
+    const res = await api("/api/profile", {
+      method: "PUT",
+      body: {
+        colors: state.colors,
+        fonts: state.fonts,
+        tone: qs("#tone").value,
+        avoid: qs("#avoid").value,
+        highlights: qs("#highlights").value,
+      },
+    });
+    btn.disabled = false;
+    if (res.status === 401) return showLogin();
+    msg.hidden = false;
+    msg.textContent = res.ok ? "Marca guardada. A próxima peça já sai neste tom." : "Não foi possível guardar a marca.";
+  });
+
+  qs("#histClose").addEventListener("click", () => {
+    qs("#histPiece").replaceChildren();
+    qs("#histClose").hidden = true;
+  });
+}
+
+wire();
+start();

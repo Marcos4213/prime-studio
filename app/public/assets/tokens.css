@@ -1,0 +1,33 @@
+/* Petróleo Clínico. Modo claro é o padrão.
+   Muted, line e danger são derivados das cores aprovadas — sem cor nova de marca.
+   Os hex do modo claro não se ajustam para contraste. */
+:root {
+  --color-bg: #F7F5F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F5F0;
+  --color-text: #1A2328;
+  --color-primary: #0F4C5C;
+  --color-on-primary: #FFFFFF;
+  --color-success: #2E7D5B;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-primary);
+  --color-accent-text: var(--color-on-primary);
+  --color-muted: color-mix(in srgb, var(--color-text) 80%, var(--color-bg));
+  --color-line: color-mix(in srgb, var(--color-text) 50%, var(--color-bg));
+  --color-danger: color-mix(in srgb, var(--color-primary) 45%, var(--color-text));
+}
+
+/* Modo escuro opcional, não padrão. Fundo petróleo-noite derivado do primário. */
+[data-theme="dark"] {
+  --color-bg: color-mix(in srgb, #0F4C5C 72%, #1A2328);
+  --color-surface: color-mix(in srgb, #F7F5F0 12%, var(--color-bg));
+  --color-surface-2: var(--color-bg);
+  --color-text: #F7F5F0;
+  --color-on-primary: #FFFFFF;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-gold);
+  --color-accent-text: #1A2328;
+  --color-muted: color-mix(in srgb, #F7F5F0 80%, var(--color-bg));
+  --color-line: color-mix(in srgb, #F7F5F0 45%, var(--color-bg));
+  --color-danger: color-mix(in srgb, #F7F5F0 88%, var(--color-bg));
+}
