@@ -1,13 +1,32 @@
-/* PALETA PROVISÓRIA, não aprovada.
-   Valores atuais da casca, só como placeholder. Trocar aqui quando a paleta for aprovada. */
+/* Petróleo Clínico. Modo claro é o padrão.
+   Muted, line e danger são derivados das cores aprovadas — sem cor nova de marca.
+   Modo escuro só quando o sistema pede prefers-color-scheme: dark. */
 :root {
-  --color-bg: #0b0a08;
-  --color-surface: #17140f;
-  --color-surface-2: #1d1912;
-  --color-text: #f4efe5;
-  --color-muted: #a39a88;
-  --color-accent: #c8a25a;
-  --color-accent-text: #17110a;
-  --color-line: #2a251b;
-  --color-danger: #e58b7a;
+  color-scheme: light;
+  --color-bg: #F7F5F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F5F0;
+  --color-text: #1A2328;
+  --color-primary: #0F4C5C;
+  --color-on-primary: #FFFFFF;
+  --color-success: #2E7D5B;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-primary);
+  --color-accent-text: var(--color-on-primary);
+  --color-muted: color-mix(in srgb, var(--color-text) 80%, var(--color-bg));
+  --color-line: color-mix(in srgb, var(--color-text) 50%, var(--color-surface));
+  --color-danger: color-mix(in srgb, var(--color-text) 55%, var(--color-primary));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-bg: color-mix(in srgb, var(--color-primary) 32%, black);
+    --color-surface: color-mix(in srgb, var(--color-primary) 46%, black);
+    --color-surface-2: color-mix(in srgb, var(--color-primary) 38%, black);
+    --color-text: #F7F5F0;
+    --color-on-primary: #1A2328;
+    --color-accent: color-mix(in srgb, var(--color-primary) 35%, var(--color-text));
+    --color-accent-text: var(--color-on-primary);
+  }
 }

@@ -86,7 +86,7 @@ function layout({ title, clock, body, mainClass = "" }) {
 <a class="skip" href="#conteudo">Ir para a leitura</a>
 <div class="edu">
 <header class="edu-top">
-  <a class="edu-logo" href="/">PRIME<span>STUDIO</span></a>
+  <a class="edu-logo" href="/"><span class="edu-word">PRIME<span>STUDIO</span></span><i class="sig" aria-hidden="true"></i></a>
   <a class="edu-toplink" href="/">Estúdio</a>
 </header>
 <main id="conteudo"${mainClass ? ` class="${mainClass}"` : ""}>
