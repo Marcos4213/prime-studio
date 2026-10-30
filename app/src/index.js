@@ -13,6 +13,14 @@ import { generatePiece, FORMATS } from "./lib/ai.js";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    /* feature:link-na-bio */
+    if (url.pathname === "/link-na-bio" || url.pathname.startsWith("/api/link-na-bio")) {
+      const { handleLinkNaBio } = await import("../features/link-na-bio/handle.js");
+      return handleLinkNaBio(request, env, url);
+    }
+    /* /feature:link-na-bio */
+
     if (url.pathname.startsWith("/api/")) {
       try {
         return await handleApi(request, env, url, ctx);
