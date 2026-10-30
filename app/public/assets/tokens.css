@@ -1,0 +1,13 @@
+/* PALETA PROVISÓRIA, não aprovada.
+   Valores atuais da casca, só como placeholder. Trocar aqui quando a paleta for aprovada. */
+:root {
+  --color-bg: #0b0a08;
+  --color-surface: #17140f;
+  --color-surface-2: #1d1912;
+  --color-text: #f4efe5;
+  --color-muted: #a39a88;
+  --color-accent: #c8a25a;
+  --color-accent-text: #17110a;
+  --color-line: #2a251b;
+  --color-danger: #e58b7a;
+}
