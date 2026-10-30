@@ -20,7 +20,7 @@ export async function onRequestPost({ request, env }) {
   if (env.LEADS) await env.LEADS.put(id, JSON.stringify(lead), { expirationTtl: TTL, metadata: { nome: lead.nome, nivel: lead.nivel, status: lead.status } });
   await indexLead(env, id, lead.email, lead.whatsapp);
 
-  const txt = `${lead.qualificado ? "📞 LIGAR EM ATÉ 30 MIN" : lead.ligacao ? "📞 PEDIU LIGAÇÃO" : "🆕 Novo lead"} · ${lead.origem} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\nNota ${lead.nota}/100 · fit ${lead.fit}\nWhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
+  const txt = `${lead.qualificado ? "📞 LEAD QUALIFICADO" : lead.ligacao ? "📞 PEDIU LIGAÇÃO" : "🆕 Novo lead"} · ${lead.origem} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\nNota ${lead.nota}/100 · fit ${lead.fit}\nWhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
   const jobs = [];
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID)
     jobs.push(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: txt, disable_web_page_preview: true }) }));
@@ -30,8 +30,11 @@ export async function onRequestPost({ request, env }) {
   const eid = s => /^[\w-]{8,80}$/.test(s || "") ? s : "";
   const capiBase = { test: b.teste_rastreio === true, url: lead.pagina, fbc: clean(a.fbc, 200), fbp: clean(a.fbp, 200), user: { em: lead.email, ph: lead.whatsapp, fn: lead.nome.split(/\s+/)[0], ln: lead.nome.split(/\s+/).slice(1).join(""), external_id: lead.whatsapp } };
   // custom_data neutro (sem saúde, dor ou procedimento): só faixa de faturamento e tipo de lead
-  const cd = { content_name: /^bio|ebook|raio|quiz|site/.test(lead.origem) ? lead.origem.replace(/[^\w-]/g, "").slice(0, 30) : "site", faixa_faturamento: lead.faturamento, lead_type: lead.qualificado ? "qualificado" : "nao_qualificado" };
+  const cd = { content_name: /^bio|ebook|raio|quiz|site|contato/.test(lead.origem) ? lead.origem.replace(/[^\w-]/g, "").slice(0, 30) : "site", faixa_faturamento: lead.faturamento, lead_type: lead.qualificado ? "qualificado" : "nao_qualificado" };
   if (!cd.faixa_faturamento) delete cd.faixa_faturamento;
+  // Dedup: a página gera um event_id, envia neste POST e dispara o Pixel com
+  // PRIME.track("Lead", { content_name }, { eventId, serverSends: true }).
+  // Não chamar /api/capi para Lead — este endpoint já manda o CAPI com o mesmo id.
   const capiJobs = [];
   if (eid(b.event_id)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "Lead", event_id: eid(b.event_id), params: cd }));
   if (lead.qualificado && eid(b.event_id_qual)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "SubmitApplication", event_id: eid(b.event_id_qual), params: cd }));

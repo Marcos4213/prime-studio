@@ -51,7 +51,7 @@ button.lk{width:100%;font:inherit;cursor:pointer}
 <nav class="lks">
 <a class="lk pri" href="/raio-x?utm_source=instagram&utm_medium=bio" data-ev="raiox"><span class="t">Raio-X grátis da sua presença</span><span class="m">Descubra se a sua presença mostra o seu valor.</span><i aria-hidden="true">→</i></a>
 <button type="button" class="lk" data-flow="wa" data-ev="whatsapp"><span class="t">Falar com o nosso time no WhatsApp</span><span class="m">Responda 4 perguntas rápidas e a conversa já começa no ponto certo.</span><i aria-hidden="true">→</i></button>
-<button type="button" class="lk" data-flow="ag" data-ev="ligacao"><span class="t">Receber diagnóstico por ligação</span><span class="m">Nosso time te liga em até 30 minutos, já com seus perfis abertos.</span><i aria-hidden="true">→</i></button>
+<button type="button" class="lk" data-flow="ag" data-ev="ligacao"><span class="t">Receber diagnóstico por ligação</span><span class="m">Nosso time te liga já com seus perfis abertos.</span><i aria-hidden="true">→</i></button>
 <a class="lk" href="/?utm_source=instagram&utm_medium=bio#cases" data-ev="sites"><span class="t">Veja sites que criamos</span><span class="m">Projetos desenhados para cada especialidade.</span><i aria-hidden="true">→</i></a>
 <a class="lk" href="/#metodo" data-ev="metodo"><span class="t">Conheça o Método PRIME</span><span class="m">5 passos para a paciente enxergar o seu valor.</span><i aria-hidden="true">→</i></a>
 <a class="lk" href="/guia?utm_source=instagram&utm_medium=bio" data-ev="guia"><span class="t">Guia gratuito</span><span class="m">O Paciente Decide em 7 Segundos: o método completo, sem custo.</span><i aria-hidden="true">→</i></a>
@@ -92,7 +92,7 @@ const qDes=()=>choice("Qual é o seu <em>maior desafio</em> hoje?","Escolha o qu
 const qUrg=()=>choice("Quando você quer <em>resolver isso?</em>","Sem compromisso, só para entender seu momento.",URG,"urg");
 function field(id,lab,attrs,val){ return `<label for="${id}">${lab}</label><input id="${id}" ${attrs} value="${esc(val||"")}">`; }
 function form(){ const ag=F==="ag";
-  S.innerHTML = (ag?`<h2>Receba seu <em>diagnóstico por ligação</em></h2><p class="s">Nosso time te liga em até 30 minutos, em horário comercial, já com seus perfis abertos.</p>`:`<h2>Quase lá. <em>Como te chamo?</em></h2><p class="s">Sua mensagem já vai pronta com as suas respostas.</p>`)
+  S.innerHTML = (ag?`<h2>Receba seu <em>diagnóstico por ligação</em></h2><p class="s">Nosso time te liga já com seus perfis abertos.</p>`:`<h2>Quase lá. <em>Como te chamo?</em></h2><p class="s">Sua mensagem já vai pronta com as suas respostas.</p>`)
    + field("fN","Nome",'autocomplete="name"',A.nome) + field("fW","WhatsApp com DDD",'inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999"',A.wpp)
    + (ag? field("fC","Nome da clínica ou negócio",'autocomplete="organization"',A.cli) + field("fE","E-mail",'type="email" inputmode="email" autocomplete="email"',A.email) + field("fI","Instagram do negócio",'autocapitalize="off" placeholder="@suaclinica"',A.ig) + field("fS","Site, se tiver",'type="url" inputmode="url" autocapitalize="off" placeholder="suaclinica.com.br"',A.site)
      + `<label for="fF">Faturamento mensal</label><select id="fF"><option value="">Selecione</option>${FAT.map(f=>`<option value="${f[0]}"${A.fat===f[0]?" selected":""}>${f[1]}</option>`).join("")}</select>` : "")
@@ -120,9 +120,8 @@ function done(){ bar.style.width="100%";
     const url=`https://wa.me/${NUM}?text=${encodeURIComponent(msg)}`; A.waUrl=url;
     S.innerHTML=`<h2>Perfeito, ${esc(A.nome.split(" ")[0])}. <em>Sua mensagem está pronta.</em></h2><p class="s">É só enviar. Ela já leva as suas respostas para a conversa começar no ponto certo.</p><a class="go" id="waGo" href="${url}" target="_blank" rel="noopener">Abrir o WhatsApp</a>`;
     document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_whatsapp"}); return; }
-  const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})), h=d.getHours(), hor=d.getDay()>=1&&d.getDay()<=5&&h>=9&&h<18;
   const msg=`Olá, time Prime Studio! Sou ${A.nome}, da ${A.cli}. Pedi o diagnóstico por ligação pela bio. Meu Instagram é ${A.ig}. Quero adiantar a conversa.`;
-  S.innerHTML=`<h2>Pronto, ${esc(A.nome.split(" ")[0])}. <em>Nosso time vai te ligar ${hor?"em até 30 minutos":"no início do próximo horário de atendimento"} com seus perfis já abertos.</em></h2><p class="s">Deixe o WhatsApp por perto. Na ligação, analisamos a sua presença com você e entendemos seus objetivos.</p><a class="go gh" id="waGo" href="https://wa.me/${NUM}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a>`;
+  S.innerHTML=`<h2>Pronto, ${esc(A.nome.split(" ")[0])}. <em>Nosso time vai te ligar com seus perfis já abertos.</em></h2><p class="s">Deixe o WhatsApp por perto. Na ligação, analisamos a sua presença com você e entendemos seus objetivos.</p><a class="go gh" id="waGo" href="https://wa.me/${NUM}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a>`;
   document.getElementById("waGo").onclick=()=>px("Contact",{content_name:"bio_ligacao_whatsapp"}); }
 document.querySelectorAll("[data-flow]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.flow)));
 </script>
