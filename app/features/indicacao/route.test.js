@@ -75,19 +75,21 @@ test("página sem sessão explica os dois lados e pede entrada", () => {
   assert.match(html, /Indique uma clínica/);
   assert.match(html, /Quem indica ganha/);
   assert.match(html, /Entrar na central/);
-  assert.match(html, /A definir/);
+  assert.match(html, /60 dias/);
+  assert.match(html, /15%/);
   assert.match(html, /sala\.webp/);
-  assert.equal(/faturamento|R\$|meses|%/.test(visible(html)), false);
+  assert.equal(/faturamento|R\$|meses/.test(visible(html)), false);
   assert.doesNotMatch(html, /id="indForm"/);
 });
 
 test("página logada traz o fluxo e não inventa valor", () => {
   const html = pageHtml("Clínica Serra");
   assert.match(html, /Indicar esta clínica/);
-  assert.match(html, /Sem desconto/);
+  assert.match(html, /60 dias/);
+  assert.match(html, /15%/);
   assert.match(html, /overflow-x:hidden/);
   assert.match(html, /Clínica Serra/);
-  assert.equal(/faturamento|R\$|meses|%/.test(visible(html)), false);
+  assert.equal(/faturamento|R\$|meses/.test(visible(html)), false);
   assert.match(html, /minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.doesNotMatch(html, /class="e"/);
   assert.doesNotMatch(html, /minmax\(0,1fr\) auto/);
@@ -154,8 +156,10 @@ test("foto, script e indicação ficam isolados por cliente", async () => {
   const data = await list.json();
   assert.equal(data.items.length, 1);
   assert.equal(data.items[0].referred_name, "Clínica Aurora");
-  assert.equal(data.rewards.cliente.indicador.meses, null);
+  assert.equal(data.rewards.cliente.indicador.dias, 60);
+  assert.equal(data.rewards.cliente.indicado.percentual, 15);
   assert.equal(data.rewards.profissional.indicador.valor, null);
+  assert.equal(data.rewards.profissional.indicador.comissao_dinheiro, false);
   assert.equal(env.DB.sqls.some((sql) => /^\s*UPDATE/i.test(sql)), false);
 });
 

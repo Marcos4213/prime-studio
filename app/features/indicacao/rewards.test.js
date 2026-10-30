@@ -11,18 +11,22 @@ import {
 } from "./rewards.js";
 import { SALA_WEBP_BASE64 } from "./photo.js";
 
-test("recompensa não inventa mês, percentual, valor nem faturamento", () => {
-  assert.equal(/[0-9]/.test(JSON.stringify(REWARDS)), false);
-  assert.equal(REWARDS.cliente.desconto, false);
+test("só os dois números fechados pelo Marcos entram na recompensa", () => {
+  assert.equal(REWARDS.cliente.indicador.dias, 60);
+  assert.equal(REWARDS.cliente.indicado.percentual, 15);
   assert.equal(REWARDS.cliente.servico_extra, null);
-  assert.equal(REWARDS.cliente.indicador.meses, null);
-  assert.equal(REWARDS.cliente.indicado.meses, null);
   assert.equal(REWARDS.profissional.indicador.percentual, null);
   assert.equal(REWARDS.profissional.indicador.valor, null);
-  assert.equal(REWARDS.profissional.indicado.meses, null);
-  assert.equal(/faturamento|R\$|%|meses|mês/i.test(JSON.stringify(COPY)), false);
-  assert.match(COPY.cliente.nota, /Sem desconto/);
-  assert.match(COPY.profissional.indicadorForma, /dinheiro ou permuta/);
+  assert.equal(REWARDS.profissional.indicador.comissao_dinheiro, false);
+  assert.equal(REWARDS.profissional.indicado.percentual, 15);
+  const copy = JSON.stringify(COPY);
+  assert.match(copy, /60 dias/);
+  assert.match(copy, /15%/);
+  assert.equal(/faturamento|R\$|meses|mês/i.test(copy), false);
+  assert.doesNotMatch(COPY.profissional.indicadorForma, /dinheiro/i);
+  assert.doesNotMatch(COPY.profissional.indicadorValor, /\d|%/);
+  assert.match(COPY.profissional.nota, /em discussão/i);
+  assert.match(COPY.profissional.nota, /Sem comissão em dinheiro/);
 });
 
 test("recado de WhatsApp não promete número nem faturamento", () => {
