@@ -88,7 +88,9 @@ test("página logada traz o fluxo e não inventa valor", () => {
   assert.match(html, /overflow-x:hidden/);
   assert.match(html, /Clínica Serra/);
   assert.equal(/faturamento|R\$|meses|%/.test(visible(html)), false);
-  assert.match(html, /minmax\(0,1fr\)/);
+  assert.match(html, /minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.doesNotMatch(html, /class="e"/);
+  assert.doesNotMatch(html, /minmax\(0,1fr\) auto/);
   assert.match(html, /\[hidden\]\{display:none !important\}/);
   assert.match(html, /\/assets\/tokens\.css/);
   assert.equal(/#[0-9a-fA-F]{3,8}/.test(html), false);
@@ -157,22 +159,24 @@ test("foto, script e indicação ficam isolados por cliente", async () => {
   assert.equal(env.DB.sqls.some((sql) => /^\s*UPDATE/i.test(sql)), false);
 });
 
-test("tokens.css é o único hex e a paleta está marcada como provisória", () => {
+test("tokens.css fecha Petróleo Clínico no modo claro e não avisa paleta provisória", () => {
   const tokens = readFileSync(new URL("../../public/assets/tokens.css", import.meta.url), "utf8");
-  assert.match(tokens, /PALETA PROVISÓRIA, não aprovada/);
-  for (const name of [
-    "--color-bg",
-    "--color-surface",
-    "--color-surface-2",
-    "--color-text",
-    "--color-muted",
-    "--color-accent",
-    "--color-accent-text",
-    "--color-line",
-    "--color-danger",
-  ]) {
-    assert.match(tokens, new RegExp(name + ":"));
-  }
+  assert.doesNotMatch(tokens, /PALETA PROVISÓRIA/);
+  const light = tokens.split("@media")[0];
+  assert.match(light, /--color-bg: #F7F5F0;/);
+  assert.match(light, /--color-surface: #FFFFFF;/);
+  assert.match(light, /--color-surface-2: #F7F5F0;/);
+  assert.match(light, /--color-text: #1A2328;/);
+  assert.match(light, /--color-primary: #0F4C5C;/);
+  assert.match(light, /--color-on-primary: #FFFFFF;/);
+  assert.match(light, /--color-success: #2E7D5B;/);
+  assert.match(light, /--color-gold: #B08D57;/);
+  assert.match(light, /--color-accent: var\(--color-primary\);/);
+  assert.match(light, /--color-accent-text: var\(--color-on-primary\);/);
+  assert.match(tokens, /prefers-color-scheme: dark/);
+  assert.match(tokens, /--color-accent: var\(--color-gold\);/);
+  assert.match(tokens, /--color-accent-text: #1A2328;/);
+  assert.match(tokens, /--color-text: #F7F5F0;/);
   assert.equal(gateHtml().includes("#"), false);
 });
 

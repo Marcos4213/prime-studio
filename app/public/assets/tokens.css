@@ -1,14 +1,42 @@
-/* PALETA PROVISÓRIA, não aprovada.
-   Valores atuais da central, só como placeholder. A cor não está fechada. */
+/* Petróleo Clínico. Modo claro é o padrão.
+   --color-muted, --color-line e --color-danger são derivados para contraste.
+   Não são cor de marca. No modo claro o dourado fica na assinatura, não no texto corrido. */
 
 :root {
-  --color-bg: #0b0a08;
-  --color-surface: #17140f;
-  --color-surface-2: #1d1912;
-  --color-text: #f4efe5;
-  --color-muted: #a39a88;
-  --color-accent: #c8a25a;
-  --color-accent-text: #17110a;
-  --color-line: #2a251b;
-  --color-danger: #e58b7a;
+  color-scheme: light;
+  --color-bg: #F7F5F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F5F0;
+  --color-text: #1A2328;
+  --color-primary: #0F4C5C;
+  --color-on-primary: #FFFFFF;
+  --color-success: #2E7D5B;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-primary);
+  --color-accent-text: var(--color-on-primary);
+  /* #1A2328 a 25% de #F7F5F0. Texto secundário, 6.66:1 no fundo. */
+  --color-muted: #51585A;
+  /* #1A2328 a 45% de #F7F5F0. Traço, acima de 3:1 na superfície. */
+  --color-line: #7D8282;
+  /* Vermelho funcional, não é cor de marca. 6.98:1 no fundo. */
+  --color-danger: #8C3A2F;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    /* Petróleo-noite: #0F4C5C × 0.45, 0.62 e 0.78. */
+    --color-bg: #072229;
+    --color-surface: #092F39;
+    --color-surface-2: #0C3B48;
+    --color-text: #F7F5F0;
+    /* Petróleo clareado para texto. O hex claro de --color-primary não muda no :root. */
+    --color-primary: #9AB1B5;
+    --color-on-primary: #1A2328;
+    --color-muted: #97A1A0;
+    --color-line: #7F8C8D;
+    --color-danger: #E8A8A4;
+    --color-accent: var(--color-gold);
+    --color-accent-text: #1A2328;
+  }
 }

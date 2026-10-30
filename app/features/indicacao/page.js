@@ -12,38 +12,37 @@ h1,h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;line-height
 .ind{width:min(640px,100%);margin:0 auto;padding:14px 16px 40px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 12px;flex-wrap:wrap}
 .logo{color:var(--color-text);font-weight:600;letter-spacing:.18em;font-size:.78rem;text-decoration:none;min-width:0}
-.logo span{color:var(--color-accent);font-weight:300;margin-left:.35em}
-.back{color:var(--color-accent);text-decoration:none;font-size:.82rem;border:1px solid var(--color-accent);border-radius:999px;padding:6px 12px;flex:none}
+.logo span{color:var(--color-gold);font-weight:300;margin-left:.35em}
+.back{color:var(--color-primary);text-decoration:none;font-size:.82rem;border:1px solid var(--color-primary);border-radius:999px;padding:6px 12px;flex:none}
 .hero{position:relative;height:132px;border-radius:18px;overflow:hidden;border:1px solid var(--color-line);margin-bottom:14px}
 .hero img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
 .hero figcaption{position:absolute;left:0;right:0;bottom:0;padding:36px 14px 12px;background:linear-gradient(180deg,transparent,var(--color-bg))}
-.eyebrow{color:var(--color-accent);letter-spacing:.22em;text-transform:uppercase;font-size:.66rem;font-weight:600}
+.eyebrow{color:var(--color-primary);letter-spacing:.22em;text-transform:uppercase;font-size:.66rem;font-weight:600}
 h1{font-size:clamp(1.7rem,7vw,2.35rem)}
 .lede{color:var(--color-muted);font-size:.92rem;margin:0 0 12px}
 .seg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px;background:var(--color-surface);border:1px solid var(--color-line);border-radius:14px;padding:4px;margin-bottom:8px}
 .seg button{min-width:0;border:0;border-radius:10px;background:transparent;color:var(--color-muted);padding:10px 6px;font-weight:600;font-size:.9rem;cursor:pointer}
-.seg button.is-on{background:var(--color-surface-2);color:var(--color-accent);box-shadow:inset 0 0 0 1px var(--color-accent)}
-.hint{color:var(--color-accent);font-size:.8rem;min-height:1.2em;margin:0 0 12px}
-.pair{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:8px}
-.e{display:none}
-.reward{background:var(--color-surface);border:1px solid var(--color-line);border-radius:16px;padding:12px 14px;min-width:0}
+.seg button.is-on{background:var(--color-surface-2);color:var(--color-primary);box-shadow:inset 0 0 0 1px var(--color-primary)}
+.hint{color:var(--color-muted);font-size:.8rem;min-height:1.2em;margin:0 0 12px}
+.pair{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-bottom:8px}
+.reward{background:var(--color-surface);border:1px solid var(--color-line);border-radius:16px;padding:12px 14px;min-width:0;position:static}
 .reward .who{color:var(--color-muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
 .reward .forma{font-size:.95rem;margin-top:2px;overflow-wrap:anywhere}
-.reward .valor{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;color:var(--color-accent);font-size:1.45rem;line-height:1;margin-top:4px}
+.reward .valor{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;color:var(--color-primary);font-size:1.45rem;line-height:1;margin-top:4px}
 .nota{color:var(--color-muted);font-size:.78rem;margin:0 0 14px}
 .passos{list-style:none;display:grid;gap:6px;margin:0 0 14px}
 .passos li{display:flex;gap:8px;align-items:baseline;min-width:0;color:var(--color-text);font-size:.88rem}
-.passos b{flex:none;width:1.1rem;color:var(--color-accent);font-family:"Cormorant Garamond",Georgia,serif;font-size:1.15rem;font-weight:500}
+.passos b{flex:none;width:1.1rem;color:var(--color-primary);font-family:"Cormorant Garamond",Georgia,serif;font-size:1.15rem;font-weight:500}
 .passos span{min-width:0;overflow-wrap:anywhere}
 .form{display:grid;gap:6px}
 .form label{font-size:.75rem;color:var(--color-muted);margin-top:6px}
 .form input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--color-line);background:var(--color-bg);color:var(--color-text);font-size:16px}
-.form input:focus{outline:none;border-color:var(--color-accent)}
+.form input:focus{outline:none;border-color:var(--color-primary)}
 .btn{display:flex;align-items:center;justify-content:center;width:100%;margin-top:12px;background:var(--color-accent);color:var(--color-accent-text);font-weight:600;font-size:.98rem;padding:14px 16px;border:0;border-radius:999px;cursor:pointer;text-decoration:none;text-align:center}
 .btn:disabled{opacity:.55;cursor:default}
-.btn-ghost{display:flex;align-items:center;justify-content:center;width:100%;margin-top:8px;background:transparent;color:var(--color-accent);border:1px solid var(--color-accent);border-radius:999px;padding:12px 16px;cursor:pointer;text-decoration:none;text-align:center}
+.btn-ghost{display:flex;align-items:center;justify-content:center;width:100%;margin-top:8px;background:transparent;color:var(--color-primary);border:1px solid var(--color-primary);border-radius:999px;padding:12px 16px;cursor:pointer;text-decoration:none;text-align:center}
 .err{color:var(--color-danger);font-size:.84rem;min-height:1.2em}
-.done{background:var(--color-surface);border:1px solid var(--color-accent);border-radius:16px;padding:16px;margin-top:4px}
+.done{background:var(--color-surface);border:1px solid var(--color-primary);border-radius:16px;padding:16px;margin-top:4px}
 .done h2{font-size:1.6rem;margin-bottom:6px}
 .done p{color:var(--color-muted);font-size:.9rem;overflow-wrap:anywhere}
 .list{margin-top:22px}
@@ -55,8 +54,7 @@ h1{font-size:clamp(1.7rem,7vw,2.35rem)}
 .gate{padding-top:8px}
 .gate .btn{margin-top:16px}
 @media (min-width:720px){
-  .pair{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch}
-  .e{display:flex;align-items:center;color:var(--color-accent);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:1.4rem;padding:0 2px}
+  .pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:stretch}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 `;
@@ -140,7 +138,6 @@ export function pageHtml(clinicName) {
       <p class="forma" id="formaA">${c.indicadorForma}</p>
       <p class="valor">A definir</p>
     </article>
-    <p class="e" aria-hidden="true">e</p>
     <article class="reward">
       <p class="who" id="whoB">${c.indicadoTitulo}</p>
       <p class="forma" id="formaB">${c.indicadoForma}</p>
