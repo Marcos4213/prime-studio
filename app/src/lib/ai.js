@@ -15,6 +15,9 @@ const BANNED = [
   { re: /\bbefore\s*(and|\/)\s*after\b/i, msg: "Antes e depois não é permitido." },
   { re: /\bretorno\s+garantido\b/i, msg: "Promessa de retorno garantido." },
   { re: /\bgarant(o|ia|ido|imos)\b.*\b(resultado|retorno|venda)/i, msg: "Garantia de resultado." },
+  { re: /\b(paciente|prontu[aá]rio|diagn[oó]stico|laudo)\b/i, msg: "Possível dado de saúde." },
+  { re: /R\$\s*\d/, msg: "Possível valor inventado." },
+  { re: /\b\d+\s*%/, msg: "Possível percentual inventado." },
 ];
 
 export function brandGuard(output) {
@@ -75,29 +78,34 @@ function systemPrompt(profile) {
   )}\n\n${RULES}`;
 }
 
-function formatInstruction(format) {
+function formatInstruction(format, recordingMode) {
   if (format === "post") {
-    return 'Formato: POST único. Responda JSON: {"caption": string, "imagePrompt": string}. O imagePrompt descreve a arte no visual e nas cores da clínica.';
+    return 'Formato: POST único. Responda JSON: {"caption": string, "imagePrompt": string}. O imagePrompt descreve fotografia real do espaço, no visual e nas cores da clínica, sem pessoa em destaque e sem texto na imagem.';
   }
   if (format === "carousel") {
-    return 'Formato: CARROSSEL. Responda JSON: {"caption": string, "slides": [{"title": string, "imagePrompt": string}]}. Entre 3 e 6 slides, com começo, desenvolvimento e fechamento. Um imagePrompt por slide, no mesmo padrão visual.';
+    return 'Formato: CARROSSEL. Responda JSON: {"caption": string, "slides": [{"title": string, "imagePrompt": string}]}. Entre 3 e 6 slides, com começo, desenvolvimento e fechamento. Um imagePrompt por slide, no mesmo padrão visual: fotografia real do espaço, sem pessoa em destaque, sem texto na imagem.';
   }
-  return 'Formato: VÍDEO (reels/story). Responda JSON: {"script": {"hook": string, "body": string, "cta": string}, "recording": {"mode": "camera" | "narracao", "tips": [string]}}. SEM prompt de imagem. mode=camera (pessoa falando) ou mode=narracao (narração sobre imagem/vídeo). tips com orientação simples de captação.';
+  const modeLine =
+    recordingMode === "narracao" || recordingMode === "camera"
+      ? `O campo recording.mode DEVE ser "${recordingMode}".`
+      : 'recording.mode é "camera" (alguém da clínica fala) ou "narracao" (voz sobre imagem do espaço).';
+  return `Formato: VÍDEO (reels ou story). Responda JSON: {"script": {"hook": string, "body": string, "cta": string}, "recording": {"mode": "camera" | "narracao", "tips": [string]}}. SEM prompt de imagem. ${modeLine} tips com enquadramento, luz natural e ordem das falas. Ritmo curto, sem citar segundos, métrica, faturamento, antes e depois ou dado de saúde.`;
 }
 
 // --- Geração ---------------------------------------------------------------
-export async function generatePiece(env, { format, theme, profile }) {
+export async function generatePiece(env, { format, theme, profile, recordingMode } = {}) {
   if (!FORMATS.has(format)) throw new Error("formato inválido");
-  const key = env.AI_API_KEY;
+  const mode = recordingMode === "narracao" || recordingMode === "camera" ? recordingMode : "";
+  const key = env?.AI_API_KEY;
   if (!key) {
-    const output = mockPiece(format, theme, profile);
+    const output = mockPiece(format, theme, profile, mode);
     return { source: "mock", output: { ...output, warnings: brandGuard(output) } };
   }
-  const output = await callModel(env, key, { format, theme, profile });
+  const output = await callModel(env, key, { format, theme, profile, recordingMode: mode });
   return { source: "ia", output: { ...output, warnings: brandGuard(output) } };
 }
 
-async function callModel(env, key, { format, theme, profile }) {
+async function callModel(env, key, { format, theme, profile, recordingMode }) {
   const base = env.AI_BASE_URL || "https://api.openai.com/v1";
   const model = env.AI_MODEL || "gpt-4o-mini";
   const body = {
@@ -108,7 +116,7 @@ async function callModel(env, key, { format, theme, profile }) {
       { role: "system", content: systemPrompt(profile) },
       {
         role: "user",
-        content: `${formatInstruction(format)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
+        content: `${formatInstruction(format, recordingMode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
       },
     ],
   };
@@ -129,11 +137,11 @@ async function callModel(env, key, { format, theme, profile }) {
   } catch {
     throw new Error("IA retornou JSON inválido");
   }
-  return normalize(format, parsed);
+  return normalize(format, parsed, recordingMode);
 }
 
 // Garante a forma esperada por formato, mesmo se a IA variar.
-function normalize(format, p) {
+function normalize(format, p, recordingMode) {
   if (format === "post") {
     return { caption: str(p.caption), imagePrompt: str(p.imagePrompt) };
   }
@@ -146,7 +154,12 @@ function normalize(format, p) {
   }
   const script = p.script || {};
   const rec = p.recording || {};
-  const mode = rec.mode === "narracao" ? "narracao" : "camera";
+  const mode =
+    recordingMode === "narracao" || recordingMode === "camera"
+      ? recordingMode
+      : rec.mode === "narracao"
+        ? "narracao"
+        : "camera";
   const tips = Array.isArray(rec.tips) ? rec.tips.map(str).filter(Boolean).slice(0, 6) : [];
   return {
     script: { hook: str(script.hook), body: str(script.body), cta: str(script.cta) },
@@ -160,39 +173,64 @@ function str(v) {
 
 // --- Mock (sem chave de IA) ------------------------------------------------
 // Exemplo determinístico e dentro das regras de marca, para o app rodar offline.
-function mockPiece(format, theme, profile) {
+function colorHint(profile, theme) {
+  const colors = safeList(profile?.colors);
+  const fonts = safeList(profile?.fonts);
+  const bits = [
+    `Fotografia real do espaço, sobre ${theme}.`,
+    "Sem pessoa em destaque, sem texto na imagem.",
+  ];
+  if (colors.length) bits.push(`Cores da marca: ${colors.join(", ")}.`);
+  else bits.push("Se a marca não tiver cor, clima escuro com detalhe dourado.");
+  if (fonts.length) bits.push(`Se houver tipografia, usar: ${fonts.join(", ")}.`);
+  return bits.join(" ");
+}
+
+function videoTips(mode) {
+  if (mode === "narracao") {
+    return [
+      "Grave a voz em lugar silencioso, perto do celular.",
+      "As imagens são do espaço da clínica, com luz natural.",
+      "Enquadramento estável, na vertical, mostrando o ambiente.",
+      "Ordem: gancho, desenvolvimento e chamada, sem esticar.",
+    ];
+  }
+  return [
+    "Alguém da clínica fala olhando para a lente, celular na vertical.",
+    "Enquadramento estável, luz natural de frente, sem contraluz.",
+    "Ordem: gancho, desenvolvimento e chamada.",
+    "Ritmo curto, de reels ou story, sem cronômetro na fala.",
+  ];
+}
+
+function mockPiece(format, theme, profile, recordingMode) {
   const t = (theme && theme.trim()) || "o cuidado premium da clínica";
   const nicho = profile?.nicho ? ` (${profile.nicho})` : "";
+  const exemplo = "Rascunho de exemplo — configure a chave de IA para gerar de verdade.";
   if (format === "post") {
     return {
-      caption: `Exemplo de legenda no tom da clínica${nicho} sobre ${t}. Uma mensagem sóbria, humana e premium, que apresenta o cuidado sem promessas e sem números. (Rascunho de exemplo — configure a chave de IA para gerar de verdade.)`,
-      imagePrompt: `Fotografia real, premium, clima escuro com detalhes dourados, foco em ${t}. Sem texto sobreposto na imagem. Respeitar as cores da marca da clínica.`,
+      caption: `Exemplo de legenda no tom da clínica${nicho} sobre ${t}. Uma mensagem sóbria, humana e premium, que apresenta o cuidado sem promessas e sem números. (${exemplo})`,
+      imagePrompt: colorHint(profile, t),
     };
   }
   if (format === "carousel") {
     return {
-      caption: `Exemplo de carrossel sobre ${t}, no tom da clínica${nicho}. (Rascunho de exemplo — configure a chave de IA para gerar de verdade.)`,
+      caption: `Exemplo de carrossel sobre ${t}, no tom da clínica${nicho}. (${exemplo})`,
       slides: [
-        { title: "Abertura", imagePrompt: `Capa premium, escuro com dourado, tema: ${t}. Foto real, sem texto na imagem.` },
-        { title: "Desenvolvimento", imagePrompt: `Detalhe do ambiente da clínica ligado a ${t}. Foto real, paleta da marca.` },
-        { title: "Fechamento", imagePrompt: `Convite sóbrio ao contato, clima acolhedor e premium, paleta da marca.` },
+        { title: "Abertura", imagePrompt: colorHint(profile, t) },
+        { title: "Desenvolvimento", imagePrompt: colorHint(profile, `um detalhe do ambiente ligado a ${t}`) },
+        { title: "Fechamento", imagePrompt: colorHint(profile, "um convite sóbrio para conhecer o espaço") },
       ],
     };
   }
+  const mode = recordingMode === "narracao" ? "narracao" : "camera";
   return {
     script: {
       hook: `Gancho de exemplo sobre ${t}, no tom da clínica${nicho}.`,
-      body: `Desenvolvimento curto e humano, apresentando o cuidado da clínica sem promessas e sem números.`,
-      cta: `Convite sóbrio para conhecer a clínica. (Rascunho de exemplo — configure a chave de IA.)`,
+      body: "Desenvolvimento curto e humano, apresentando o cuidado da clínica sem promessas e sem números.",
+      cta: `Convite sóbrio para conhecer a clínica. (${exemplo})`,
     },
-    recording: {
-      mode: "camera",
-      tips: [
-        "Grave na horizontal ou vertical conforme o destino, com o celular estável.",
-        "Luz natural de frente; evite contraluz.",
-        "Fale a frase de gancho olhando para a câmera, pausado.",
-      ],
-    },
+    recording: { mode, tips: videoTips(mode) },
   };
 }
 

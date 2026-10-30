@@ -13,6 +13,23 @@ import { generatePiece, FORMATS } from "./lib/ai.js";
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    /* feature:estudio */
+    if (url.pathname === "/estudio" || url.pathname === "/estudio/") {
+      const { handleEstudioPage } = await import("../features/estudio/server.js");
+      return handleEstudioPage(request);
+    }
+    if (url.pathname === "/api/estudio/generate" && request.method === "POST") {
+      try {
+        const { handleEstudioGenerate } = await import("../features/estudio/server.js");
+        return await handleEstudioGenerate(request, env);
+      } catch (err) {
+        console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
+        return new Response(JSON.stringify({ ok: false, error: "erro interno" }), {
+          status: 500,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
+      }
+    }
     if (url.pathname.startsWith("/api/")) {
       try {
         return await handleApi(request, env, url, ctx);
