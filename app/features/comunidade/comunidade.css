@@ -1,0 +1,193 @@
+@import url("../../public/assets/tokens.css");
+
+/* Comunidade — layout e UX. Cor só via tokens.css. */
+body.comunidade-page {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.circulo {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 16px 48px;
+  color: var(--color-text);
+  overflow-x: hidden;
+}
+.circulo *,
+.circulo *::before,
+.circulo *::after { box-sizing: border-box; }
+.circulo img { max-width: 100%; display: block; }
+
+.circulo-kicker {
+  margin: 0 0 6px;
+  color: var(--color-accent);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.circulo h1,
+.circulo h2,
+.circulo h3 {
+  margin: 0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.circulo h1 { font-size: clamp(2rem, 8vw, 2.6rem); }
+.circulo h1 em {
+  color: var(--color-accent);
+  font-style: italic;
+  font-weight: 500;
+}
+.circulo-lede {
+  margin: 10px 0 0;
+  max-width: 36ch;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.circulo-hero { margin: 16px 0 0; }
+.circulo-hero img {
+  width: 100%;
+  height: 148px;
+  object-fit: cover;
+  object-position: center 62%;
+  border-radius: 18px;
+  border: 1px solid var(--color-line);
+}
+
+.circulo-nota,
+.circulo-salas,
+.circulo-ideia {
+  margin-top: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  padding: 20px;
+}
+.circulo-nota { border-left: 2px solid var(--color-accent); }
+.circulo h2 { font-size: 1.5rem; margin-bottom: 4px; }
+.circulo-nota p,
+.circulo-salas > p,
+.circulo-ideia > p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+.circulo-salas > p {
+  color: var(--color-muted);
+  font-size: 0.86rem;
+  margin-bottom: 14px;
+}
+
+.sala {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+.sala + .sala {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+}
+.sala img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-2);
+}
+.sala h3 {
+  font-size: 1.15rem;
+  color: var(--color-accent);
+}
+.sala p {
+  margin: 3px 0 0;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.circulo-ideia label {
+  display: block;
+  margin: 8px 0 7px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+.circulo-ideia textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.circulo-ideia textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+.circulo-ideia textarea::placeholder { color: var(--color-muted); }
+
+.circulo .btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  min-height: 48px;
+  padding: 15px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  font: 600 0.98rem/1 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+}
+.circulo .btn:disabled { opacity: 0.55; cursor: default; }
+.circulo .btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.circulo-status {
+  min-height: 1.3em;
+  margin: 10px 0 0;
+  color: var(--color-accent);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.circulo-status[data-tone="erro"] { color: var(--color-danger); }
+.circulo-fine {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 720px) {
+  .circulo { padding: 28px 16px 48px; }
+  .circulo-hero img { height: 220px; }
+}
