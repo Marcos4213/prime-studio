@@ -27,11 +27,18 @@ body.comunidade-page {
 
 .circulo-kicker {
   margin: 0 0 6px;
-  color: var(--color-accent);
+  color: var(--color-primary);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   font-size: 0.68rem;
   font-weight: 600;
+}
+.circulo-assinatura {
+  display: block;
+  width: 2rem;
+  height: 2px;
+  margin: 10px 0 12px;
+  background: var(--color-gold);
 }
 .circulo h1,
 .circulo h2,
@@ -44,7 +51,7 @@ body.comunidade-page {
 }
 .circulo h1 { font-size: clamp(2rem, 8vw, 2.6rem); }
 .circulo h1 em {
-  color: var(--color-accent);
+  color: var(--color-primary);
   font-style: italic;
   font-weight: 500;
 }
@@ -75,7 +82,7 @@ body.comunidade-page {
   border-radius: 18px;
   padding: 20px;
 }
-.circulo-nota { border-left: 2px solid var(--color-accent); }
+.circulo-nota { border-left: 2px solid var(--color-gold); }
 .circulo h2 { font-size: 1.5rem; margin-bottom: 4px; }
 .circulo-nota p,
 .circulo-salas > p,
@@ -113,7 +120,7 @@ body.comunidade-page {
 }
 .sala h3 {
   font-size: 1.15rem;
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 .sala p {
   margin: 3px 0 0;
@@ -147,7 +154,7 @@ body.comunidade-page {
 }
 .circulo-ideia textarea:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
 }
 .circulo-ideia textarea::placeholder { color: var(--color-muted); }
 
@@ -161,21 +168,21 @@ body.comunidade-page {
   padding: 15px 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-accent-text);
+  background: var(--color-cta);
+  color: var(--color-on-cta);
   font: 600 0.98rem/1 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
 }
 .circulo .btn:disabled { opacity: 0.55; cursor: default; }
 .circulo .btn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-primary);
   outline-offset: 3px;
 }
 
 .circulo-status {
   min-height: 1.3em;
   margin: 10px 0 0;
-  color: var(--color-accent);
+  color: var(--color-primary);
   font-size: 0.82rem;
   line-height: 1.4;
 }
@@ -185,6 +192,17 @@ body.comunidade-page {
   color: var(--color-muted);
   font-size: 0.74rem;
   line-height: 1.4;
+}
+
+:root[data-tema="escuro"] .circulo-kicker,
+:root[data-tema="escuro"] .circulo h1 em,
+:root[data-tema="escuro"] .circulo-status {
+  color: var(--color-text);
+}
+:root[data-tema="escuro"] .circulo-ideia textarea:focus,
+:root[data-tema="escuro"] .circulo .btn:focus-visible {
+  border-color: var(--color-gold);
+  outline-color: var(--color-gold);
 }
 
 @media (min-width: 720px) {

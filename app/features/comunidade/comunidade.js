@@ -78,6 +78,9 @@
 
     var head = el("header", "circulo-mast");
     head.appendChild(el("p", "circulo-kicker", "Círculo Prime"));
+    var assinatura = el("span", "circulo-assinatura");
+    assinatura.setAttribute("aria-hidden", "true");
+    head.appendChild(assinatura);
     var h1 = el("h1");
     h1.appendChild(document.createTextNode("Você está "));
     h1.appendChild(el("em", null, "dentro"));
