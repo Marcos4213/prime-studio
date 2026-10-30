@@ -1,0 +1,18 @@
+{
+  "name": "prime-central",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Central do Cliente da Prime Studio — app + API em Cloudflare Workers (MVP Fases 0-2).",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "db:create": "wrangler d1 create prime-central",
+    "db:migrate:local": "wrangler d1 migrations apply prime-central --local",
+    "db:migrate:remote": "wrangler d1 migrations apply prime-central --remote",
+    "types": "wrangler types",
+    "deploy": "echo 'Deploy só com o OK do Marcos. Rode wrangler deploy manualmente.' && exit 1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.156.0"
+  }
+}

@@ -1,0 +1,12 @@
+# Exemplo de variáveis para desenvolvimento local (wrangler dev).
+# Copie para `.dev.vars` (que NÃO é versionado) e preencha. NUNCA comite segredos.
+#
+# Chave da IA (OpenAI-compatível). Sem ela, o estúdio gera um EXEMPLO (mock).
+AI_API_KEY=""
+# Opcionais (têm default em wrangler.toml [vars]):
+# AI_BASE_URL="https://api.openai.com/v1"
+# AI_MODEL="gpt-4o-mini"
+#
+# Chave de admin para o bootstrap de clientes (POST /api/admin/clients).
+# Sem ela, a rota de admin fica desligada (404).
+ADMIN_KEY=""

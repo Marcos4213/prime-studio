@@ -1,0 +1,36 @@
+# Central do Cliente — Cloudflare Worker (app + API)
+# App separado do site de marketing (que é Pages, na raiz do repo).
+# NÃO fazer deploy sem o OK do Marcos. Secrets NUNCA aqui: só via `wrangler secret put`.
+name = "prime-central"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Front-end estático servido pelo próprio Worker.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# Banco por cliente: clientes, perfil de marca, histórico do estúdio, indicações.
+# O database_id é preenchido por `wrangler d1 create prime-central` (não é secret).
+[[d1_databases]]
+binding = "DB"
+database_name = "prime-central"
+database_id = "PLACEHOLDER_RUN_WRANGLER_D1_CREATE"
+migrations_dir = "migrations"
+
+# Reservado para o banco de vídeos da clínica (Fase 5). Ainda não usado no código.
+[[r2_buckets]]
+binding = "VIDEOS"
+bucket_name = "prime-central-videos"
+
+# Vars NÃO-secretas (podem ficar versionadas). Chaves/segredos vão em `wrangler secret put`.
+[vars]
+AI_BASE_URL = "https://api.openai.com/v1"
+AI_MODEL = "gpt-4o-mini"
+SESSION_TTL_HOURS = "168"
+
+[observability]
+enabled = true
+[observability.traces]
+enabled = true
