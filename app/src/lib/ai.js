@@ -185,9 +185,18 @@ function geminiModel(env) {
   return GEMINI_MODEL;
 }
 
-function logFallback(err, key) {
-  const detail = redactSecrets(err?.message || err, key);
+function logFallback(err, key, extra) {
+  const detail = redactSecrets(`${err?.message || err} ${extra || ""}`.trim(), key);
   console.log(JSON.stringify({ level: "warn", msg: "gemini_rascunho", detail }));
+}
+
+async function probeHost() {
+  try {
+    const resp = await fetch(`${GEMINI_URL}/${GEMINI_MODEL}`, { method: "GET", signal: AbortSignal.timeout(4000) });
+    return `probe_${resp.status}`;
+  } catch (err) {
+    return `probe_${redactSecrets(err?.message || err)}`;
+  }
 }
 
 // --- Geração ---------------------------------------------------------------
@@ -204,14 +213,15 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
       profile,
       method,
       schema: SCHEMAS[format],
-      instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
-      timeoutMs: 25000,
+      instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
+      timeoutMs: 20000,
     });
     const output = normalize(format, parsed, mode);
     return { source: "ia", model: geminiModel(env), output: attach(output, method) };
   } catch (err) {
-    logFallback(err, key);
-    return { ...finishMock(format, theme, profile, mode, method), fallback: redactSecrets(err?.message || err, key) };
+    const extra = /timeout|aborted/i.test(String(err?.message || err)) ? await probeHost() : "";
+    logFallback(err, key, extra);
+    return { ...finishMock(format, theme, profile, mode, method), fallback: redactSecrets(`${err?.message || err} ${extra}`.trim(), key) };
   }
 }
 
@@ -261,7 +271,6 @@ async function callGemini(env, key, { profile, method, schema, instruction, time
       generationConfig: {
         responseMimeType: "application/json",
         responseJsonSchema: schema,
-        maxOutputTokens: 2048,
         thinkingConfig: { thinkingLevel: "low" },
       },
     }),
