@@ -870,7 +870,7 @@ async function loadHistory() {
     const box = document.createElement("div");
     box.className = "empty";
     const img = document.createElement("img");
-    img.className = "still still-empty";
+    img.className = "still-empty";
     img.src = "/assets/visual3d/vazio.webp";
     img.alt = "";
     img.width = 640;

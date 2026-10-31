@@ -101,21 +101,11 @@ function paint(host, view, ui) {
   const frag = document.createDocumentFragment();
 
   const head = el("div", "presence-head");
-  const mark = document.createElement("img");
-  mark.className = "still";
-  mark.src = "/assets/visual3d/presenca.webp";
-  mark.alt = "Três portas de pedra clara, vidro petróleo e dobradiça dourada.";
-  mark.width = 640;
-  mark.height = 640;
-  mark.loading = "lazy";
-  mark.decoding = "async";
-  const copy = el("div", "presence-copy");
-  copy.append(p("eyebrow", "Olhar de hoje"));
-  copy.append(el("p", "date", view.today?.label || ""));
-  copy.append(el("h1", "", "Presença"));
-  copy.append(p("lede", "Site, Instagram e Google. Uma presença só."));
-  if (view.clinic) copy.append(p("clinic", view.clinic));
-  head.append(mark, copy);
+  head.append(p("eyebrow", "Olhar de hoje"));
+  head.append(el("p", "date", view.today?.label || ""));
+  head.append(el("h1", "", "Presença"));
+  head.append(p("lede", "Site, Instagram e Google. Uma presença só."));
+  if (view.clinic) head.append(p("clinic", view.clinic));
   frag.append(head);
 
   const habit = el("section", "habit");
@@ -170,6 +160,7 @@ function doorCard(ch, openId) {
     const img = document.createElement("img");
     img.src = ch.photo;
     img.alt = ch.photo_alt || "";
+    img.loading = "lazy";
     img.decoding = "async";
     img.addEventListener("error", () => img.remove());
     shot.append(img);

@@ -14,8 +14,8 @@ h1,h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;line-height
 .logo{color:var(--color-text);font-weight:600;letter-spacing:.18em;font-size:.78rem;text-decoration:none;min-width:0}
 .logo span{color:var(--color-gold);font-weight:300;margin-left:.35em}
 .back{color:var(--color-primary);text-decoration:none;font-size:.82rem;border:1px solid var(--color-primary);border-radius:999px;padding:6px 12px;flex:none}
-.hero{position:relative;height:132px;border-radius:18px;overflow:hidden;border:1px solid var(--color-line);margin-bottom:14px}
-.hero img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
+.hero{position:relative;height:240px;border-radius:18px;overflow:hidden;border:1px solid var(--color-line);margin-bottom:14px;background:var(--color-surface)}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:center}
 .hero figcaption{position:absolute;left:0;right:0;bottom:0;padding:36px 14px 12px;background:linear-gradient(180deg,transparent,var(--color-bg))}
 .eyebrow{color:var(--color-primary);letter-spacing:.22em;text-transform:uppercase;font-size:.66rem;font-weight:600}
 h1{font-size:clamp(1.7rem,7vw,2.35rem)}
@@ -47,10 +47,7 @@ h1{font-size:clamp(1.7rem,7vw,2.35rem)}
 .done p{color:var(--color-muted);font-size:.9rem;overflow-wrap:anywhere}
 .list{margin-top:22px}
 .list h2{font-size:1.35rem;margin-bottom:8px}
-.ind-head{display:flex;align-items:center;gap:14px;margin:0 0 12px;min-width:0}
-.ind-head h1{font-size:clamp(1.7rem,7vw,2.35rem)}
-.still{width:88px;height:88px;object-fit:cover;flex:none;display:block;border-radius:16px;border:1px solid var(--color-line);background:var(--color-surface);box-shadow:inset 0 1px 0 var(--color-gold)}
-.still-empty{width:148px;height:148px}
+.still-empty{display:block;width:min(100%,420px);height:200px;object-fit:cover;margin:0 auto;border-radius:16px;border:1px solid var(--color-line);background:var(--color-surface)}
 .empty{display:grid;justify-items:center;text-align:center;gap:8px;color:var(--color-muted);font-size:.88rem;padding:8px 0 4px}
 .item{background:var(--color-surface);border:1px solid var(--color-line);border-radius:14px;padding:12px 14px;margin-bottom:8px;min-width:0}
 .item h3{font-size:.98rem;font-weight:600;overflow-wrap:anywhere}
@@ -95,15 +92,12 @@ ${data}
 }
 
 function hero() {
-  return `<div class="ind-head">
-  <img class="still" src="/assets/visual3d/indicacao.webp" alt="Dois cartões em branco, presos por um fio dourado." width="640" height="640" loading="lazy" decoding="async">
-  <div>
+  return `<figure class="hero">
+  <img src="/assets/visual3d/indicacao.webp" alt="Render 3D: dois cartões em branco, fio fino e seixo de vidro petróleo." width="960" height="720" loading="lazy" decoding="async">
+  <figcaption>
     <span class="eyebrow">Indicação</span>
     <h1>Indique uma clínica</h1>
-  </div>
-</div>
-<figure class="hero">
-  <img src="/indicacao/media/sala.webp" alt="Sala de espera de clínica, clara e silenciosa." width="800" height="533" loading="lazy" decoding="async">
+  </figcaption>
 </figure>`;
 }
 
@@ -223,7 +217,7 @@ export const BROWSER_JS = String.raw`
   function emptyNote(text) {
     var box = el("div", "empty");
     var img = document.createElement("img");
-    img.className = "still still-empty";
+    img.className = "still-empty";
     img.src = "/assets/visual3d/vazio.webp";
     img.alt = "";
     img.width = 640;

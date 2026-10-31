@@ -77,7 +77,7 @@ test("página sem sessão explica os dois lados e pede entrada", () => {
   assert.match(html, /Entrar na central/);
   assert.match(html, /60 dias/);
   assert.match(html, /15%/);
-  assert.match(html, /sala\.webp/);
+  assert.match(html, /visual3d\/indicacao\.webp/);
   assert.equal(/faturamento|R\$|meses/.test(visible(html)), false);
   assert.doesNotMatch(html, /id="indForm"/);
 });

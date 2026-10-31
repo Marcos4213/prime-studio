@@ -102,9 +102,12 @@ ${CLIENT}
 </html>`;
 }
 
-function hero(item, eyebrow) {
+function hero(item, eyebrow, src) {
+  const image = src || photoSrc(item.photo);
+  const alt = src ? "Render 3D: livro aberto em papel, fita fina e esfera de vidro petróleo." : item.alt;
+  const load = src ? `loading="lazy" decoding="async"` : `fetchpriority="high"`;
   return `<article class="hero">
-  <img src="${photoSrc(item.photo)}" alt="${esc(item.alt)}" width="800" height="600" fetchpriority="high">
+  <img src="${image}" alt="${esc(alt)}" width="960" height="720" ${load}>
   <div class="hero-copy">
     <p class="eyebrow">${esc(eyebrow)}</p>
     <h1>${richTitle(item.title, item.em)}</h1>
@@ -171,14 +174,9 @@ export function renderHome(date = new Date()) {
   const today = dayById(clock.id);
   const tomorrow = dayById(nextDayId(clock.id));
   const body = `
-<div class="edu-head">
-  <img class="still" src="/assets/visual3d/educacao.webp" alt="Livro aberto em linho, páginas em branco e fita dourada." width="640" height="640" loading="lazy" decoding="async">
-  <div>
-    <p class="kicker">Educação</p>
-    <p class="kicker-sub">Do nosso time, para usar hoje.</p>
-  </div>
-</div>
-${hero(today, `Para hoje · ${today.weekday}`)}
+<p class="kicker">Educação</p>
+<p class="kicker-sub">Do nosso time, para usar hoje.</p>
+${hero(today, `Para hoje · ${today.weekday}`, "/assets/visual3d/educacao.webp")}
 ${prose(today)}
 ${steps(today)}
 ${actions({
@@ -261,7 +259,7 @@ export function renderWeek(date = new Date()) {
 export function renderNotFound(date = new Date()) {
   const clock = clinicClock(date);
   const body = `<div class="empty">
-  <img class="still still-empty" src="/assets/visual3d/vazio.webp" alt="" width="640" height="640" loading="lazy" decoding="async">
+  <img class="still-empty" src="/assets/visual3d/vazio.webp" alt="" width="960" height="720" loading="lazy" decoding="async">
   <p class="kicker">Educação</p>
   <h1>Essa leitura <em>não está aqui</em></h1>
   <p>A de hoje continua na trilha.</p>
