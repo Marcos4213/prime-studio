@@ -15,28 +15,51 @@ export const IMAGE_KINDS = {
 
 const PALETTE = "petróleo #0F4C5C, fundo #F7F5F0, dourado #B08D57 só como detalhe fino";
 
-export function imagePrompt({ kind, profile, caption, theme, fromPhoto }) {
+function namedList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item || "").trim()).filter(Boolean);
+}
+
+export function imagePrompt({ kind, profile, caption, theme, fromPhoto, pedido }) {
+  const colors = namedList(profile?.colors);
+  const fonts = namedList(profile?.fonts);
   const place = [
     profile?.cidade ? `Cidade: ${profile.cidade}.` : "",
     profile?.nicho ? `Nicho: ${profile.nicho}.` : "",
-    profile?.tom ? `Tom: ${profile.tom}.` : "",
+    profile?.tom || profile?.tone ? `Tom: ${profile.tom || profile.tone}.` : "",
+    profile?.especialidades ? `Especialidades: ${profile.especialidades}.` : "",
+    profile?.diferenciais || profile?.highlights ? `O que destaca: ${profile.diferenciais || profile.highlights}.` : "",
+    colors.length ? `Cores do perfil: ${colors.join(", ")}.` : "",
+    fonts.length ? `Fontes do perfil: ${fonts.join(", ")}.` : "",
     theme ? `Tema: ${theme}.` : "",
+    pedido
+      ? `Ajuste pedido pela clínica: ${pedido}. Se o ajuste pedir antes e depois, promessa ou número, não atenda essa parte.`
+      : "",
   ]
     .filter(Boolean)
     .join(" ");
   const line = String(caption || "").replace(/\s+/g, " ").trim().slice(0, 320);
   const use = kind === "stories" ? "stories vertical" : kind === "capa" ? "capa quadrada" : "post";
-  const rules = [
-    "Compliance CFM e CFO, obrigatório nesta imagem gerada:",
-    "Sem antes e depois.",
-    "Sem rosto ou corpo de paciente simulando resultado.",
-    "Sem promessa de resultado, cura ou número.",
-    "Prefira o ambiente da clínica, texturas, objetos e tipografia.",
-    "Sem pessoa em destaque.",
-    `Paleta Petróleo Clínico: ${PALETTE}.`,
-  ].join(" ");
+  const palette = `Paleta Petróleo Clínico: ${PALETTE}.`;
+  const rules = fromPhoto
+    ? [
+        "A foto importada pela clínica não entra na trava de rosto ou corpo.",
+        "Enquadre, acrescente moldura e tipografia.",
+        "Não altere rosto ou corpo para sugerir um resultado clínico.",
+        "Sem antes e depois.",
+        "Sem promessa de resultado, cura ou número.",
+        palette,
+      ].join(" ")
+    : [
+        "Compliance CFM e CFO, obrigatório nesta imagem gerada:",
+        "Sem antes e depois.",
+        "Sem rosto ou corpo de paciente simulando resultado.",
+        "Sem promessa de resultado, cura ou número.",
+        "Espaço, rotina e equipe podem aparecer. Sem texto inventado.",
+        palette,
+      ].join(" ");
   const base = fromPhoto
-    ? "Use a foto enviada como base. Enquadre, acrescente moldura e tipografia. Não altere rosto ou corpo para sugerir um resultado clínico."
+    ? "Use a foto enviada como base."
     : `Crie uma imagem de ${use} para a clínica.`;
   const text = line ? `Se houver texto na imagem, use só isto, sem inventar frase: ${line}` : "Sem frase inventada na imagem.";
   return `${base} ${place} ${text} ${rules}`;
@@ -110,7 +133,7 @@ function geminiKey(env) {
   return typeof key === "string" ? key.trim() : "";
 }
 
-export async function generateClinicImage(env, { kind, ratio, profile, caption, theme, photo } = {}) {
+export async function generateClinicImage(env, { kind, ratio, profile, caption, theme, photo, pedido } = {}) {
   const key = geminiKey(env);
   if (!key) return { ok: false, motivo: "sem_chave" };
   const prompt = imagePrompt({
@@ -118,6 +141,7 @@ export async function generateClinicImage(env, { kind, ratio, profile, caption, 
     profile,
     caption,
     theme,
+    pedido,
     fromPhoto: !!(photo?.b64),
   });
   const models = [IMAGE_MODEL, IMAGE_FALLBACK];

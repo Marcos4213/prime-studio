@@ -7,7 +7,7 @@ const SECRET = "AIzaTESTKEYSHOULDNOTLEAK123456";
 test("o prompt da imagem gerada leva paleta e compliance", () => {
   const prompt = imagePrompt({
     kind: "post",
-    profile: { cidade: "Curitiba", nicho: "odonto" },
+    profile: { cidade: "Curitiba", nicho: "odonto", colors: ["areia"], tom: "sóbrio" },
     caption: "Convite sóbrio para conhecer o espaço.",
     theme: "recepção",
     fromPhoto: false,
@@ -17,6 +17,10 @@ test("o prompt da imagem gerada leva paleta e compliance", () => {
   assert.match(prompt, /#B08D57/);
   assert.match(prompt, /antes e depois/i);
   assert.match(prompt, /CFM/);
+  assert.match(prompt, /simulando resultado/i);
+  assert.match(prompt, /Curitiba/);
+  assert.match(prompt, /areia/);
+  assert.match(prompt, /sóbrio/);
   assert.equal(prompt.includes(SECRET), false);
 });
 
@@ -25,6 +29,8 @@ test("compor a partir da foto continua sob compliance", () => {
   assert.match(prompt, /foto enviada como base/);
   assert.match(prompt, /resultado clínico/);
   assert.match(prompt, /antes e depois/i);
+  assert.match(prompt, /não entra na trava/i);
+  assert.doesNotMatch(prompt, /simulando resultado/i);
 });
 
 test("a imagem gerada não é o eco da foto enviada", () => {

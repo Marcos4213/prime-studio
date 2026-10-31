@@ -186,7 +186,7 @@ function buildPiece(piece) {
   const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
   const methodHtml = methodName
     ? '<p class="method" data-copy-method>Método de copy: ' + esc(methodName) + "</p>" +
-      '<p class="hint">Dentro do Método PRIME. A gente escreve no tom da clínica, sem promessa e sem número.</p>'
+      '<p class="hint">' + esc((o.copyMethod && o.copyMethod.why) || "Dentro do Método PRIME. A gente escreve no tom da clínica.") + "</p>"
     : "";
   const src = piece.source === "ia" ? "Gerado por IA" : "Exemplo";
   const srcClass = piece.source === "ia" ? "ok" : "wait";
@@ -237,7 +237,7 @@ function chatHtml() {
     '<button type="button" class="btn" data-chat-use aria-pressed="false">Usar esta</button>' +
     '<button type="button" class="btn-ghost" data-chat-undo>Desfazer</button>' +
     "</div>" +
-    '<p class="note">A conversa fica nesta tela. A peça guardada não muda.</p>' +
+    '<p class="note">A conversa fica nesta tela, no método da peça e no perfil da clínica. A peça guardada não muda.</p>' +
     '<p class="err" data-chat-err hidden></p>' +
     "</div></div></aside>"
   );
@@ -678,6 +678,7 @@ function wireChat(el, piece, visualApi) {
           target: name === "legenda" ? "legenda" : "imagem",
           instruction,
           text: name === "legenda" ? (current && current.text) || "" : pieceCaption(piece),
+          structure: (piece.output && piece.output.copyMethod && piece.output.copyMethod.structure) || "post",
           kind: visualApi.stateVis.kind,
           ratio: visualApi.stateVis.ratio,
           origem: name === "legenda" ? "" : current.id,
@@ -700,7 +701,7 @@ function wireChat(el, piece, visualApi) {
       }
       const reply = document.createElement("li");
       reply.className = "from-ia";
-      reply.textContent = "Nova versão pronta.";
+      reply.textContent = "Versão nova. Nada foi publicado.";
       log.appendChild(reply);
       log.scrollTop = log.scrollHeight;
     } finally {
@@ -938,11 +939,15 @@ function wire() {
       const composer = qs("#composer");
       composer.hidden = false;
       qs("#delivers").textContent = btn.dataset.delivers || "";
-      const methodByFormat = { post: "AIDA", carousel: "AIDA", video: "AIDA" };
+      const methodByFormat = {
+        post: "AIDA. No feed, a primeira frase segura o scroll.",
+        carousel: "AIDA. A primeira tela segura, a última convida.",
+        video: "AIDA. O gancho abre e o convite fecha.",
+      };
       const formatMethod = qs("#formatMethod");
       if (formatMethod) {
         formatMethod.hidden = false;
-        formatMethod.textContent = "Método de copy: " + (methodByFormat[state.format] || "AIDA");
+        formatMethod.textContent = "Método de copy: " + (methodByFormat[state.format] || "AIDA. Dentro do Método PRIME.");
       }
       const isVideo = state.format === "video";
       qs("#modeBox").hidden = !isVideo;

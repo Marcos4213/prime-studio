@@ -87,28 +87,39 @@ function safeList(v) {
 const RULES = [
   "Regras inegociáveis (compliance CFM e CFO) para TUDO que você gerar:",
   "- Sem promessa de resultado, cura, transformação ou retorno.",
-  "- Sem 'antes e depois'.",
-  "- Sem dado de saúde, diagnóstico, paciente ou procedimento clínico específico.",
-  "- Sem número inventado (métrica, preço, percentual, estatística). Se não foi informado, não cite.",
+  "- Sem antes e depois.",
+  "- Sem rosto ou corpo de paciente simulando resultado. Foto importada pela clínica não entra nesta trava.",
+  "- Sem dado de saúde, diagnóstico ou caso de quem foi atendido.",
+  "- Sem número inventado (métrica, preço, percentual, prazo, estatística). Se o perfil não trouxe, não cite.",
   "- Nada aqui publica sozinho: é um rascunho para aprovação humana.",
-  "- Português do Brasil. Fale como \"nosso time\" ou \"a gente\".",
+  "- Português do Brasil. Fale como \"nosso time\" ou \"a gente\". Não abra com \"você\".",
+  "- Escreva a peça. Não explique o método e não nomeie as batidas no texto.",
 ].join("\n");
 
 function systemPrompt(profile, method) {
   const voice = method
-    ? `Método de copy desta peça: ${method.name} (${method.note}). Estrutura: ${method.structure}. Sempre dentro do ${method.prime || "Método PRIME"}.`
-    : `Sempre dentro do Método PRIME.`;
-  return `Você é o estúdio de conteúdo da Prime Studio, criando peças para clínicas premium, dentro do Método PRIME.\n\n${voice}\n\nPerfil da marca:\n${brandBlock(
+    ? [
+        `Método de copy desta peça: ${method.name}. ${method.note}`,
+        method.beats ? `Batidas: ${method.beats}` : "",
+        method.job ? `Trabalho desta estrutura (${method.structure}): ${method.job}` : "",
+        `Sempre dentro do ${method.prime || "Método PRIME"}.`,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "Sempre dentro do Método PRIME.";
+  return `Você é o estúdio de conteúdo da Prime Studio. A peça é da clínica, no tom dela, dentro do Método PRIME.\n\n${voice}\n\nPerfil da marca (use só o que está aqui; campo vazio não vira chute):\n${brandBlock(
     profile
   )}\n\n${RULES}`;
 }
 
 function formatInstruction(format, recordingMode) {
+  const visual =
+    "O imagePrompt descreve fotografia real do espaço ou da equipe em rotina, nas cores e fontes do perfil quando existirem, sem texto na imagem e sem simular mudança clínica.";
   if (format === "post") {
-    return 'Formato: POST único. Responda JSON: {"caption": string, "imagePrompt": string}. O imagePrompt descreve fotografia real do espaço, no visual e nas cores da clínica, sem pessoa em destaque e sem texto na imagem.';
+    return `Formato: POST único. A legenda segue as batidas do método, sem nomeá-las. Responda JSON: {"caption": string, "imagePrompt": string}. ${visual}`;
   }
   if (format === "carousel") {
-    return 'Formato: CARROSSEL. Responda JSON: {"caption": string, "slides": [{"title": string, "imagePrompt": string}]}. Entre 3 e 6 slides, com começo, desenvolvimento e fechamento. Um imagePrompt por slide, no mesmo padrão visual: fotografia real do espaço, sem pessoa em destaque, sem texto na imagem.';
+    return `Formato: CARROSSEL. Responda JSON: {"caption": string, "slides": [{"title": string, "imagePrompt": string}]}. Entre 3 e 6 slides: a primeira segura a atenção, o meio desenvolve, a última convida. ${visual} Um imagePrompt por slide, no mesmo padrão visual.`;
   }
   const modeLine =
     recordingMode === "narracao" || recordingMode === "camera"
@@ -155,7 +166,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
     const { parsed, model } = await generateParsed(env, key, {
       profile,
       method,
-      instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
+      instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "o dia a dia da clínica"}\nResponda apenas o JSON, curto.`,
     });
     const output = normalize(format, parsed, mode);
     return { source: "ia", model, output: attach(output, method) };
@@ -167,28 +178,35 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
 }
 
 // Bio, link na bio, anúncio, WhatsApp e site. O mesmo Gemini, com o método da estrutura.
-export function chatInstruction({ instruction, text }) {
+export function chatInstruction({ instruction, text, method }) {
+  const frame = method
+    ? `Mantenha o método ${method.name}. ${method.beats || ""} Não nomeie as batidas no texto.`
+    : "Mantenha o método da peça, dentro do Método PRIME.";
   return [
     "A clínica pediu um ajuste no texto desta peça. Aplique o pedido e devolva a versão nova.",
+    frame,
+    'Fale como "nosso time" ou "a gente". Não abra com "você".',
+    "Se o pedido pedir promessa, antes e depois, número ou resultado simulado, não atenda essa parte.",
     `Pedido da clínica: ${instruction}`,
     "Texto atual:",
     text,
     'Responda apenas JSON {"text": string}.',
-    "Compliance CFM e CFO neste texto gerado: sem promessa de resultado, sem antes e depois, sem rosto ou corpo simulando resultado, sem número inventado.",
+    "Compliance CFM e CFO neste texto gerado: sem promessa de resultado, sem antes e depois, sem rosto ou corpo de paciente simulando resultado, sem número inventado.",
   ].join("\n");
 }
 
-export async function reviseCopy(env, { instruction, text, profile } = {}) {
+export async function reviseCopy(env, { instruction, text, profile, structure } = {}) {
   const ask = str(instruction).slice(0, 400);
   const current = str(text).slice(0, 4000);
   if (!ask || !current) return { ok: false, motivo: "pedido" };
   const key = geminiKey(env);
   if (!key) return { ok: false, motivo: "sem_chave" };
+  const method = chooseCopyMethod(structure || "post");
   try {
     const { parsed, model } = await generateParsed(env, key, {
       profile,
-      method: null,
-      instruction: chatInstruction({ instruction: ask, text: current }),
+      method,
+      instruction: chatInstruction({ instruction: ask, text: current, method }),
     });
     const next = str(parsed.text);
     if (!next) return { ok: false, motivo: "vazio" };
@@ -208,7 +226,7 @@ export async function generateStructureCopy(env, { structure, profile, theme } =
     const { parsed, model } = await generateParsed(env, key, {
       profile,
       method,
-      instruction: `Estrutura: ${method.structure}. Escreva uma frase de copy no método ${method.name}. ${method.note}\nTema: ${theme || "presença da clínica"}\nResponda JSON {"line": string}. Sem promessa de resultado, sem antes e depois, sem número inventado.`,
+      instruction: `Estrutura: ${method.structure}. ${method.job || ""}\nEscreva a copy no método ${method.name}, sem nomear as batidas.\nTema: ${theme || "o dia a dia da clínica"}\nResponda JSON {"line": string}.`,
     });
     const line = str(parsed.line) || local.line;
     const warnings = brandGuard({ line });
@@ -333,8 +351,8 @@ function colorHint(profile, theme) {
   const colors = safeList(profile?.colors);
   const fonts = safeList(profile?.fonts);
   const bits = [
-    `Fotografia real do espaço, sobre ${theme}.`,
-    "Sem pessoa em destaque, sem texto na imagem.",
+    `Fotografia real do espaço ou da equipe em rotina, sobre ${theme}.`,
+    "Sem texto na imagem.",
   ];
   if (colors.length) bits.push(`Cores da marca: ${colors.join(", ")}.`);
   else bits.push("Se a marca não tiver cor, clima escuro com detalhe dourado.");
@@ -361,9 +379,8 @@ function videoTips(mode) {
 
 function mockPiece(format, theme, profile, recordingMode, method) {
   const t = (theme && theme.trim()) || "o cuidado premium da clínica";
-  const nicho = profile?.nicho ? ` Nicho: ${profile.nicho}.` : "";
   const drafted = suggestLine(method?.structure || "post", profile);
-  const caption = `${drafted.line} Tema: ${t}.${nicho}`.trim();
+  const caption = `${drafted.line} Hoje: ${t}.`.trim();
   if (format === "post") {
     return {
       caption,
@@ -383,9 +400,9 @@ function mockPiece(format, theme, profile, recordingMode, method) {
   const mode = recordingMode === "narracao" ? "narracao" : "camera";
   return {
     script: {
-      hook: `Gancho de exemplo sobre ${t}, no tom da clínica${profile?.nicho ? ` (${profile.nicho})` : ""}.`,
+      hook: `A gente abre assim: ${t}.`,
       body: drafted.line,
-      cta: "Convite sóbrio para conhecer a clínica.",
+      cta: "Chame o nosso time para conhecer a clínica.",
     },
     recording: { mode, tips: videoTips(mode) },
   };

@@ -20,7 +20,7 @@ test("rascunho sem chave não pede para configurar IA e mostra o método", async
   assert.equal(result.output.copyMethod.name, "AIDA");
   assert.equal(result.output.copyMethod.prime, "Método PRIME");
   assert.equal(packed.includes("configure a chave"), false);
-  assert.match(result.output.caption, /A gente chama atenção/);
+  assert.match(result.output.caption, /A gente abre a porta/);
 });
 
 test("falha da API cai no rascunho e não devolve a chave", async () => {
@@ -89,9 +89,9 @@ test("erro HTTP da API não carrega o corpo nem a chave", async () => {
     );
     const packed = JSON.stringify(result);
     assert.equal(result.source, "mock");
-    assert.equal(result.name, "PAS");
+    assert.equal(result.name, "AIDA");
     assert.equal(packed.includes(SECRET), false);
-    assert.match(result.line, /presença/);
+    assert.match(result.line, /mensagem/);
   } finally {
     globalThis.fetch = prev;
   }
@@ -151,6 +151,9 @@ test("a conversa devolve a versão nova e não a chave", async () => {
     const body = JSON.parse(opts.body);
     assert.match(body.contents[0].parts[0].text, /tom mais acolhedor/);
     assert.match(body.systemInstruction.parts[0].text, /CFM/);
+    assert.match(body.systemInstruction.parts[0].text, /AIDA/);
+    assert.match(body.systemInstruction.parts[0].text, /Curitiba/);
+    assert.match(body.contents[0].parts[0].text, /a gente/);
     return geminiResponse({ text: "A gente recebe com um tom mais acolhedor e um convite sóbrio." });
   };
   try {
