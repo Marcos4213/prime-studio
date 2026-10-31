@@ -281,7 +281,7 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-pri
   }
   .studio-side { position: sticky; top: 16px; }
   #result { grid-column: 1 / -1; }
-  #historySec:has(.piece-board) { grid-column: 1 / -1; }
+  .studio-layout:has(#histPiece .piece-board) { grid-template-columns: minmax(0, 1fr); }
   .habit, .photos, #formatSec, #composer, #result, #brand, #historySec { order: 0; }
   .habit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .habit-tomorrow { border-top: 0; border-left: 1px solid var(--color-line); padding: 0 0 0 16px; }
@@ -472,7 +472,7 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-pri
   overflow-wrap: anywhere;
 }
 .visual { container-type: inline-size; }
-@container (min-width: 720px) {
+@container (min-width: 560px) {
   .visual-grid { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); align-items: start; gap: 22px; }
 }
 
