@@ -214,7 +214,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
       method,
       schema: SCHEMAS[format],
       instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
-      timeoutMs: 20000,
+      timeoutMs: 26000,
     });
     const output = normalize(format, parsed, mode);
     return { source: "ia", model: geminiModel(env), output: attach(output, method) };
@@ -270,7 +270,6 @@ async function callGemini(env, key, { profile, method, schema, instruction, time
       contents: [{ role: "user", parts: [{ text: instruction }] }],
       generationConfig: {
         responseMimeType: "application/json",
-        responseJsonSchema: schema,
         thinkingConfig: { thinkingLevel: "low" },
       },
     }),
