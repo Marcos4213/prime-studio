@@ -211,7 +211,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
     return { source: "ia", model: geminiModel(env), output: attach(output, method) };
   } catch (err) {
     logFallback(err, key);
-    return finishMock(format, theme, profile, mode, method);
+    return { ...finishMock(format, theme, profile, mode, method), fallback: redactSecrets(err?.message || err, key) };
   }
 }
 
@@ -261,9 +261,11 @@ async function callGemini(env, key, { profile, method, schema, instruction, time
       generationConfig: {
         responseMimeType: "application/json",
         responseJsonSchema: schema,
+        maxOutputTokens: 2048,
+        thinkingConfig: { thinkingLevel: "low" },
       },
     }),
-    signal: AbortSignal.timeout(timeoutMs || 25000),
+    signal: AbortSignal.timeout(timeoutMs || 28000),
   });
   const raw = await resp.text();
   if (!resp.ok) {
