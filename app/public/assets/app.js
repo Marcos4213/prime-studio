@@ -118,7 +118,7 @@ async function boot() {
     state.clinic = data.clinic || null;
     if (data.clinic && data.clinic.profile) state.entrada = { ...data.clinic.profile };
     const filled = state.clinic && state.clinic.completeness ? Number(state.clinic.completeness.filled) : 0;
-    if (!state.onboarding.completo || filled === 0) location.hash = "#entrada";
+    if (!entradaAdiada() && (!state.onboarding.completo || filled === 0)) location.hash = "#entrada";
     showApp();
   } else {
     showLogin();
@@ -345,8 +345,9 @@ function dressFrame(frame) {
     .circulo, .wrap, .ind, .edu { max-width: none !important; width: 100% !important; }
     body { background: var(--color-bg); }
     @media (max-width: 899px) {
+      html { --casca-clear: 0px; }
       .circulo, .wrap, .ind, .edu, .page, main {
-        padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
       }
     }
   `;
@@ -680,7 +681,7 @@ const ENTRADA_STEPS = [
   {
     kicker: "Primeiro acesso",
     title: "A pergunta de todo dia: o que a clínica posta hoje.",
-    lede: "O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho. O estúdio fica no centro. Presença, Link na bio, Educação, Comunidade e Indicação entram no mesmo acesso.",
+    lede: "O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho. O estúdio fica no centro. Presença, Link na bio, Educação, Comunidade e Indicação entram no mesmo acesso. Dá para pular.",
     fields: [{ key: "nicho", label: "Nicho", kind: "nicho" }],
   },
   {
@@ -732,6 +733,22 @@ const ENTRADA_STEPS = [
 
 let entradaStep = 0;
 
+function entradaAdiada() {
+  try {
+    return sessionStorage.getItem("prime.entrada.adiada") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function adiarEntrada() {
+  try {
+    sessionStorage.setItem("prime.entrada.adiada", "1");
+  } catch {
+    /* o Pular ainda entra na central nesta visita */
+  }
+}
+
 function meterHtml(score) {
   const filled = score ? score.filled : 0;
   const total = score ? score.total : 10;
@@ -759,8 +776,8 @@ function renderEntrada() {
       .map((field) => {
         if (field.kind === "nicho") {
           return `<div class="choices" role="radiogroup" aria-label="Nicho">
-            <button type="button" class="choice" data-nicho="estetica">Estética</button>
-            <button type="button" class="choice" data-nicho="odonto">Odonto</button>
+            <button type="button" class="choice" role="radio" data-nicho="estetica" aria-checked="false">Estética</button>
+            <button type="button" class="choice" role="radio" data-nicho="odonto" aria-checked="false">Odonto</button>
           </div>`;
         }
         const rows = field.rows || 3;
@@ -778,12 +795,12 @@ function renderEntrada() {
   }).join("");
   v.innerHTML = `<form id="entradaForm" class="entrada">
     <div class="onb-bar" id="entradaBar" aria-hidden="true">${ENTRADA_STEPS.map(() => "<i></i>").join("")}</div>
-    <p class="onb-count" id="entradaCount"></p>
+    <p class="onb-count" id="entradaCount" aria-live="polite"></p>
     ${steps}
     <p id="entradaErr" class="err" role="alert" hidden></p>
     <div class="onb-actions">
       <button type="button" class="btn-ghost" id="entradaBack">Voltar</button>
-      <button type="button" class="btn-ghost" id="entradaSkip">Pular</button>
+      <button type="button" class="btn-ghost" id="entradaSkip" aria-label="Pular e entrar na central">Pular</button>
       <button type="submit" class="btn" id="entradaNext">Continuar</button>
     </div>
   </form>`;
@@ -792,25 +809,34 @@ function renderEntrada() {
       state.entrada[input.dataset.field] = input.value;
     });
   });
-  v.querySelectorAll("[data-nicho]").forEach((btn) => {
+  v.querySelectorAll("[data-nicho]").forEach((btn, index, all) => {
     btn.addEventListener("click", () => {
       state.entrada.nicho = btn.dataset.nicho;
-      paintEntrada();
+      paintEntrada(false);
+    });
+    btn.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      e.preventDefault();
+      const dir = e.key === "ArrowRight" ? 1 : -1;
+      const next = all[(index + dir + all.length) % all.length];
+      state.entrada.nicho = next.dataset.nicho;
+      paintEntrada(false);
+      next.focus();
     });
   });
   $("#entradaBack").addEventListener("click", () => {
     if (entradaStep > 0) entradaStep -= 1;
-    paintEntrada();
+    paintEntrada(true);
   });
   $("#entradaSkip").addEventListener("click", () => advanceEntrada(true));
   $("#entradaForm").addEventListener("submit", (e) => {
     e.preventDefault();
     advanceEntrada(entradaStep === ENTRADA_STEPS.length - 1);
   });
-  paintEntrada();
+  paintEntrada(true);
 }
 
-function paintEntrada() {
+function paintEntrada(moveFocus) {
   const v = $('[data-view="entrada"]');
   if (!v) return;
   $$("[data-entrada-step]", v).forEach((el) => {
@@ -828,9 +854,18 @@ function paintEntrada() {
     if (input.value !== value) input.value = value;
   });
   v.querySelectorAll("[data-nicho]").forEach((btn) => {
-    btn.classList.toggle("is-on", state.entrada.nicho === btn.dataset.nicho);
-    btn.setAttribute("aria-pressed", state.entrada.nicho === btn.dataset.nicho ? "true" : "false");
+    const on = state.entrada.nicho === btn.dataset.nicho;
+    btn.classList.toggle("is-on", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.setAttribute("aria-checked", on ? "true" : "false");
   });
+  if (moveFocus) {
+    const heading = v.querySelector(`[data-entrada-step="${entradaStep}"] h2`);
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus();
+    }
+  }
 }
 
 async function advanceEntrada(concluir) {
@@ -857,11 +892,12 @@ async function advanceEntrada(concluir) {
   }
   if (data.onboarding) state.onboarding = data.onboarding;
   if (concluir) {
+    adiarEntrada();
     openHref("/hoje", { replace: true });
     return;
   }
   entradaStep += 1;
-  paintEntrada();
+  paintEntrada(true);
 }
 
 // ---------- Marca ----------
