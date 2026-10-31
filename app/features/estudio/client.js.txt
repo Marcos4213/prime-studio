@@ -149,11 +149,9 @@ function buildPiece(piece) {
     const tips = Array.isArray(rec.tips) ? rec.tips : [];
     const scriptText = [sc.hook, sc.body, sc.cta].filter(Boolean).join("\n\n");
     body =
-      '<div data-live-copy>' +
-      field("Gancho", sc.hook) +
+      field("Gancho", sc.hook, true) +
       field("Desenvolvimento", sc.body) +
       field("Chamada", sc.cta) +
-      "</div>" +
       '<p class="lbl">Como gravar — ' + esc(modeLabel) + "</p>" +
       '<ul class="tips">' + tips.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
       '<div class="actions">' + copyBtn("roteiro", scriptText) + "</div>";
@@ -208,33 +206,40 @@ function buildPiece(piece) {
 
 function chatHtml() {
   const tab = (id, label, hidden) =>
-    '<button type="button" class="pick" data-chat-target="' + id + '"' + (hidden ? " hidden" : "") + ">" + label + "</button>";
+    '<button type="button" class="pick" role="tab" data-chat-target="' + id + '" aria-selected="false"' + (hidden ? " hidden" : "") + ">" + label + "</button>";
   return (
-    '<aside class="chat" data-chat>' +
-    '<p class="eyebrow">Conversa</p>' +
-    "<h3>Ajustar esta peça</h3>" +
+    '<aside class="chat" data-chat aria-label="Conversa sobre a peça">' +
+    '<div class="chat-head">' +
+    "<div><p class=\"eyebrow\">Conversa</p><h3>Ajustar esta peça</h3></div>" +
+    '<button type="button" class="btn-ghost chat-toggle" data-chat-toggle aria-expanded="false">Abrir conversa</button>' +
+    "</div>" +
     '<p class="hint">Peça o retoque. Nada vai ao ar sozinho.</p>' +
+    '<div class="chat-body" data-chat-body>' +
+    '<div class="chat-stream">' +
     '<div class="picks" role="tablist" aria-label="O que ajustar">' +
     tab("legenda", "Legenda", false) +
     tab("imagem", "Imagem", true) +
     tab("foto", "Foto", true) +
     "</div>" +
     '<p class="chat-empty" data-chat-empty>A conversa começa no pedido abaixo.</p>' +
-    '<ol class="chat-log" data-chat-log aria-live="polite"></ol>' +
+    '<ol class="chat-log" data-chat-log aria-live="polite" aria-relevant="additions"></ol>' +
     '<p class="copy" data-chat-preview></p>' +
     '<p class="kicker">Versões</p>' +
-    '<ol class="versions" data-versions></ol>' +
+    '<ol class="versions" data-versions aria-label="Versões desta conversa"></ol>' +
     '<p class="warns" data-chat-warns hidden></p>' +
-    '<p class="kicker">Pedido</p>' +
-    '<textarea data-chat-input maxlength="400" rows="3" aria-label="Pedido de ajuste" placeholder="mais curto, tom mais acolhedor, troca o fundo, corrige essa frase"></textarea>' +
+    "</div>" +
+    '<div class="chat-dock">' +
+    '<label class="chat-label">Pedido' +
+    '<textarea data-chat-input maxlength="400" rows="2" aria-label="Pedido de ajuste" placeholder="mais curto, tom mais acolhedor, troca o fundo, corrige essa frase"></textarea>' +
+    "</label>" +
     '<div class="actions">' +
     '<button type="button" class="btn" data-chat-send>Aplicar</button>' +
+    '<button type="button" class="btn" data-chat-use aria-pressed="false">Usar esta</button>' +
     '<button type="button" class="btn-ghost" data-chat-undo>Desfazer</button>' +
-    '<button type="button" class="btn-ghost" data-chat-use>Usar esta</button>' +
     "</div>" +
     '<p class="note">A conversa fica nesta tela. A peça guardada não muda.</p>' +
     '<p class="err" data-chat-err hidden></p>' +
-    "</aside>"
+    "</div></div></aside>"
   );
 }
 
@@ -270,7 +275,7 @@ function visualHtml() {
     ratioBtn("1:1") + ratioBtn("4:5") + ratioBtn("9:16") +
     "</div>" +
     '<button type="button" class="btn btn-block" data-make-image>Gerar imagem</button>' +
-    '<p class="notice">Foto de quem foi atendido só entra com autorização de uso de imagem.</p>' +
+    '<p class="notice">Use fotos de pacientes apenas com autorização de uso de imagem.</p>' +
     '<label class="btn-ghost btn-block file-btn">Enviar foto da clínica<input type="file" accept="image/jpeg,image/png,image/webp" data-photo></label>' +
     '<p class="note" data-photo-status hidden></p>' +
     '<p class="err" data-photo-err hidden></p>' +
@@ -284,11 +289,16 @@ function visualHtml() {
     '<p class="note" data-image-fallback hidden></p>' +
     '<figure class="gen-figure" data-gen-figure hidden>' +
     '<img data-gen-img alt="Imagem gerada para a peça">' +
-    '<div class="actions"><a class="btn" data-download href="#">Baixar</a>' +
-    '<button type="button" class="btn-ghost" data-regen>Regerar</button></div></figure>' +
+    '<div class="actions visual-actions" role="group" aria-label="O que fazer com a imagem">' +
+    '<a class="btn" data-download href="#">Baixar</a>' +
+    '<button type="button" class="btn-ghost" data-regen>Regerar</button>' +
+    '<button type="button" class="btn" data-use-image aria-pressed="false">Usar esta</button>' +
+    "</div></figure>" +
+    '<p class="note" data-chosen hidden></p>' +
     '<figure class="post-base" data-post-base hidden>' +
-    '<img data-base-img alt="Foto importada como base do post">' +
+    '<img data-base-img alt="Foto da clínica enviada para a peça">' +
     "<figcaption data-base-caption></figcaption></figure>" +
+    '<button type="button" class="btn btn-block" data-use-photo hidden aria-pressed="false">Usar esta</button>' +
     "</div></div></section>"
   );
 }
@@ -331,7 +341,15 @@ function wireVisual(el, piece) {
   const baseCap = visual.querySelector("[data-base-caption]");
   const compose = visual.querySelector("[data-compose]");
   const photoErr = visual.querySelector("[data-photo-err]");
-  const hooks = { image: null, photo: null };
+  const chosen = visual.querySelector("[data-chosen]");
+  const usePhoto = visual.querySelector("[data-use-photo]");
+  const hooks = { image: null, photo: null, useGenerated: null, usePhoto: null };
+
+  function markChosen(text) {
+    if (!chosen) return;
+    chosen.hidden = false;
+    chosen.textContent = text;
+  }
 
   function showGenerated(image) {
     fallback.hidden = true;
@@ -346,7 +364,9 @@ function wireVisual(el, piece) {
     stateVis.origem = foto.id || "";
     base.hidden = false;
     baseImg.src = foto.url;
+    baseImg.alt = "Foto da clínica enviada para a peça";
     baseCap.textContent = caption || pieceCaption(piece) || "A clínica, no tom de vocês.";
+    if (usePhoto) usePhoto.hidden = false;
     compose.hidden = false;
   }
 
@@ -354,11 +374,13 @@ function wireVisual(el, piece) {
     visual.querySelectorAll("[data-kind]").forEach((btn) => {
       const on = btn.getAttribute("data-kind") === stateVis.kind;
       btn.classList.toggle("is-on", on);
+      btn.setAttribute("role", "radio");
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
     visual.querySelectorAll("[data-ratio]").forEach((btn) => {
       const on = btn.getAttribute("data-ratio") === stateVis.ratio;
       btn.classList.toggle("is-on", on);
+      btn.setAttribute("role", "radio");
       btn.setAttribute("aria-checked", on ? "true" : "false");
     });
   }
@@ -425,6 +447,19 @@ function wireVisual(el, piece) {
 
   visual.querySelector("[data-make-image]").addEventListener("click", () => runImage(false));
   visual.querySelector("[data-regen]").addEventListener("click", () => runImage(false));
+  visual.querySelector("[data-use-image]").addEventListener("click", () => {
+    if (hooks.useGenerated) hooks.useGenerated();
+    const btn = visual.querySelector("[data-use-image]");
+    btn.setAttribute("aria-pressed", "true");
+    markChosen("Esta imagem fica na peça. Nada vai ao ar sozinho.");
+  });
+  if (usePhoto) {
+    usePhoto.addEventListener("click", () => {
+      if (hooks.usePhoto) hooks.usePhoto();
+      usePhoto.setAttribute("aria-pressed", "true");
+      markChosen("Esta foto fica na peça. Nada vai ao ar sozinho.");
+    });
+  }
   compose.addEventListener("click", () => runImage(true));
 
   const photoStatus = visual.querySelector("[data-photo-status]");
@@ -453,7 +488,7 @@ function wireVisual(el, piece) {
     if (hooks.photo) hooks.photo(data.foto);
   });
 
-  return { stateVis, showGenerated, showPhoto, hooks };
+  return { stateVis, showGenerated, showPhoto, markChosen, hooks };
 }
 
 function wireChat(el, piece, visualApi) {
@@ -475,7 +510,27 @@ function wireChat(el, piece, visualApi) {
   const input = chat.querySelector("[data-chat-input]");
   const err = chat.querySelector("[data-chat-err]");
   const send = chat.querySelector("[data-chat-send]");
+  const useBtn = chat.querySelector("[data-chat-use]");
+  const toggle = chat.querySelector("[data-chat-toggle]");
+  const wide = window.matchMedia("(min-width: 900px)");
   let busy = false;
+
+  function setChatOpen(open) {
+    const show = wide.matches || open;
+    chat.classList.toggle("is-open", show);
+    el.classList.toggle("is-chat-open", !wide.matches && show);
+    if (!toggle) return;
+    toggle.setAttribute("aria-expanded", show ? "true" : "false");
+    toggle.textContent = !wide.matches && show ? "Recolher conversa" : "Abrir conversa";
+  }
+  setChatOpen(false);
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      if (wide.matches) return;
+      setChatOpen(!chat.classList.contains("is-open"));
+    });
+  }
+  wide.addEventListener("change", () => setChatOpen(wide.matches));
 
   function bucket() {
     return pack[pack.target];
@@ -518,6 +573,7 @@ function wireChat(el, piece, visualApi) {
       btn.className = "btn-ghost btn-xs" + (i === b.applied ? " is-on" : "");
       const mark = i === b.applied ? " · em uso" : i === b.index ? " · vista" : "";
       btn.textContent = "Versão " + (i + 1) + mark;
+      btn.setAttribute("aria-pressed", i === b.applied ? "true" : "false");
       btn.addEventListener("click", () => {
         b.index = i;
         paint();
@@ -533,6 +589,12 @@ function wireChat(el, piece, visualApi) {
     warns.hidden = !list.length;
     warns.textContent = list.join(" ");
     chat.querySelector("[data-chat-undo]").disabled = !b.versions.length || b.index <= 0;
+    const inUse = b.versions.length > 0 && b.index === b.applied;
+    useBtn.setAttribute("aria-pressed", inUse ? "true" : "false");
+    const useImg = el.querySelector("[data-use-image]");
+    const useFoto = el.querySelector("[data-use-photo]");
+    if (useImg) useImg.setAttribute("aria-pressed", pack.imagem.applied >= 0 && pack.imagem.index === pack.imagem.applied ? "true" : "false");
+    if (useFoto) useFoto.setAttribute("aria-pressed", pack.foto.applied >= 0 && pack.foto.index === pack.foto.applied ? "true" : "false");
   }
   function pushVersion(name, version, focus) {
     const b = pack[name];
@@ -560,6 +622,21 @@ function wireChat(el, piece, visualApi) {
   };
   visualApi.hooks.photo = (foto) => {
     pushVersion("foto", { id: foto.id, url: foto.url, source: "foto" }, false);
+  };
+  visualApi.hooks.useGenerated = () => {
+    const bucketImg = pack.imagem;
+    if (!bucketImg.versions.length) return;
+    const src = (el.querySelector("[data-gen-img]") || {}).src || "";
+    let index = bucketImg.versions.findIndex((v) => v.url && src.indexOf(v.url) !== -1);
+    if (index < 0) index = bucketImg.index;
+    pack.target = "imagem";
+    useIndex(index);
+  };
+  visualApi.hooks.usePhoto = () => {
+    const bucketFoto = pack.foto;
+    if (!bucketFoto.versions.length) return;
+    pack.target = "foto";
+    useIndex(bucketFoto.index);
   };
 
   chat.querySelectorAll("[data-chat-target]").forEach((btn) => {
