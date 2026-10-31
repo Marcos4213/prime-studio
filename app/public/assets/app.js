@@ -118,7 +118,7 @@ async function boot() {
     state.clinic = data.clinic || null;
     if (data.clinic && data.clinic.profile) state.entrada = { ...data.clinic.profile };
     const filled = state.clinic && state.clinic.completeness ? Number(state.clinic.completeness.filled) : 0;
-    if (!entradaAdiada() && (!state.onboarding.completo || filled === 0)) location.hash = "#entrada";
+    if (!state.onboarding.completo || (filled === 0 && !entradaPulada(state.me.id))) location.hash = "#entrada";
     showApp();
   } else {
     showLogin();
@@ -349,12 +349,6 @@ function dressFrame(frame) {
     html, body { max-width: 100%; overflow-x: hidden; }
     body { background: var(--color-bg); }
     img, video, .chat, .visual, .piece-board, .file-btn { max-width: 100%; }
-    @media (max-width: 899px) {
-      html { --casca-clear: 0px; }
-      .circulo, .wrap, .ind, .edu, .page, main {
-        padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-      }
-    }
   `;
   doc.head.appendChild(style);
   doc.addEventListener("click", (event) => {
@@ -739,19 +733,21 @@ const ENTRADA_STEPS = [
 
 let entradaStep = 0;
 
-function entradaAdiada() {
+function entradaPulada(clientId) {
+  if (!clientId) return false;
   try {
-    return sessionStorage.getItem("prime.entrada.adiada") === "1";
+    return localStorage.getItem("prime.entrada.pulado." + clientId) === "1";
   } catch {
     return false;
   }
 }
 
-function adiarEntrada() {
+function marcarEntradaPulada(clientId) {
+  if (!clientId) return;
   try {
-    sessionStorage.setItem("prime.entrada.adiada", "1");
+    localStorage.setItem("prime.entrada.pulado." + clientId, "1");
   } catch {
-    /* o Pular ainda entra na central nesta visita */
+    /* o próximo acesso volta a oferecer o perfil vazio */
   }
 }
 
@@ -898,7 +894,7 @@ async function advanceEntrada(concluir) {
   }
   if (data.onboarding) state.onboarding = data.onboarding;
   if (concluir) {
-    adiarEntrada();
+    marcarEntradaPulada(state.me && state.me.id);
     openHref("/hoje", { replace: true });
     return;
   }

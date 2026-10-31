@@ -133,10 +133,10 @@ async function copyText(text, btn) {
 function buildPiece(piece) {
   const o = piece.output || {};
   const copies = [];
-  const copyBtn = (label, text) => {
+  const copyBtn = (label, text, live) => {
     const i = copies.length;
     copies.push(String(text || ""));
-    return '<button type="button" class="btn-ghost btn-xs" data-copy-i="' + i + '">Copiar ' + esc(label) + "</button>";
+    return '<button type="button" class="btn-ghost btn-xs" data-copy-i="' + i + '"' + (live ? " data-copy-live" : "") + ">Copiar " + esc(label) + "</button>";
   };
   const field = (label, text, live) =>
     '<p class="lbl">' + label + '</p><p class="copy"' + (live ? " data-live-copy" : "") + ">" + (text ? esc(text) : "—") + "</p>";
@@ -154,12 +154,12 @@ function buildPiece(piece) {
       field("Chamada", sc.cta) +
       '<p class="lbl">Como gravar — ' + esc(modeLabel) + "</p>" +
       '<ul class="tips">' + tips.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
-      '<div class="actions">' + copyBtn("roteiro", scriptText) + "</div>";
+      '<div class="actions">' + copyBtn("roteiro", scriptText, true) + "</div>";
   } else if (piece.format === "carousel") {
     const slides = Array.isArray(o.slides) ? o.slides : [];
     body =
       field("Legenda", o.caption, true) +
-      '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
+      '<div class="actions">' + copyBtn("legenda", o.caption, true) + "</div>" +
       slides
         .map((s, i) => {
           const name = ORDINALS[i] ? ORDINALS[i] + " tela" : "Tela";
@@ -174,7 +174,7 @@ function buildPiece(piece) {
   } else {
     body =
       field("Legenda", o.caption, true) +
-      '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
+      '<div class="actions">' + copyBtn("legenda", o.caption, true) + "</div>" +
       '<p class="lbl">Prompt de imagem</p><p class="prompt">' + esc(o.imagePrompt) + "</p>" +
       '<div class="actions">' + copyBtn("prompt", o.imagePrompt) + "</div>";
   }
@@ -276,7 +276,7 @@ function visualHtml() {
     "</div>" +
     '<button type="button" class="btn btn-block" data-make-image>Gerar imagem</button>' +
     '<p class="notice">Use fotos de pacientes apenas com autorização de uso de imagem.</p>' +
-    '<label class="btn-ghost btn-block file-btn">Enviar foto da clínica<input type="file" accept="image/jpeg,image/png,image/webp" data-photo></label>' +
+    '<label class="btn-ghost btn-block file-btn">Importar foto da clínica<input type="file" accept="image/jpeg,image/png,image/webp" data-photo></label>' +
     '<p class="note" data-photo-status hidden></p>' +
     '<p class="err" data-photo-err hidden></p>' +
     '<button type="button" class="btn-ghost btn-block" data-compose hidden>Compor com a foto</button>' +
@@ -307,8 +307,9 @@ function mountPiece(el, piece) {
   const built = buildPiece(piece);
   el.classList.add("piece-board");
   el.innerHTML = built.html;
+  el._copies = built.copies;
   el.querySelectorAll("[data-copy-i]").forEach((btn) => {
-    btn.addEventListener("click", () => copyText(built.copies[Number(btn.getAttribute("data-copy-i"))], btn));
+    btn.addEventListener("click", () => copyText(el._copies[Number(btn.getAttribute("data-copy-i"))], btn));
   });
   const visualApi = wireVisual(el, piece);
   wireChat(el, piece, visualApi);
@@ -400,6 +401,12 @@ function wireVisual(el, piece) {
     });
   });
 
+  function imageFallbackText(motivo) {
+    if (motivo === "cota") return "A cota de imagens acabou por agora. Nada foi publicado.";
+    if (motivo === "sem_chave") return "Sem chave de IA: a imagem não foi gerada. Nada foi publicado.";
+    return "A imagem não veio agora. Nada foi publicado. Você pode tentar de novo.";
+  }
+
   async function runImage(useOrigem) {
     if (stateVis.busy) return;
     stateVis.busy = true;
@@ -413,8 +420,9 @@ function wireVisual(el, piece) {
     fallback.classList.add("is-wait");
     fallback.classList.remove("is-err");
     fallback.textContent = "Preparando a imagem…";
+    let res;
     try {
-      const res = await api("/api/estudio/imagem", {
+      res = await api("/api/estudio/imagem", {
         method: "POST",
         body: {
           kind: stateVis.kind,
@@ -424,18 +432,8 @@ function wireVisual(el, piece) {
           origem: useOrigem ? stateVis.origem : "",
         },
       });
-      if (res.status === 401) return showLogin();
-      if (!res.ok || !res.data.ok || !res.data.image) {
-        fallback.hidden = false;
-        fallback.classList.add("is-err");
-        fallback.classList.remove("is-wait");
-        fallback.textContent = res.data.motivo === "cota"
-          ? "A cota de imagens acabou por agora. Nada foi publicado."
-          : "A imagem não veio agora. Nada foi publicado. Você pode tentar de novo.";
-        return;
-      }
-      showGenerated(res.data.image);
-      if (hooks.image) hooks.image(res.data.image);
+    } catch {
+      res = { ok: false, status: 0, data: {} };
     } finally {
       stateVis.busy = false;
       make.disabled = false;
@@ -443,6 +441,16 @@ function wireVisual(el, piece) {
       visual.classList.remove("is-busy");
       visual.removeAttribute("aria-busy");
     }
+    if (res.status === 401) return showLogin();
+    if (!res.ok || !res.data.ok || !res.data.image) {
+      fallback.hidden = false;
+      fallback.classList.add("is-err");
+      fallback.classList.remove("is-wait");
+      fallback.textContent = imageFallbackText(res.data && res.data.motivo);
+      return;
+    }
+    showGenerated(res.data.image);
+    if (hooks.image) hooks.image(res.data.image);
   }
 
   visual.querySelector("[data-make-image]").addEventListener("click", () => runImage(false));
@@ -474,9 +482,14 @@ function wireVisual(el, piece) {
     }
     const body = new FormData();
     body.append("foto", file);
-    const res = await fetch("/api/estudio/fotos", { method: "POST", credentials: "same-origin", body });
+    let res;
     let data = {};
-    try { data = await res.json(); } catch { data = {}; }
+    try {
+      res = await fetch("/api/estudio/fotos", { method: "POST", credentials: "same-origin", body });
+      try { data = await res.json(); } catch { data = {}; }
+    } catch {
+      res = { status: 0, ok: false };
+    }
     if (photoStatus) photoStatus.hidden = true;
     if (res.status === 401) return showLogin();
     if (!res.ok || !data.ok) {
@@ -541,13 +554,21 @@ function wireChat(el, piece, visualApi) {
   }
   function applyToPiece(name, version) {
     if (name === "legenda") {
+      const text = version.text || "";
       const live = el.querySelector("[data-live-copy]");
-      if (live) live.textContent = version.text || "—";
+      if (live && live.tagName === "P") live.textContent = text || "—";
+      else if (live) live.textContent = text || "—";
+      const copies = el._copies;
+      const copyLive = el.querySelector("[data-copy-live]");
+      if (copies && copyLive) copies[Number(copyLive.getAttribute("data-copy-i"))] = text;
+      const cap = el.querySelector("[data-base-caption]");
+      const baseFig = el.querySelector("[data-post-base]");
+      if (cap && baseFig && !baseFig.hidden) cap.textContent = text || "A clínica, no tom do nosso time.";
       if (piece.format === "video") {
-        const script = { ...((piece.output || {}).script || {}), hook: version.text || "", body: "", cta: "" };
+        const script = { ...((piece.output || {}).script || {}), hook: text, body: "", cta: "" };
         piece.output = { ...(piece.output || {}), script };
       } else {
-        piece.output = { ...(piece.output || {}), caption: version.text || "" };
+        piece.output = { ...(piece.output || {}), caption: text };
       }
       return;
     }
@@ -639,6 +660,14 @@ function wireChat(el, piece, visualApi) {
     useIndex(bucketFoto.index);
   };
 
+  const fold = chat.querySelector("[data-chat-fold]");
+  if (fold) {
+    fold.addEventListener("click", () => {
+      const folded = chat.classList.toggle("is-folded");
+      fold.textContent = folded ? "Abrir conversa" : "Recolher";
+      fold.setAttribute("aria-expanded", folded ? "false" : "true");
+    });
+  }
   chat.querySelectorAll("[data-chat-target]").forEach((btn) => {
     btn.addEventListener("click", () => {
       pack.target = btn.getAttribute("data-chat-target");
@@ -671,8 +700,9 @@ function wireChat(el, piece, visualApi) {
     log.scrollTop = log.scrollHeight;
     const empty = chat.querySelector("[data-chat-empty]");
     if (empty) empty.hidden = true;
+    let res;
     try {
-      const res = await api("/api/estudio/chat", {
+      res = await api("/api/estudio/chat", {
         method: "POST",
         body: {
           target: name === "legenda" ? "legenda" : "imagem",
@@ -684,6 +714,10 @@ function wireChat(el, piece, visualApi) {
           origem: name === "legenda" ? "" : current.id,
         },
       });
+    } catch {
+      res = { ok: false, status: 0, data: {} };
+    }
+    try {
       if (res.status === 401) return showLogin();
       if (!res.ok || !res.data.ok || !res.data.version) {
         err.hidden = false;
@@ -732,10 +766,16 @@ async function generate() {
   const theme = typed || boot.today.angle;
   const body = { format: state.format, theme };
   if (state.format === "video") body.recordingMode = state.mode;
-  const res = await api("/api/estudio/generate", { method: "POST", body });
-  state.busy = false;
-  qs("#gen").textContent = "Montar a peça";
-  syncGen();
+  let res;
+  try {
+    res = await api("/api/estudio/generate", { method: "POST", body });
+  } catch {
+    res = { ok: false, status: 0, data: {} };
+  } finally {
+    state.busy = false;
+    qs("#gen").textContent = "Montar a peça";
+    syncGen();
+  }
   if (res.status === 401) return showLogin();
   if (!res.ok || !res.data.ok) {
     const err = qs("#genErr");

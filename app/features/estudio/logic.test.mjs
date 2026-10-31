@@ -82,9 +82,15 @@ test("a página cabe no celular e deixa o hábito visível", () => {
   assert.match(tokens, /--color-accent-text:\s*var\(--color-on-primary\)/);
   assert.match(css, /\.btn \{[^}]*background:\s*var\(--color-accent\)/);
   assert.match(css, /var\(--color-gold\)/);
-  const notice = "Use fotos de pacientes apenas com autorização de uso de imagem.";
-  assert.match(js, /Use fotos de pacientes apenas com autorização de uso de imagem\./);
-  assert.doesNotMatch((html + js).split(notice).join(""), /faturamento|antes e depois|paciente/i);
+  const avisoFoto = "Use fotos de pacientes apenas com autorização de uso de imagem.";
+  assert.ok(js.includes(avisoFoto));
+  assert.doesNotMatch(html + js.replaceAll(avisoFoto, ""), /faturamento|antes e depois|paciente/i);
+  assert.match(js, /Importar foto/);
+  assert.match(js, /data-chat/);
+  const server = fs.readFileSync(new URL("server.js", dir), "utf8");
+  const upload = server.slice(server.indexOf("export async function handleEstudioUpload"), server.indexOf("export async function handleEstudioChat"));
+  assert.equal(upload.includes("handleEstudioUpload"), true);
+  assert.doesNotMatch(upload, /brandGuard|compliance|antes e depois|CFM/i);
   assert.match(html, /recepcao\.webp/);
   assert.match(html, /sala\.webp/);
   assert.match(html, /espera\.webp/);
