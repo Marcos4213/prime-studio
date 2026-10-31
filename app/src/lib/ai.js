@@ -196,8 +196,8 @@ function attach(output, method) {
   return { ...output, copyMethod: method, warnings: brandGuard(output) };
 }
 
-// O flash atual às vezes não devolve cabeçalho (timeout/503). O 2.5 estável entra só então.
-const FALLBACK_MODEL = "gemini-2.5-flash";
+// O flash atual às vezes responde 503 ou não devolve cabeçalho. O 3.6 estável entra só então.
+const FALLBACK_MODEL = "gemini-3.6-flash";
 
 async function generateParsed(env, key, args) {
   const primary = geminiModel(env);

@@ -129,7 +129,7 @@ test("se o flash atual não responde, o flash estável anterior entrega a legend
     const result = await generatePiece({ GEMINI_API_KEY: SECRET }, { format: "post", theme: "recepção", profile: {} });
     assert.equal(calls >= 2, true);
     assert.equal(result.source, "ia");
-    assert.equal(result.model, "gemini-2.5-flash");
+    assert.equal(result.model, "gemini-3.6-flash");
     assert.equal(JSON.stringify(result).includes(SECRET), false);
   } finally {
     globalThis.fetch = prev;
