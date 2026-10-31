@@ -34,7 +34,7 @@ const NAV = [
   { id: "indicacao", title: "Indicação", href: "/indicacao", icon: "indicacao" },
 ];
 const FRONTS = new Set(NAV.filter((item) => item.id !== "hoje").map((item) => item.id));
-const MAIS = new Set(["educacao", "comunidade", "indicacao"]);
+const MAIS = new Set(["educacao", "comunidade", "indicacao", "marca"]);
 
 function icon(name) {
   const paths = {
@@ -46,6 +46,7 @@ function icon(name) {
     comunidade: '<circle cx="8" cy="9" r="2.2"/><circle cx="16" cy="9" r="2.2"/><path d="M4.2 18.2c.5-2.3 2.1-3.6 3.8-3.6h.4c1.6 0 3.2 1.3 3.6 3.6"/><path d="M12.2 18.2c.4-2.3 2-3.6 3.6-3.6h.4c1.7 0 3.3 1.3 3.8 3.6"/>',
     indicacao: '<path d="M12 4.5v15"/><path d="M8 8.5h5.5a2.8 2.8 0 0 1 0 5.6H8.8a2.8 2.8 0 0 0 0 5.6H16"/>',
     mais: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
+    marca: '<circle cx="12" cy="8" r="3"/><path d="M5.5 19.2c.8-3 3.2-4.6 6.5-4.6s5.7 1.6 6.5 4.6"/>',
   };
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || ""}</svg>`;
 }
@@ -56,7 +57,9 @@ const state = {
   format: "post",
   profile: null,
   onboarding: { completo: false, tema_amanha: "" },
+  clinic: null,
   menu: [],
+  entrada: {},
 };
 
 async function api(path, opts = {}) {
@@ -112,8 +115,10 @@ async function boot() {
     state.me = data.client;
     state.aiOn = data.ai_configurada;
     state.onboarding = data.onboarding || { completo: false, tema_amanha: "" };
-    if (!state.onboarding.completo) showOnboarding();
-    else showApp();
+    state.clinic = data.clinic || null;
+    if (data.clinic && data.clinic.profile) state.entrada = { ...data.clinic.profile };
+    if (!state.onboarding.completo) location.hash = "#entrada";
+    showApp();
   } else {
     showLogin();
   }
@@ -221,6 +226,7 @@ function toggleMais(force) {
 function paneFromHash() {
   const raw = location.hash.replace(/^#\/?/, "").split(/[/?]/)[0];
   if (raw === "perfil") return "marca";
+  if (raw === "entrada") return "entrada";
   if (raw === "historico" || raw === "marca") return raw;
   if (raw === "inicio" || raw === "hoje" || !raw) return "hoje";
   if (FRONTS.has(raw)) return raw;
@@ -230,6 +236,7 @@ function paneFromHash() {
 function hrefFor(id) {
   if (id === "hoje") return "/hoje";
   if (id === "marca") return "/marca";
+  if (id === "entrada") return "/entrada";
   if (id === "historico") return "/historico";
   return `/${id}`;
 }
@@ -237,6 +244,7 @@ function hrefFor(id) {
 function hashFor(id) {
   if (id === "hoje") return "#inicio";
   if (id === "marca") return "#perfil";
+  if (id === "entrada") return "#entrada";
   return `#${id}`;
 }
 
@@ -265,12 +273,15 @@ function setActive(id) {
 function renderMenu() {
   const box = $("[data-menu]");
   if (!box) return;
-  box.innerHTML = state.menu
+  const items = state.menu.filter((item) => item.id !== "marca");
+  const pct = state.clinic && state.clinic.completeness ? `${state.clinic.completeness.percent}%` : "";
+  box.innerHTML = items
     .map(
       (item) =>
         `<a class="nav-link" href="${esc(hashFor(item.id))}" data-nav="${esc(item.id)}" data-href="${esc(item.href)}">${icon(item.icon)}<span class="nav-label">${esc(item.title)}</span></a>`
     )
-    .join("");
+    .join("") +
+    `<a class="nav-link" href="#perfil" data-nav="marca" data-href="/marca">${icon("marca")}<span class="nav-label">Perfil da marca</span><span class="nav-pct" data-complete-nav>${esc(pct)}</span></a>`;
   $$("a", box).forEach((a) =>
     a.addEventListener("click", (e) => {
       e.preventDefault();
@@ -302,6 +313,8 @@ function showPane(id) {
   setActive(id);
   if (id === "historico") renderHistorico();
   if (id === "hoje") renderHoje();
+  if (id === "entrada") renderEntrada();
+  if (id === "marca") renderMarca();
 }
 
 function openHref(href, opts = {}) {
@@ -623,6 +636,10 @@ function renderPiece(piece, fresh) {
   const warns = (o.warnings || []).length
     ? `<div class="warns"><b>Revisar antes de aprovar:</b><br>${o.warnings.map(esc).join("<br>")}</div>`
     : "";
+  const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
+  const methodHtml = methodName
+    ? `<p class="method" data-copy-method>Método de copy: ${esc(methodName)}</p><p class="hint">Dentro do Método PRIME.</p>`
+    : "";
   const srcBadge = `<span class="badge src-${piece.source}">${piece.source === "ia" ? "Gerado por IA" : "Exemplo"}</span>`;
   const stBadge = `<span class="badge st-${piece.status}">${piece.status}</span>`;
   const actions = fresh
@@ -634,7 +651,7 @@ function renderPiece(piece, fresh) {
   return `<div class="block"><div class="piece">
       <div>${srcBadge}${stBadge}</div>
       <h3>${fmtName(piece.format)}${piece.theme ? " · " + esc(piece.theme) : ""}</h3>
-      ${inner}${warns}
+      ${methodHtml}${inner}${warns}
     </div>${actions}</div>`;
 }
 
@@ -657,18 +674,264 @@ function fmtName(k) {
   return (FORMATS.find((f) => f.key === k) || {}).nm || k;
 }
 
+// ---------- Primeiro acesso ----------
+const ENTRADA_STEPS = [
+  {
+    kicker: "Primeiro acesso",
+    title: "A pergunta de todo dia: o que a clínica posta hoje.",
+    lede: "O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho. O estúdio fica no centro. Presença, Link na bio, Educação, Comunidade e Indicação entram no mesmo acesso.",
+    fields: [{ key: "nicho", label: "Nicho", kind: "nicho" }],
+  },
+  {
+    kicker: "A clínica",
+    title: "O que vocês fazem.",
+    lede: "A gente usa isso para escrever no tom da clínica. Dá para pular e voltar.",
+    fields: [
+      { key: "especialidades", label: "Especialidades", placeholder: "O que a clínica atende" },
+      { key: "procedimentos", label: "Procedimentos carro-chefe", placeholder: "O que mais sai no dia a dia, sem promessa" },
+    ],
+  },
+  {
+    kicker: "Para quem",
+    title: "Quem a clínica quer receber.",
+    lede: "Sem dado de paciente. Só o perfil de quem a clínica escolhe atender.",
+    fields: [
+      { key: "publico", label: "Público ideal", placeholder: "Quem a clínica quer receber" },
+      { key: "diferenciais", label: "Diferenciais", placeholder: "O que torna a clínica única, sem número" },
+    ],
+  },
+  {
+    kicker: "A voz",
+    title: "Como a clínica fala.",
+    lede: "O tom entra em cada peça. A cidade situa, sem inventar endereço.",
+    fields: [
+      { key: "tom", label: "Tom de voz", placeholder: "Sóbrio, acolhedor, direto" },
+      { key: "cidade", label: "Cidade", placeholder: "Cidade da clínica", rows: 1 },
+    ],
+  },
+  {
+    kicker: "O caminho",
+    title: "O que a clínica quer com a presença.",
+    lede: "Objetivo sem meta de faturamento. Objeção é o que trava antes de marcar.",
+    fields: [
+      { key: "objetivos", label: "Objetivos", placeholder: "Ser encontrada, escolhida, lembrada" },
+      { key: "objecoes", label: "Objeções comuns", placeholder: "O que trava a decisão, sem dado de saúde" },
+    ],
+  },
+  {
+    kicker: "Amanhã",
+    title: "Volte amanhã para a próxima peça.",
+    lede: "Prova é autoridade real, sem número inventado. Se quiser, deixe o tema. A central abre por ele.",
+    fields: [
+      { key: "provas", label: "Provas e autoridade", placeholder: "Formação ou tempo de casa, sem número inventado" },
+      { key: "tema_amanha", label: "Tema de amanhã", placeholder: "Ex.: um detalhe do espaço da clínica", rows: 1 },
+    ],
+  },
+];
+
+let entradaStep = 0;
+
+function meterHtml(score) {
+  const filled = score ? score.filled : 0;
+  const total = score ? score.total : 10;
+  const pct = score ? score.percent : 0;
+  return `<p class="complete"><span class="complete-label">${filled} de ${total} campos</span><span class="complete-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></p>`;
+}
+
+function paintCompleteNav() {
+  const el = $("[data-complete-nav]");
+  if (!el) return;
+  const pct = state.clinic && state.clinic.completeness ? `${state.clinic.completeness.percent}%` : "";
+  el.textContent = pct;
+}
+
+function renderEntrada() {
+  const v = $('[data-view="entrada"]');
+  if (!v) return;
+  if (v.dataset.ready === "1") {
+    paintEntrada();
+    return;
+  }
+  v.dataset.ready = "1";
+  const steps = ENTRADA_STEPS.map((step, index) => {
+    const fields = step.fields
+      .map((field) => {
+        if (field.kind === "nicho") {
+          return `<div class="choices" role="radiogroup" aria-label="Nicho">
+            <button type="button" class="choice" data-nicho="estetica">Estética</button>
+            <button type="button" class="choice" data-nicho="odonto">Odonto</button>
+          </div>`;
+        }
+        const rows = field.rows || 3;
+        return `<label class="form" for="ent-${field.key}">${esc(field.label)}
+          <textarea id="ent-${field.key}" data-field="${field.key}" rows="${rows}" maxlength="400" placeholder="${esc(field.placeholder || "")}"></textarea>
+        </label>`;
+      })
+      .join("");
+    return `<section data-entrada-step="${index}">
+      <p class="eyebrow">${esc(step.kicker)}</p>
+      <h2>${esc(step.title)}</h2>
+      <p class="lede">${esc(step.lede)}</p>
+      ${fields}
+    </section>`;
+  }).join("");
+  v.innerHTML = `<form id="entradaForm" class="entrada">
+    <div class="onb-bar" id="entradaBar" aria-hidden="true">${ENTRADA_STEPS.map(() => "<i></i>").join("")}</div>
+    <p class="onb-count" id="entradaCount"></p>
+    ${steps}
+    <p id="entradaErr" class="err" role="alert" hidden></p>
+    <div class="onb-actions">
+      <button type="button" class="btn-ghost" id="entradaBack">Voltar</button>
+      <button type="button" class="btn-ghost" id="entradaSkip">Pular</button>
+      <button type="submit" class="btn" id="entradaNext">Continuar</button>
+    </div>
+  </form>`;
+  v.querySelectorAll("[data-field]").forEach((input) => {
+    input.addEventListener("input", () => {
+      state.entrada[input.dataset.field] = input.value;
+    });
+  });
+  v.querySelectorAll("[data-nicho]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.entrada.nicho = btn.dataset.nicho;
+      paintEntrada();
+    });
+  });
+  $("#entradaBack").addEventListener("click", () => {
+    if (entradaStep > 0) entradaStep -= 1;
+    paintEntrada();
+  });
+  $("#entradaSkip").addEventListener("click", () => advanceEntrada(entradaStep === ENTRADA_STEPS.length - 1));
+  $("#entradaForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    advanceEntrada(entradaStep === ENTRADA_STEPS.length - 1);
+  });
+  paintEntrada();
+}
+
+function paintEntrada() {
+  const v = $('[data-view="entrada"]');
+  if (!v) return;
+  $$("[data-entrada-step]", v).forEach((el) => {
+    el.hidden = Number(el.dataset.entradaStep) !== entradaStep;
+  });
+  $$("#entradaBar i", v).forEach((bar, i) => bar.classList.toggle("is-on", i <= entradaStep));
+  const count = $("#entradaCount");
+  if (count) count.textContent = `${entradaStep + 1} de ${ENTRADA_STEPS.length}`;
+  const back = $("#entradaBack");
+  if (back) back.hidden = entradaStep === 0;
+  const next = $("#entradaNext");
+  if (next) next.textContent = entradaStep === ENTRADA_STEPS.length - 1 ? "Entrar na central" : "Continuar";
+  v.querySelectorAll("[data-field]").forEach((input) => {
+    const value = state.entrada[input.dataset.field] || "";
+    if (input.value !== value) input.value = value;
+  });
+  v.querySelectorAll("[data-nicho]").forEach((btn) => {
+    btn.classList.toggle("is-on", state.entrada.nicho === btn.dataset.nicho);
+    btn.setAttribute("aria-pressed", state.entrada.nicho === btn.dataset.nicho ? "true" : "false");
+  });
+}
+
+async function advanceEntrada(concluir) {
+  const err = $("#entradaErr");
+  const next = $("#entradaNext");
+  if (err) err.hidden = true;
+  if (next) next.disabled = true;
+  const perfil = { ...state.entrada };
+  const { ok, data } = await api("/api/onboarding", {
+    method: "POST",
+    body: { concluir, tema_amanha: perfil.tema_amanha || "", perfil },
+  });
+  if (next) next.disabled = false;
+  if (!ok) {
+    if (err) {
+      err.textContent = "Não foi possível guardar. Tente de novo.";
+      err.hidden = false;
+    }
+    return;
+  }
+  if (data.clinic) {
+    state.clinic = data.clinic;
+    paintCompleteNav();
+  }
+  if (data.onboarding) state.onboarding = data.onboarding;
+  if (concluir) {
+    openHref("/hoje", { replace: true });
+    return;
+  }
+  entradaStep += 1;
+  paintEntrada();
+}
+
 // ---------- Marca ----------
 async function renderMarca() {
   const v = $('[data-view="marca"]');
+  if (!v) return;
+  const ticket = (v.dataset.ticket = String(Number(v.dataset.ticket || "0") + 1));
   v.innerHTML = `<div class="block"><span class="spin">Carregando perfil de marca…</span></div>`;
-  const { ok, data } = await api("/api/profile");
-  const p = ok && data.ok ? data.profile : { colors: [], fonts: [], tone: "", avoid: "", highlights: "" };
+  const [profileRes, clinicRes] = await Promise.all([api("/api/profile"), api("/api/clinic-profile")]);
+  if (!v.isConnected || v.dataset.ticket !== ticket) return;
+  const p = profileRes.ok && profileRes.data.ok ? profileRes.data.profile : { colors: [], fonts: [], tone: "", avoid: "", highlights: "" };
+  const clinic = clinicRes.ok && clinicRes.data.ok ? clinicRes.data : { profile: {}, completeness: { filled: 0, total: 10, percent: 0 }, version: 0, methods: [], stored: true };
   state.profile = p;
+  state.clinic = {
+    profile: clinic.profile,
+    version: clinic.version,
+    completeness: clinic.completeness,
+    stored: clinic.stored,
+  };
+  paintCompleteNav();
+  const c = clinic.profile || {};
+  const structureLabel = {
+    post: "Post",
+    bio: "Bio",
+    "link-na-bio": "Link na bio",
+    anuncio: "Anúncio",
+    whatsapp: "WhatsApp",
+    site: "Site",
+  };
+  const methods = (clinic.methods || [])
+    .map((method) => `<li><span>${esc(structureLabel[method.structure] || method.structure)}</span> ${esc(method.name)}</li>`)
+    .join("");
+  const versionLine = clinic.stored === false
+    ? "O perfil versionado ainda não está neste banco."
+    : clinic.version
+      ? `Versão ${clinic.version}. Cada gravação acrescenta uma versão nova.`
+      : "Ainda sem versão. A primeira gravação começa o treino.";
   v.innerHTML = `
+    <div class="block perfil-treino">
+      <span class="eyebrow">Treinar IA</span>
+      <h2>Perfil da marca / Treinar IA</h2>
+      <p class="hint">A gente lê este perfil para montar post, bio, link na bio, anúncio, WhatsApp e site. Sem promessa, sem antes e depois, sem número inventado.</p>
+      ${meterHtml(clinic.completeness)}
+      <p class="hint" id="versionLine">${esc(versionLine)}</p>
+      <ul class="method-list">${methods}</ul>
+      <div class="perfil-grid">
+        <label class="form">Nicho
+          <select id="pfNicho">
+            <option value="">Escolher</option>
+            <option value="estetica">Estética</option>
+            <option value="odonto">Odonto</option>
+          </select>
+        </label>
+        <label class="form">Cidade<textarea id="pfCidade" rows="2" maxlength="80">${esc(c.cidade || "")}</textarea></label>
+        <label class="form">Especialidades<textarea id="pfEspecialidades" rows="3" maxlength="400">${esc(c.especialidades || "")}</textarea></label>
+        <label class="form">Procedimentos carro-chefe<textarea id="pfProcedimentos" rows="3" maxlength="400">${esc(c.procedimentos || "")}</textarea></label>
+        <label class="form">Público ideal<textarea id="pfPublico" rows="3" maxlength="400">${esc(c.publico || "")}</textarea></label>
+        <label class="form">Diferenciais<textarea id="pfDiferenciais" rows="3" maxlength="400">${esc(c.diferenciais || "")}</textarea></label>
+        <label class="form">Tom de voz<textarea id="pfTom" rows="3" maxlength="400">${esc(c.tom || "")}</textarea></label>
+        <label class="form">Objetivos<textarea id="pfObjetivos" rows="3" maxlength="400">${esc(c.objetivos || "")}</textarea></label>
+        <label class="form">Objeções comuns<textarea id="pfObjecoes" rows="3" maxlength="400">${esc(c.objecoes || "")}</textarea></label>
+        <label class="form">Provas e autoridade<textarea id="pfProvas" rows="3" maxlength="400">${esc(c.provas || "")}</textarea></label>
+      </div>
+      <button class="btn" id="saveClinic" type="button">Guardar versão</button>
+      <span class="note" id="clinicSaved" hidden>Versão guardada.</span>
+      <p class="err" id="clinicErr" hidden></p>
+    </div>
     <div class="block">
-      <span class="eyebrow">Conta</span>
-      <h2>Perfil da clínica</h2>
-      <p class="hint">Cores, fontes e tom que a IA respeita ao montar cada peça. Quanto mais completo, mais parece sua clínica.</p>
+      <span class="eyebrow">Memória visual</span>
+      <h2>Cores e fontes</h2>
+      <p class="hint">O que a peça respeita além do texto. Quanto mais completo, mais parece a clínica.</p>
       <p class="row"><button type="button" class="btn-ghost btn-xs" id="goHist">Peças guardadas</button></p>
 
       <div class="eyebrow" style="margin:10px 0 4px">Cores</div>
@@ -710,6 +973,52 @@ async function renderMarca() {
   };
   drawColors();
   drawFonts();
+  const nicho = $("#pfNicho");
+  if (nicho) nicho.value = c.nicho || "";
+  const saveClinic = $("#saveClinic");
+  if (saveClinic) {
+    saveClinic.addEventListener("click", async () => {
+      saveClinic.disabled = true;
+      const err = $("#clinicErr");
+      if (err) err.hidden = true;
+      const { ok, data } = await api("/api/clinic-profile", {
+        method: "PUT",
+        body: {
+          nicho: $("#pfNicho").value,
+          cidade: $("#pfCidade").value,
+          especialidades: $("#pfEspecialidades").value,
+          procedimentos: $("#pfProcedimentos").value,
+          publico: $("#pfPublico").value,
+          diferenciais: $("#pfDiferenciais").value,
+          tom: $("#pfTom").value,
+          objetivos: $("#pfObjetivos").value,
+          objecoes: $("#pfObjecoes").value,
+          provas: $("#pfProvas").value,
+        },
+      });
+      saveClinic.disabled = false;
+      if (!ok) {
+        if (err) {
+          err.textContent = data.error === "perfil_indisponivel"
+            ? "Este banco ainda não tem a tabela do perfil. A migração não foi aplicada."
+            : "Não foi possível guardar.";
+          err.hidden = false;
+        }
+        return;
+      }
+      state.clinic = data;
+      paintCompleteNav();
+      const meter = $(".complete", v);
+      if (meter) meter.outerHTML = meterHtml(data.completeness);
+      const note = $("#clinicSaved");
+      if (note) {
+        note.hidden = false;
+        note.textContent = data.version ? `Versão ${data.version} guardada.` : "Versão guardada.";
+      }
+      const version = $("#versionLine");
+      if (version && data.version) version.textContent = `Versão ${data.version}. Cada gravação acrescenta uma versão nova.`;
+    });
+  }
   const hist = $("#goHist");
   if (hist) hist.addEventListener("click", () => openHref("/historico"));
   $("#addColor").addEventListener("click", () => {

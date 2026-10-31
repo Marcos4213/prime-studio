@@ -34,6 +34,7 @@ p { overflow-wrap: anywhere; }
 }
 .logo span { color: var(--color-primary); font-weight: 400; margin-left: .4em; }
 .lede, .hint, .note, .photo-note, .habit-why, .status, .fine { color: var(--color-muted); }
+.method { color: var(--color-primary); font-weight: 600; margin: 8px 0 4px; }
 .lede { margin: 10px 0 14px; max-width: 36ch; }
 .fine { font-size: .78rem; margin: 16px 0 0; }
 .hint, .note, .photo-note, .habit-why, .status { font-size: .9rem; }
