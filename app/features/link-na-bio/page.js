@@ -199,6 +199,7 @@ export function renderEditorPage() {
   <p class="eyebrow">Presença única</p>
   <h1>Link na bio</h1>
   <p class="lead">A paciente sai do Instagram e cai aqui. Em três segundos, ela precisa ver a mesma clínica do site, do perfil e do Google.</p>
+  <p class="method" data-copy-method>Método de copy: StoryBrand, dentro do Método PRIME.</p>
   <p id="habitChip" class="habit is-none">A bio ainda não foi revisada</p>
 </header>
 <div class="stage">

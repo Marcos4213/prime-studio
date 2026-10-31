@@ -1,6 +1,7 @@
 // Estúdio de post: geração com IA (OpenAI-compatível) e fallback mock.
 // A chave vem SÓ do ambiente (env.AI_API_KEY). Sem chave => exemplo (mock),
 // para o app funcionar sem publicar. Regras de marca aplicadas ao que a IA gera.
+import { chooseCopyMethod, structureForFormat, suggestLine } from "./copy-method.js";
 
 const FORMATS = new Set(["post", "carousel", "video"]);
 
@@ -41,12 +42,19 @@ function brandBlock(profile) {
   const colors = safeList(profile.colors);
   const fonts = safeList(profile.fonts);
   return [
-    profile.tone ? `Tom da clínica: ${profile.tone}` : "",
+    profile.tone || profile.tom ? `Tom da clínica: ${profile.tom || profile.tone}` : "",
     colors.length ? `Cores da marca: ${colors.join(", ")}` : "",
     fonts.length ? `Fontes da marca: ${fonts.join(", ")}` : "",
     profile.avoid ? `O que a clínica NUNCA diz: ${profile.avoid}` : "",
-    profile.highlights ? `O que destaca a clínica: ${profile.highlights}` : "",
+    profile.highlights || profile.diferenciais ? `O que destaca a clínica: ${profile.diferenciais || profile.highlights}` : "",
     profile.nicho ? `Nicho: ${profile.nicho}` : "",
+    profile.especialidades ? `Especialidades: ${profile.especialidades}` : "",
+    profile.procedimentos ? `Procedimentos carro-chefe: ${profile.procedimentos}` : "",
+    profile.publico ? `Público ideal: ${profile.publico}` : "",
+    profile.cidade ? `Cidade: ${profile.cidade}` : "",
+    profile.objetivos ? `Objetivos: ${profile.objetivos}` : "",
+    profile.objecoes ? `Objeções comuns: ${profile.objecoes}` : "",
+    profile.provas ? `Provas e autoridade: ${profile.provas}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -72,8 +80,11 @@ const RULES = [
   "- Português do Brasil, tom premium e humano.",
 ].join("\n");
 
-function systemPrompt(profile) {
-  return `Você é o estúdio de conteúdo da Prime Studio, criando peças de Instagram para clínicas premium.\n\n${brandBlock(
+function systemPrompt(profile, method) {
+  const voice = method
+    ? `Método de copy desta peça: ${method.name} (${method.note}). Fale como "nosso time" ou "a gente".`
+    : `Fale como "nosso time" ou "a gente".`;
+  return `Você é o estúdio de conteúdo da Prime Studio, criando peças para clínicas premium, dentro do Método PRIME.\n\n${voice}\n\n${brandBlock(
     profile
   )}\n\n${RULES}`;
 }
@@ -93,19 +104,20 @@ function formatInstruction(format, recordingMode) {
 }
 
 // --- Geração ---------------------------------------------------------------
-export async function generatePiece(env, { format, theme, profile, recordingMode } = {}) {
+export async function generatePiece(env, { format, theme, profile, recordingMode, structure } = {}) {
   if (!FORMATS.has(format)) throw new Error("formato inválido");
   const mode = recordingMode === "narracao" || recordingMode === "camera" ? recordingMode : "";
+  const method = chooseCopyMethod(structure || structureForFormat(format));
   const key = env?.AI_API_KEY;
   if (!key) {
-    const output = mockPiece(format, theme, profile, mode);
-    return { source: "mock", output: { ...output, warnings: brandGuard(output) } };
+    const output = mockPiece(format, theme, profile, mode, method);
+    return { source: "mock", output: { ...output, copyMethod: method, warnings: brandGuard(output) } };
   }
-  const output = await callModel(env, key, { format, theme, profile, recordingMode: mode });
-  return { source: "ia", output: { ...output, warnings: brandGuard(output) } };
+  const output = await callModel(env, key, { format, theme, profile, recordingMode: mode, method });
+  return { source: "ia", output: { ...output, copyMethod: method, warnings: brandGuard(output) } };
 }
 
-async function callModel(env, key, { format, theme, profile, recordingMode }) {
+async function callModel(env, key, { format, theme, profile, recordingMode, method }) {
   const base = env.AI_BASE_URL || "https://api.openai.com/v1";
   const model = env.AI_MODEL || "gpt-4o-mini";
   const body = {
@@ -113,7 +125,7 @@ async function callModel(env, key, { format, theme, profile, recordingMode }) {
     temperature: 0.8,
     response_format: { type: "json_object" },
     messages: [
-      { role: "system", content: systemPrompt(profile) },
+      { role: "system", content: systemPrompt(profile, method) },
       {
         role: "user",
         content: `${formatInstruction(format, recordingMode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
@@ -203,19 +215,21 @@ function videoTips(mode) {
   ];
 }
 
-function mockPiece(format, theme, profile, recordingMode) {
+function mockPiece(format, theme, profile, recordingMode, method) {
   const t = (theme && theme.trim()) || "o cuidado premium da clínica";
-  const nicho = profile?.nicho ? ` (${profile.nicho})` : "";
+  const nicho = profile?.nicho ? ` Nicho: ${profile.nicho}.` : "";
   const exemplo = "Rascunho de exemplo — configure a chave de IA para gerar de verdade.";
+  const drafted = suggestLine(method?.structure || "post", profile);
+  const caption = `${drafted.line} Tema: ${t}.${nicho} (${exemplo})`;
   if (format === "post") {
     return {
-      caption: `Exemplo de legenda no tom da clínica${nicho} sobre ${t}. Uma mensagem sóbria, humana e premium, que apresenta o cuidado sem promessas e sem números. (${exemplo})`,
+      caption,
       imagePrompt: colorHint(profile, t),
     };
   }
   if (format === "carousel") {
     return {
-      caption: `Exemplo de carrossel sobre ${t}, no tom da clínica${nicho}. (${exemplo})`,
+      caption,
       slides: [
         { title: "Abertura", imagePrompt: colorHint(profile, t) },
         { title: "Desenvolvimento", imagePrompt: colorHint(profile, `um detalhe do ambiente ligado a ${t}`) },
@@ -226,8 +240,8 @@ function mockPiece(format, theme, profile, recordingMode) {
   const mode = recordingMode === "narracao" ? "narracao" : "camera";
   return {
     script: {
-      hook: `Gancho de exemplo sobre ${t}, no tom da clínica${nicho}.`,
-      body: "Desenvolvimento curto e humano, apresentando o cuidado da clínica sem promessas e sem números.",
+      hook: `Gancho de exemplo sobre ${t}, no tom da clínica${profile?.nicho ? ` (${profile.nicho})` : ""}.`,
+      body: drafted.line,
       cta: `Convite sóbrio para conhecer a clínica. (${exemplo})`,
     },
     recording: { mode, tips: videoTips(mode) },

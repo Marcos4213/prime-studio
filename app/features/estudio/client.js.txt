@@ -178,6 +178,11 @@ function buildPiece(piece) {
     ? '<div class="warns"><p><strong>Revisar antes de aprovar</strong></p><ul>' +
       o.warnings.map((w) => "<li>" + esc(w) + "</li>").join("") + "</ul></div>"
     : "";
+  const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
+  const methodHtml = methodName
+    ? '<p class="method" data-copy-method>Método de copy: ' + esc(methodName) + "</p>" +
+      '<p class="hint">Dentro do Método PRIME. A gente escreve no tom da clínica, sem promessa e sem número.</p>'
+    : "";
   const src = piece.source === "ia" ? "Gerado por IA" : "Exemplo";
   const srcClass = piece.source === "ia" ? "ok" : "wait";
   const approved = piece.status === "aprovado";
@@ -190,7 +195,7 @@ function buildPiece(piece) {
   const html =
     '<article class="sheet"><p class="badges"><span class="badge ' + srcClass + '">' + esc(src) +
     '</span><span class="badge ' + (approved ? "ok" : "") + '">' + esc(st) + "</span></p><h3>" +
-    esc(title) + "</h3>" + body + warns + approve + "</article>";
+    esc(title) + "</h3>" + methodHtml + body + warns + approve + "</article>";
   return { html, copies };
 }
 
@@ -434,6 +439,12 @@ function wire() {
       const composer = qs("#composer");
       composer.hidden = false;
       qs("#delivers").textContent = btn.dataset.delivers || "";
+      const methodByFormat = { post: "AIDA", carousel: "AIDA", video: "AIDA" };
+      const formatMethod = qs("#formatMethod");
+      if (formatMethod) {
+        formatMethod.hidden = false;
+        formatMethod.textContent = "Método de copy: " + (methodByFormat[state.format] || "AIDA");
+      }
       const isVideo = state.format === "video";
       qs("#modeBox").hidden = !isVideo;
       if (!isVideo) {

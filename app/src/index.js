@@ -9,6 +9,13 @@ import {
   createClient,
 } from "./lib/auth.js";
 import { generatePiece, FORMATS } from "./lib/ai.js";
+import { copyMethodCatalog } from "./lib/copy-method.js";
+import {
+  loadGeneratorProfile,
+  publicClinic,
+  readLatestClinicProfile,
+  saveClinicProfileVersion,
+} from "./lib/clinic-profile.js";
 import { findFeaturesDir, loadFeatures, toMenu } from "../features/load.js";
 import bakedMenu from "./feature-menu.json";
 
@@ -129,15 +136,19 @@ async function handleApi(request, env, url, ctx) {
 
   if (path === "/api/me" && method === "GET") {
     const onboarding = await readOnboarding(env, client.id);
+    const clinic = publicClinic(await readLatestClinicProfile(env, client.id));
     return json({
       ok: true,
       client: publicClient(client),
       ai_configurada: !!env.AI_API_KEY,
       onboarding,
+      clinic,
     });
   }
 
   if (path === "/api/onboarding" && method === "POST") return postOnboarding(request, env, client);
+  if (path === "/api/clinic-profile" && method === "GET") return getClinicProfile(env, client);
+  if (path === "/api/clinic-profile" && method === "PUT") return putClinicProfile(request, env, client);
   if (path === "/api/features" && method === "GET") {
     return json({ ok: true, menu: await featureMenu() });
   }
@@ -218,17 +229,51 @@ async function readOnboarding(env, clientId) {
 
 async function postOnboarding(request, env, client) {
   const body = await readJson(request);
-  const tema = clean(body.tema_amanha, 140);
-  await env.DB.prepare(
-    `INSERT INTO client_onboarding (client_id, completed_at, tema_amanha)
-     VALUES (?, ?, ?)
-     ON CONFLICT(client_id) DO UPDATE SET
-       completed_at = excluded.completed_at,
-       tema_amanha = excluded.tema_amanha`
-  )
-    .bind(client.id, nowIso(), tema)
-    .run();
-  return json({ ok: true, onboarding: { completo: true, tema_amanha: tema } });
+  const perfil = body.perfil && typeof body.perfil === "object" ? body.perfil : {};
+  const tema = clean(body.tema_amanha ?? perfil.tema_amanha, 140);
+  const concluir = body.concluir !== false;
+  let clinic = null;
+  let perfilErro = "";
+  try {
+    clinic = publicClinic(await saveClinicProfileVersion(env, client.id, { ...perfil, tema_amanha: tema }));
+  } catch (err) {
+    if (err?.code === "perfil_indisponivel") perfilErro = "perfil_indisponivel";
+    else throw err;
+  }
+  if (concluir) {
+    await env.DB.prepare(
+      `INSERT INTO client_onboarding (client_id, completed_at, tema_amanha)
+       VALUES (?, ?, ?)
+       ON CONFLICT(client_id) DO UPDATE SET
+         completed_at = excluded.completed_at,
+         tema_amanha = excluded.tema_amanha`
+    )
+      .bind(client.id, nowIso(), tema)
+      .run();
+  }
+  return json({
+    ok: true,
+    onboarding: { completo: concluir, tema_amanha: tema },
+    clinic,
+    perfil_erro: perfilErro || undefined,
+  });
+}
+
+async function getClinicProfile(env, client) {
+  const clinic = publicClinic(await readLatestClinicProfile(env, client.id));
+  return json({ ok: true, ...clinic, methods: copyMethodCatalog() });
+}
+
+async function putClinicProfile(request, env, client) {
+  const body = await readJson(request);
+  const perfil = body.perfil && typeof body.perfil === "object" ? body.perfil : body;
+  try {
+    const clinic = publicClinic(await saveClinicProfileVersion(env, client.id, perfil));
+    return json({ ok: true, ...clinic, methods: copyMethodCatalog() });
+  } catch (err) {
+    if (err?.code === "perfil_indisponivel") return json({ ok: false, error: "perfil_indisponivel" }, 503);
+    throw err;
+  }
 }
 
 async function logout(request, env, secure) {
@@ -304,21 +349,8 @@ async function generate(request, env, client) {
   const theme = clean(body.theme, 400);
   if (!FORMATS.has(format)) return json({ ok: false, error: "formato_invalido" }, 422);
 
-  const prow = await env.DB.prepare(
-    "SELECT colors, fonts, tone, avoid, highlights FROM brand_profiles WHERE client_id = ?"
-  )
-    .bind(client.id)
-    .first();
-  const profile = prow
-    ? {
-        colors: parseJsonArr(prow.colors),
-        fonts: parseJsonArr(prow.fonts),
-        tone: prow.tone || "",
-        avoid: prow.avoid || "",
-        highlights: prow.highlights || "",
-        nicho: client.nicho || "",
-      }
-    : { nicho: client.nicho || "" };
+  const loaded = await loadGeneratorProfile(env, client);
+  const profile = loaded.profile;
 
   let result;
   try {

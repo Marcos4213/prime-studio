@@ -11,6 +11,8 @@ import {
   sanitizeDraft,
 } from "./model.js";
 import { renderEditorPage, renderGatePage } from "./page.js";
+import { suggestLine } from "../../src/lib/copy-method.js";
+import { readLatestClinicProfile } from "../../src/lib/clinic-profile.js";
 
 let schemaReady = null;
 
@@ -63,7 +65,7 @@ async function route(request, env, url) {
   const client = await clientOf(request, env);
   if (!client) return json({ ok: false, error: "nao_autenticado" }, 401);
 
-  if (path === "/api/link-na-bio" && method === "GET") return json(present(await loadRow(env, client.id), client));
+  if (path === "/api/link-na-bio" && method === "GET") return json(await present(await loadRow(env, client.id), client, env));
   if (path === "/api/link-na-bio" && method === "PUT") return persist(env, client, await readJson(request), "save");
   if (path === "/api/link-na-bio/revisao" && method === "POST")
     return persist(env, client, await readJson(request), "review");
@@ -93,7 +95,7 @@ function parseStored(raw) {
   }
 }
 
-function present(row, client) {
+async function present(row, client, env) {
   const canonical = row ? parseStored(row.draft) : emptyDraft(client.name || "");
   const hash = contentHash(canonical);
   const reviewed = reviewState({
@@ -101,6 +103,13 @@ function present(row, client) {
     contentHash: hash,
     reviewedHash: row?.reviewed_hash || "",
   });
+  let copyMethod = suggestLine("link-na-bio", {});
+  try {
+    const clinic = await readLatestClinicProfile(env, client.id);
+    copyMethod = suggestLine("link-na-bio", clinic.profile);
+  } catch {
+    copyMethod = suggestLine("link-na-bio", {});
+  }
   return {
     ok: true,
     client: { name: client.name || "", nicho: client.nicho || "" },
@@ -110,6 +119,7 @@ function present(row, client) {
     state: reviewed.state,
     covers: coversFor(client.nicho),
     draft: editorDraft(canonical),
+    copy_method: copyMethod,
   };
 }
 
@@ -156,7 +166,7 @@ async function persist(env, client, body, mode) {
     .bind(client.id, JSON.stringify(draft), status, reviewedAt, reviewedHash, now)
     .run();
 
-  return json(present(await loadRow(env, client.id), client));
+  return json(await present(await loadRow(env, client.id), client, env));
 }
 
 async function markReady(env, client) {
@@ -177,7 +187,7 @@ async function markReady(env, client) {
   await env.DB.prepare("UPDATE link_bio_pages SET status = 'pronta', updated_at = ? WHERE client_id = ?")
     .bind(now, client.id)
     .run();
-  return json(present(await loadRow(env, client.id), client));
+  return json(await present(await loadRow(env, client.id), client, env));
 }
 
 function html(body) {

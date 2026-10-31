@@ -6,6 +6,7 @@ import clientJs from "./client.js.txt";
 import { json, uid, nowIso, clean, parseCookies } from "../../src/lib/http.js";
 import { getClientFromSession } from "../../src/lib/auth.js";
 import { generatePiece, FORMATS } from "../../src/lib/ai.js";
+import { loadGeneratorProfile } from "../../src/lib/clinic-profile.js";
 import { dailyPair } from "./logic.js";
 
 export function handleEstudioPage(request) {
@@ -41,21 +42,7 @@ export async function handleEstudioGenerate(request, env) {
     return json({ ok: false, error: "modo_invalido" }, 422);
   }
 
-  const prow = await env.DB.prepare(
-    "SELECT colors, fonts, tone, avoid, highlights FROM brand_profiles WHERE client_id = ?"
-  )
-    .bind(client.id)
-    .first();
-  const profile = prow
-    ? {
-        colors: parseJsonArr(prow.colors),
-        fonts: parseJsonArr(prow.fonts),
-        tone: prow.tone || "",
-        avoid: prow.avoid || "",
-        highlights: prow.highlights || "",
-        nicho: client.nicho || "",
-      }
-    : { nicho: client.nicho || "" };
+  const profile = (await loadGeneratorProfile(env, client)).profile;
 
   let result;
   try {
@@ -100,11 +87,3 @@ async function readJson(request) {
   }
 }
 
-function parseJsonArr(v) {
-  try {
-    const p = JSON.parse(v || "[]");
-    return Array.isArray(p) ? p : [];
-  } catch {
-    return [];
-  }
-}
