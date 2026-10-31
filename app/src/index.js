@@ -8,7 +8,7 @@ import {
   verifyPassword,
   createClient,
 } from "./lib/auth.js";
-import { generatePiece, FORMATS } from "./lib/ai.js";
+import { generatePiece, FORMATS, redactSecrets } from "./lib/ai.js";
 import { copyMethodCatalog } from "./lib/copy-method.js";
 import {
   loadGeneratorProfile,
@@ -140,7 +140,7 @@ async function handleApi(request, env, url, ctx) {
     return json({
       ok: true,
       client: publicClient(client),
-      ai_configurada: !!env.AI_API_KEY,
+      ai_configurada: !!(env.GEMINI_API_KEY && String(env.GEMINI_API_KEY).trim()),
       onboarding,
       clinic,
     });
@@ -356,7 +356,7 @@ async function generate(request, env, client) {
   try {
     result = await generatePiece(env, { format, theme, profile });
   } catch (err) {
-    return json({ ok: false, error: "falha_ia", detail: String(err?.message || err) }, 502);
+    return json({ ok: false, error: "falha_ia", detail: redactSecrets(err?.message || err) }, 502);
   }
 
   const id = uid("pc");

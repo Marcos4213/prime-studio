@@ -5,7 +5,7 @@ import studioCss from "./studio.css.txt";
 import clientJs from "./client.js.txt";
 import { json, uid, nowIso, clean, parseCookies } from "../../src/lib/http.js";
 import { getClientFromSession } from "../../src/lib/auth.js";
-import { generatePiece, FORMATS } from "../../src/lib/ai.js";
+import { generatePiece, FORMATS, redactSecrets } from "../../src/lib/ai.js";
 import { loadGeneratorProfile } from "../../src/lib/clinic-profile.js";
 import { dailyPair } from "./logic.js";
 
@@ -53,7 +53,7 @@ export async function handleEstudioGenerate(request, env) {
       recordingMode: format === "video" ? recordingMode : "",
     });
   } catch (err) {
-    console.log(JSON.stringify({ level: "error", msg: String(err?.message || err).slice(0, 300), path: "/api/estudio/generate" }));
+    console.log(JSON.stringify({ level: "error", msg: redactSecrets(err?.message || err), path: "/api/estudio/generate" }));
     return json({ ok: false, error: "falha_ia" }, 502);
   }
 

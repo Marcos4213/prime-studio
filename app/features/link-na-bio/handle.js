@@ -12,6 +12,7 @@ import {
 } from "./model.js";
 import { renderEditorPage, renderGatePage } from "./page.js";
 import { suggestLine } from "../../src/lib/copy-method.js";
+import { generateStructureCopy, redactSecrets } from "../../src/lib/ai.js";
 import { readLatestClinicProfile } from "../../src/lib/clinic-profile.js";
 
 let schemaReady = null;
@@ -44,7 +45,7 @@ export async function handleLinkNaBio(request, env, url) {
     await ensureSchema(env);
     return await route(request, env, url);
   } catch (err) {
-    console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
+    console.log(JSON.stringify({ level: "error", msg: redactSecrets(err?.message || err), path: url.pathname }));
     return json({ ok: false, error: "erro interno" }, 500);
   }
 }
@@ -103,12 +104,18 @@ async function present(row, client, env) {
     contentHash: hash,
     reviewedHash: row?.reviewed_hash || "",
   });
-  let copyMethod = suggestLine("link-na-bio", {});
+  let profile = {};
   try {
     const clinic = await readLatestClinicProfile(env, client.id);
-    copyMethod = suggestLine("link-na-bio", clinic.profile);
+    profile = clinic.profile || {};
   } catch {
-    copyMethod = suggestLine("link-na-bio", {});
+    profile = {};
+  }
+  let copyMethod = suggestLine("link-na-bio", profile);
+  try {
+    copyMethod = await generateStructureCopy(env, { structure: "link-na-bio", profile });
+  } catch {
+    copyMethod = suggestLine("link-na-bio", profile);
   }
   return {
     ok: true,

@@ -117,7 +117,8 @@ async function boot() {
     state.onboarding = data.onboarding || { completo: false, tema_amanha: "" };
     state.clinic = data.clinic || null;
     if (data.clinic && data.clinic.profile) state.entrada = { ...data.clinic.profile };
-    if (!state.onboarding.completo) location.hash = "#entrada";
+    const filled = state.clinic && state.clinic.completeness ? Number(state.clinic.completeness.filled) : 0;
+    if (!state.onboarding.completo || filled === 0) location.hash = "#entrada";
     showApp();
   } else {
     showLogin();
@@ -801,7 +802,7 @@ function renderEntrada() {
     if (entradaStep > 0) entradaStep -= 1;
     paintEntrada();
   });
-  $("#entradaSkip").addEventListener("click", () => advanceEntrada(entradaStep === ENTRADA_STEPS.length - 1));
+  $("#entradaSkip").addEventListener("click", () => advanceEntrada(true));
   $("#entradaForm").addEventListener("submit", (e) => {
     e.preventDefault();
     advanceEntrada(entradaStep === ENTRADA_STEPS.length - 1);

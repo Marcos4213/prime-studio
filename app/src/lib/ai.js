@@ -1,9 +1,14 @@
-// Estúdio de post: geração com IA (OpenAI-compatível) e fallback mock.
-// A chave vem SÓ do ambiente (env.AI_API_KEY). Sem chave => exemplo (mock),
-// para o app funcionar sem publicar. Regras de marca aplicadas ao que a IA gera.
+// Estúdio e as outras estruturas: geração com Gemini e rascunho de exemplo.
+// A chave vem SÓ do ambiente (env.GEMINI_API_KEY). Sem chave, ou se a API
+// não responder, o app devolve o rascunho local. A chave não entra em log,
+// erro ou texto da peça.
 import { chooseCopyMethod, structureForFormat, suggestLine } from "./copy-method.js";
 
 const FORMATS = new Set(["post", "carousel", "video"]);
+
+// Flash estável na documentação do Gemini (setembro de 2026). Sem preview.
+export const GEMINI_MODEL = "gemini-3.8-flash";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // --- Regras de marca (guarda-corpos) --------------------------------------
 // Padrões proibidos no que a IA gera. Em caso de acerto, vira aviso + o texto
@@ -34,6 +39,15 @@ export function brandGuard(output) {
   };
   scan(output, "");
   return warnings;
+}
+
+export function redactSecrets(text, secret) {
+  let out = String(text || "");
+  if (typeof secret === "string" && secret.length > 6) out = out.split(secret).join("[redacted]");
+  out = out.replace(/AIza[0-9A-Za-z_-]{8,}/g, "[redacted]");
+  out = out.replace(/([?&]key=)[^&\s]+/gi, "$1[redacted]");
+  out = out.replace(/(x-goog-api-key|authorization|api[_-]?key)\s*[:=]\s*\S+/gi, "$1 [redacted]");
+  return out.slice(0, 180);
 }
 
 // --- Prompt ----------------------------------------------------------------
@@ -71,20 +85,20 @@ function safeList(v) {
 }
 
 const RULES = [
-  "Regras inegociáveis para TUDO que você gerar:",
-  "- Sem promessa de faturamento, lucro ou retorno financeiro.",
+  "Regras inegociáveis (compliance CFM e CFO) para TUDO que você gerar:",
+  "- Sem promessa de resultado, cura, transformação ou retorno.",
   "- Sem 'antes e depois'.",
-  "- Sem dado de saúde, diagnóstico ou procedimento clínico específico.",
-  "- Sem número inventado (métrica, preço, estatística). Se não foi informado, não cite.",
+  "- Sem dado de saúde, diagnóstico, paciente ou procedimento clínico específico.",
+  "- Sem número inventado (métrica, preço, percentual, estatística). Se não foi informado, não cite.",
   "- Nada aqui publica sozinho: é um rascunho para aprovação humana.",
-  "- Português do Brasil, tom premium e humano.",
+  "- Português do Brasil. Fale como \"nosso time\" ou \"a gente\".",
 ].join("\n");
 
 function systemPrompt(profile, method) {
   const voice = method
-    ? `Método de copy desta peça: ${method.name} (${method.note}). Fale como "nosso time" ou "a gente".`
-    : `Fale como "nosso time" ou "a gente".`;
-  return `Você é o estúdio de conteúdo da Prime Studio, criando peças para clínicas premium, dentro do Método PRIME.\n\n${voice}\n\n${brandBlock(
+    ? `Método de copy desta peça: ${method.name} (${method.note}). Estrutura: ${method.structure}. Sempre dentro do ${method.prime || "Método PRIME"}.`
+    : `Sempre dentro do Método PRIME.`;
+  return `Você é o estúdio de conteúdo da Prime Studio, criando peças para clínicas premium, dentro do Método PRIME.\n\n${voice}\n\nPerfil da marca:\n${brandBlock(
     profile
   )}\n\n${RULES}`;
 }
@@ -103,53 +117,188 @@ function formatInstruction(format, recordingMode) {
   return `Formato: VÍDEO (reels ou story). Responda JSON: {"script": {"hook": string, "body": string, "cta": string}, "recording": {"mode": "camera" | "narracao", "tips": [string]}}. SEM prompt de imagem. ${modeLine} tips com enquadramento, luz natural e ordem das falas. Ritmo curto, sem citar segundos, métrica, faturamento, antes e depois ou dado de saúde.`;
 }
 
+const SCHEMAS = {
+  post: {
+    type: "object",
+    properties: {
+      caption: { type: "string" },
+      imagePrompt: { type: "string" },
+    },
+    required: ["caption", "imagePrompt"],
+  },
+  carousel: {
+    type: "object",
+    properties: {
+      caption: { type: "string" },
+      slides: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            imagePrompt: { type: "string" },
+          },
+          required: ["title", "imagePrompt"],
+        },
+      },
+    },
+    required: ["caption", "slides"],
+  },
+  video: {
+    type: "object",
+    properties: {
+      script: {
+        type: "object",
+        properties: {
+          hook: { type: "string" },
+          body: { type: "string" },
+          cta: { type: "string" },
+        },
+        required: ["hook", "body", "cta"],
+      },
+      recording: {
+        type: "object",
+        properties: {
+          mode: { type: "string" },
+          tips: { type: "array", items: { type: "string" } },
+        },
+        required: ["mode", "tips"],
+      },
+    },
+    required: ["script", "recording"],
+  },
+  line: {
+    type: "object",
+    properties: { line: { type: "string" } },
+    required: ["line"],
+  },
+};
+
+function geminiKey(env) {
+  const key = env?.GEMINI_API_KEY;
+  return typeof key === "string" ? key.trim() : "";
+}
+
+function geminiModel(env) {
+  const raw = typeof env?.GEMINI_MODEL === "string" ? env.GEMINI_MODEL.trim() : "";
+  if (/^gemini-\d+(\.\d+)?-flash$/.test(raw)) return raw;
+  return GEMINI_MODEL;
+}
+
+function logFallback(err, key) {
+  const detail = redactSecrets(err?.message || err, key);
+  console.log(JSON.stringify({ level: "warn", msg: "gemini_rascunho", detail }));
+}
+
 // --- Geração ---------------------------------------------------------------
 export async function generatePiece(env, { format, theme, profile, recordingMode, structure } = {}) {
   if (!FORMATS.has(format)) throw new Error("formato inválido");
   const mode = recordingMode === "narracao" || recordingMode === "camera" ? recordingMode : "";
   const method = chooseCopyMethod(structure || structureForFormat(format));
-  const key = env?.AI_API_KEY;
+  const key = geminiKey(env);
   if (!key) {
-    const output = mockPiece(format, theme, profile, mode, method);
-    return { source: "mock", output: { ...output, copyMethod: method, warnings: brandGuard(output) } };
+    return finishMock(format, theme, profile, mode, method);
   }
-  const output = await callModel(env, key, { format, theme, profile, recordingMode: mode, method });
-  return { source: "ia", output: { ...output, copyMethod: method, warnings: brandGuard(output) } };
+  try {
+    const parsed = await callGemini(env, key, {
+      profile,
+      method,
+      schema: SCHEMAS[format],
+      instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
+      timeoutMs: 25000,
+    });
+    const output = normalize(format, parsed, mode);
+    return { source: "ia", model: geminiModel(env), output: attach(output, method) };
+  } catch (err) {
+    logFallback(err, key);
+    return finishMock(format, theme, profile, mode, method);
+  }
 }
 
-async function callModel(env, key, { format, theme, profile, recordingMode, method }) {
-  const base = env.AI_BASE_URL || "https://api.openai.com/v1";
-  const model = env.AI_MODEL || "gpt-4o-mini";
-  const body = {
-    model,
-    temperature: 0.8,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: systemPrompt(profile, method) },
-      {
-        role: "user",
-        content: `${formatInstruction(format, recordingMode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON.`,
-      },
-    ],
-  };
-  const resp = await fetch(`${base}/chat/completions`, {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify(body),
-  });
-  if (!resp.ok) {
-    const detail = await resp.text().catch(() => "");
-    throw new Error(`IA respondeu ${resp.status}: ${detail.slice(0, 200)}`);
-  }
-  const data = await resp.json();
-  const content = data?.choices?.[0]?.message?.content || "{}";
-  let parsed;
+// Bio, link na bio, anúncio, WhatsApp e site. O mesmo Gemini, com o método da estrutura.
+export async function generateStructureCopy(env, { structure, profile, theme } = {}) {
+  const method = chooseCopyMethod(structure);
+  const local = suggestLine(method.structure, profile);
+  const key = geminiKey(env);
+  if (!key) return { ...local, source: "mock" };
   try {
-    parsed = JSON.parse(content);
-  } catch {
-    throw new Error("IA retornou JSON inválido");
+    const parsed = await callGemini(env, key, {
+      profile,
+      method,
+      schema: SCHEMAS.line,
+      instruction: `Estrutura: ${method.structure}. Escreva uma frase de copy no método ${method.name}. ${method.note}\nTema: ${theme || "presença da clínica"}\nResponda JSON {"line": string}. Sem promessa de resultado, sem antes e depois, sem número inventado.`,
+      timeoutMs: 12000,
+    });
+    const line = str(parsed.line) || local.line;
+    const warnings = brandGuard({ line });
+    return { ...method, line, source: "ia", model: geminiModel(env), warnings };
+  } catch (err) {
+    logFallback(err, key);
+    return { ...local, source: "mock" };
   }
-  return normalize(format, parsed, recordingMode);
+}
+
+function finishMock(format, theme, profile, mode, method) {
+  const output = mockPiece(format, theme, profile, mode, method);
+  return { source: "mock", output: attach(output, method) };
+}
+
+function attach(output, method) {
+  return { ...output, copyMethod: method, warnings: brandGuard(output) };
+}
+
+async function callGemini(env, key, { profile, method, schema, instruction, timeoutMs }) {
+  const model = geminiModel(env);
+  const resp = await fetch(`${GEMINI_URL}/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-goog-api-key": key,
+    },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt(profile, method) }] },
+      contents: [{ role: "user", parts: [{ text: instruction }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseJsonSchema: schema,
+      },
+    }),
+    signal: AbortSignal.timeout(timeoutMs || 25000),
+  });
+  const raw = await resp.text();
+  if (!resp.ok) {
+    let code = `gemini_${resp.status}`;
+    try {
+      const status = JSON.parse(raw)?.error?.status;
+      if (typeof status === "string" && /^[A-Z0-9_]+$/.test(status)) code = `${code}_${status}`;
+    } catch {
+      code = `gemini_${resp.status}`;
+    }
+    throw new Error(code);
+  }
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error("gemini_json");
+  }
+  const text = candidateText(data);
+  if (!text) throw new Error("gemini_vazio");
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("gemini_conteudo");
+  }
+}
+
+function candidateText(data) {
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .filter((part) => part && typeof part.text === "string" && !part.thought)
+    .map((part) => part.text)
+    .join("")
+    .trim();
 }
 
 // Garante a forma esperada por formato, mesmo se a IA variar.
@@ -183,8 +332,8 @@ function str(v) {
   return typeof v === "string" ? v.trim() : "";
 }
 
-// --- Mock (sem chave de IA) ------------------------------------------------
-// Exemplo determinístico e dentro das regras de marca, para o app rodar offline.
+// --- Rascunho de exemplo ---------------------------------------------------
+// Determinístico e dentro das regras de marca. Usado sem chave e quando a API falha.
 function colorHint(profile, theme) {
   const colors = safeList(profile?.colors);
   const fonts = safeList(profile?.fonts);
@@ -218,9 +367,8 @@ function videoTips(mode) {
 function mockPiece(format, theme, profile, recordingMode, method) {
   const t = (theme && theme.trim()) || "o cuidado premium da clínica";
   const nicho = profile?.nicho ? ` Nicho: ${profile.nicho}.` : "";
-  const exemplo = "Rascunho de exemplo — configure a chave de IA para gerar de verdade.";
   const drafted = suggestLine(method?.structure || "post", profile);
-  const caption = `${drafted.line} Tema: ${t}.${nicho} (${exemplo})`;
+  const caption = `${drafted.line} Tema: ${t}.${nicho}`.trim();
   if (format === "post") {
     return {
       caption,
@@ -242,7 +390,7 @@ function mockPiece(format, theme, profile, recordingMode, method) {
     script: {
       hook: `Gancho de exemplo sobre ${t}, no tom da clínica${profile?.nicho ? ` (${profile.nicho})` : ""}.`,
       body: drafted.line,
-      cta: `Convite sóbrio para conhecer a clínica. (${exemplo})`,
+      cta: "Convite sóbrio para conhecer a clínica.",
     },
     recording: { mode, tips: videoTips(mode) },
   };
