@@ -867,10 +867,20 @@ async function loadHistory() {
   setTodayStatus(items.some((it) => spDay(it.created_at) === boot.todayKey));
   list.replaceChildren();
   if (!items.length) {
+    const box = document.createElement("div");
+    box.className = "empty";
+    const img = document.createElement("img");
+    img.className = "still still-empty";
+    img.src = "/assets/visual3d/vazio.webp";
+    img.alt = "";
+    img.width = 640;
+    img.height = 640;
+    img.loading = "lazy";
+    img.decoding = "async";
     const p = document.createElement("p");
-    p.className = "empty";
     p.textContent = "Nada no acervo ainda. A primeira peça fica guardada aqui, e amanhã você continua daí.";
-    list.append(p);
+    box.append(img, p);
+    list.append(box);
     return;
   }
   items.forEach((it) => {

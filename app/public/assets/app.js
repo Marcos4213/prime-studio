@@ -43,6 +43,11 @@ const NICHOS = [
   { value: "odonto", label: "Odonto" },
 ];
 
+function still(name, alt, extra) {
+  const cls = extra ? `still ${extra}` : "still";
+  return `<img class="${cls}" src="/assets/visual3d/${name}.webp" alt="${esc(alt)}" width="640" height="640" loading="lazy" decoding="async">`;
+}
+
 function icon(name) {
   const paths = {
     inicio: '<path d="M4 11.2 12 4l8 7.2V20a1 1 0 0 1-1 1h-5.2v-6.2H10.2V21H5a1 1 0 0 1-1-1z"/>',
@@ -419,6 +424,7 @@ function hojeHtml({ nome, weekday, estado, presenca, semana }) {
         ${weekday ? `<p class="hoje-day">${esc(weekday)}</p>` : ""}
       </header>
       <article class="hoje-strip">
+        ${still("inicio", "Cartão em algodão, caneta dourada e peso de vidro petróleo.")}
         <div class="hoje-copy">
           <h3>Montar a peça de hoje</h3>
           <p class="hoje-state"><i aria-hidden="true"></i>${esc(estado)}</p>
@@ -427,6 +433,7 @@ function hojeHtml({ nome, weekday, estado, presenca, semana }) {
       </article>
       <section class="hoje-week" aria-labelledby="hojePresenca">
         <div class="hoje-week-head">
+          ${still("presenca", "Três portas de pedra clara, vidro petróleo e dobradiça dourada.")}
           <h3 id="hojePresenca">Presença</h3>
           <button class="btn-ghost btn-xs" type="button" data-go="/presenca">Ver a presença</button>
         </div>
@@ -809,6 +816,7 @@ function renderEntrada() {
     </section>`;
   }).join("");
   v.innerHTML = `<form id="entradaForm" class="entrada">
+    ${still("onboarding", "Orquídea branca em vaso de vidro petróleo, ao lado de um arco dourado.", "still-wide")}
     <div class="onb-bar" id="entradaBar" aria-hidden="true">${ENTRADA_STEPS.map(() => "<i></i>").join("")}</div>
     <p class="onb-count" id="entradaCount" aria-live="polite"></p>
     ${steps}
@@ -1168,7 +1176,7 @@ function leadsHtml(resumo, items, atual) {
           </button>`;
         })
         .join("")
-    : `<p class="empty">Nenhum lead neste caderno.</p>`;
+    : `<div class="empty">${still("vazio", "", "still-empty")}<p>Nenhum lead neste caderno.</p></div>`;
   const a = atual || {};
   const status = a.status || "aberto";
   const assuntoOpts = LEAD_SUBJECTS.map((item) => `<option value="${esc(item.id)}">${esc(item.label)}</option>`).join("");
@@ -1178,9 +1186,12 @@ function leadsHtml(resumo, items, atual) {
   return `
     <div class="leads">
       <header class="leads-head">
-        <p class="eyebrow">Caderno</p>
-        <h2>Leads</h2>
-        <p class="leads-resumo" data-resumo>${esc(resumoTexto(resumo))}</p>
+        ${still("leads", "Caderno de couro fechado, com fecho dourado, sobre pedra.")}
+        <div>
+          <p class="eyebrow">Caderno</p>
+          <h2>Leads</h2>
+          <p class="leads-resumo" data-resumo>${esc(resumoTexto(resumo))}</p>
+        </div>
       </header>
       <div class="leads-grid">
         <div class="leads-list" aria-label="Leads">${lista}</div>
@@ -1361,7 +1372,7 @@ async function renderHistorico() {
   const list = ok && data.ok ? data.items : [];
   const box = $("#hist");
   if (!list.length) {
-    box.innerHTML = `<div class="empty">Nada por aqui ainda. Crie sua primeira peça no Estúdio.</div>`;
+    box.innerHTML = `<div class="empty">${still("vazio", "", "still-empty")}<p>Nada por aqui ainda. Crie sua primeira peça no Estúdio.</p></div>`;
     return;
   }
   box.innerHTML = list

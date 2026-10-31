@@ -13,6 +13,11 @@ img{max-width:100%;height:auto}
 .edu-logo span{color:var(--color-primary);font-weight:300;margin-left:.35em}
 .sig{display:block;width:22px;height:2px;background:var(--color-gold);border-radius:1px}
 .edu-toplink{color:var(--color-accent);text-decoration:none;font-weight:600;font-size:.78rem;flex:none;padding:8px 2px}
+.edu-head{display:flex;align-items:center;gap:14px;margin-top:8px;min-width:0}
+.edu-head .kicker{margin-top:0}
+.edu-head .kicker-sub{margin-bottom:0}
+.still{width:96px;height:96px;object-fit:cover;flex:none;display:block;border-radius:18px;border:1px solid var(--color-line);background:var(--color-surface);box-shadow:inset 0 1px 0 var(--color-gold)}
+.still-empty{width:160px;height:160px}
 .kicker{margin-top:14px;color:var(--color-accent);letter-spacing:.24em;text-transform:uppercase;font-size:.68rem;font-weight:600}
 .kicker-sub{color:var(--color-muted);font-size:.92rem;margin:6px 0 14px;max-width:34ch}
 .hero{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--color-line)}
@@ -60,7 +65,7 @@ img{max-width:100%;height:auto}
 .week b{display:block;font-family:var(--serif);font-size:1.15rem;font-weight:500;line-height:1.15;color:var(--color-text)}
 .foot{margin-top:28px;color:var(--color-muted);font-size:.75rem;letter-spacing:.04em}
 .foot p+p{margin-top:4px}
-.empty{padding:12px 0 28px}
+.empty{display:grid;justify-items:center;text-align:center;gap:8px;padding:12px 0 28px}
 .empty h1{margin:8px 0 10px}
 .empty p{color:var(--color-muted);margin-bottom:16px}
 .edu em{color:var(--color-accent);font-style:italic}

@@ -100,11 +100,23 @@ function paint(host, view, ui) {
   const channels = Array.isArray(view.channels) ? view.channels : [];
   const frag = document.createDocumentFragment();
 
-  frag.append(p("eyebrow", "Olhar de hoje"));
-  frag.append(el("p", "date", view.today?.label || ""));
-  frag.append(el("h1", "", "Presença"));
-  frag.append(p("lede", "Site, Instagram e Google. Uma presença só."));
-  if (view.clinic) frag.append(p("clinic", view.clinic));
+  const head = el("div", "presence-head");
+  const mark = document.createElement("img");
+  mark.className = "still";
+  mark.src = "/assets/visual3d/presenca.webp";
+  mark.alt = "Três portas de pedra clara, vidro petróleo e dobradiça dourada.";
+  mark.width = 640;
+  mark.height = 640;
+  mark.loading = "lazy";
+  mark.decoding = "async";
+  const copy = el("div", "presence-copy");
+  copy.append(p("eyebrow", "Olhar de hoje"));
+  copy.append(el("p", "date", view.today?.label || ""));
+  copy.append(el("h1", "", "Presença"));
+  copy.append(p("lede", "Site, Instagram e Google. Uma presença só."));
+  if (view.clinic) copy.append(p("clinic", view.clinic));
+  head.append(mark, copy);
+  frag.append(head);
 
   const habit = el("section", "habit");
   habit.append(el("h2", "", "O hábito"));

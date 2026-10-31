@@ -47,7 +47,11 @@ h1{font-size:clamp(1.7rem,7vw,2.35rem)}
 .done p{color:var(--color-muted);font-size:.9rem;overflow-wrap:anywhere}
 .list{margin-top:22px}
 .list h2{font-size:1.35rem;margin-bottom:8px}
-.empty{color:var(--color-muted);font-size:.88rem;padding:8px 0 4px}
+.ind-head{display:flex;align-items:center;gap:14px;margin:0 0 12px;min-width:0}
+.ind-head h1{font-size:clamp(1.7rem,7vw,2.35rem)}
+.still{width:88px;height:88px;object-fit:cover;flex:none;display:block;border-radius:16px;border:1px solid var(--color-line);background:var(--color-surface);box-shadow:inset 0 1px 0 var(--color-gold)}
+.still-empty{width:148px;height:148px}
+.empty{display:grid;justify-items:center;text-align:center;gap:8px;color:var(--color-muted);font-size:.88rem;padding:8px 0 4px}
 .item{background:var(--color-surface);border:1px solid var(--color-line);border-radius:14px;padding:12px 14px;margin-bottom:8px;min-width:0}
 .item h3{font-size:.98rem;font-weight:600;overflow-wrap:anywhere}
 .item p{color:var(--color-muted);font-size:.78rem;margin-top:3px;overflow-wrap:anywhere}
@@ -91,12 +95,15 @@ ${data}
 }
 
 function hero() {
-  return `<figure class="hero">
-  <img src="/indicacao/media/sala.webp" alt="Sala de espera de clínica, clara e silenciosa." width="800" height="533">
-  <figcaption>
+  return `<div class="ind-head">
+  <img class="still" src="/assets/visual3d/indicacao.webp" alt="Dois cartões em branco, presos por um fio dourado." width="640" height="640" loading="lazy" decoding="async">
+  <div>
     <span class="eyebrow">Indicação</span>
     <h1>Indique uma clínica</h1>
-  </figcaption>
+  </div>
+</div>
+<figure class="hero">
+  <img src="/indicacao/media/sala.webp" alt="Sala de espera de clínica, clara e silenciosa." width="800" height="533" loading="lazy" decoding="async">
 </figure>`;
 }
 
@@ -213,10 +220,25 @@ export const BROWSER_JS = String.raw`
 
   var statusLabel = { novo: "Recebida", em_contato: "Em conversa", fechado: "Fechada", sem_retorno: "Sem retorno" };
 
+  function emptyNote(text) {
+    var box = el("div", "empty");
+    var img = document.createElement("img");
+    img.className = "still still-empty";
+    img.src = "/assets/visual3d/vazio.webp";
+    img.alt = "";
+    img.width = 640;
+    img.height = 640;
+    img.loading = "lazy";
+    img.decoding = "async";
+    box.appendChild(img);
+    box.appendChild(el("p", null, text));
+    return box;
+  }
+
   function renderList(items) {
     lista.replaceChildren();
     if (!items || !items.length) {
-      lista.appendChild(el("p", "empty", "Nenhuma indicação ainda. O caminho é o formulário aqui em cima."));
+      lista.appendChild(emptyNote("Nenhuma indicação ainda. O caminho é o formulário aqui em cima."));
       return;
     }
     for (var i = 0; i < items.length; i++) {
@@ -237,13 +259,13 @@ export const BROWSER_JS = String.raw`
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (r) {
         if (!r.ok || !r.data || !r.data.ok) {
-          lista.replaceChildren(el("p", "empty", "Não foi possível carregar suas indicações."));
+          lista.replaceChildren(emptyNote("Não foi possível carregar suas indicações."));
           return;
         }
         renderList(r.data.items || []);
       })
       .catch(function () {
-        lista.replaceChildren(el("p", "empty", "Não foi possível carregar suas indicações."));
+        lista.replaceChildren(emptyNote("Não foi possível carregar suas indicações."));
       });
   }
 

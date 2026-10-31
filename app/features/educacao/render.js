@@ -171,8 +171,13 @@ export function renderHome(date = new Date()) {
   const today = dayById(clock.id);
   const tomorrow = dayById(nextDayId(clock.id));
   const body = `
-<p class="kicker">Educação</p>
-<p class="kicker-sub">Do nosso time, para usar hoje.</p>
+<div class="edu-head">
+  <img class="still" src="/assets/visual3d/educacao.webp" alt="Livro aberto em linho, páginas em branco e fita dourada." width="640" height="640" loading="lazy" decoding="async">
+  <div>
+    <p class="kicker">Educação</p>
+    <p class="kicker-sub">Do nosso time, para usar hoje.</p>
+  </div>
+</div>
 ${hero(today, `Para hoje · ${today.weekday}`)}
 ${prose(today)}
 ${steps(today)}
@@ -256,6 +261,7 @@ export function renderWeek(date = new Date()) {
 export function renderNotFound(date = new Date()) {
   const clock = clinicClock(date);
   const body = `<div class="empty">
+  <img class="still still-empty" src="/assets/visual3d/vazio.webp" alt="" width="640" height="640" loading="lazy" decoding="async">
   <p class="kicker">Educação</p>
   <h1>Essa leitura <em>não está aqui</em></h1>
   <p>A de hoje continua na trilha.</p>
