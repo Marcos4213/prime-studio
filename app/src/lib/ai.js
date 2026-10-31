@@ -204,12 +204,15 @@ async function generateParsed(env, key, args) {
   const models = primary === FALLBACK_MODEL ? [primary] : [primary, FALLBACK_MODEL];
   let last = new Error("gemini_vazio");
   for (const model of models) {
-    try {
-      const parsed = await callGemini(key, { ...args, model, timeoutMs: model === primary ? 10000 : 14000 });
-      return { parsed, model };
-    } catch (err) {
-      last = err;
-      logFallback(err, key, model);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const parsed = await callGemini(key, { ...args, model, timeoutMs: model === primary ? 10000 : 14000 });
+        return { parsed, model };
+      } catch (err) {
+        last = err;
+        logFallback(err, key, model);
+        if (!/503/.test(String(err?.message || ""))) break;
+      }
     }
   }
   throw last;
