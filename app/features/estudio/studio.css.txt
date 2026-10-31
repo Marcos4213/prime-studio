@@ -274,26 +274,25 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-primary);
   border-radius: 999px;
   padding: 6px 14px;
 }
-.pick.is-on { border-color: #0F4C5C; color: #0F4C5C; box-shadow: inset 0 0 0 1px #0F4C5C; }
-.notice { color: var(--color-muted); font-size: .88rem; }
+.pick.is-on { border-color: var(--color-primary); color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); }
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .gen-figure { margin: 12px 0; }
-.gen-figure img { width: 100%; height: auto; display: block; border-radius: 12px; background: #F7F5F0; }
+.gen-figure img { width: 100%; height: auto; display: block; border-radius: 12px; background: var(--color-bg); }
 .post-base {
   margin: 12px 0;
-  background: #F7F5F0;
-  border: 10px solid #0F4C5C;
+  background: var(--color-bg);
+  border: 10px solid var(--color-primary);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 2px #B08D57;
+  box-shadow: inset 0 0 0 2px var(--color-gold);
 }
-.post-base img { width: 100%; display: block; max-height: 560px; object-fit: cover; background: #F7F5F0; }
+.post-base img { width: 100%; display: block; max-height: 560px; object-fit: cover; background: var(--color-bg); }
 .post-base figcaption {
   margin: 0;
   padding: 12px 14px 16px;
-  border-top: 3px solid #B08D57;
-  color: #1A2328;
+  border-top: 3px solid var(--color-gold);
+  color: var(--color-text);
   white-space: pre-wrap;
 }
 
@@ -306,7 +305,10 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-primary);
   border-radius: 20px;
   padding: 16px;
 }
-.chat h3 { margin-bottom: 4px; }
+.chat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.chat-head h3 { margin-bottom: 4px; }
+.chat-fold { display: none; flex: none; }
+.chat label { display: block; }
 .chat textarea {
   width: 100%;
   margin-top: 6px;
@@ -351,15 +353,25 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-primary);
     z-index: 20;
     margin: 0;
     max-height: min(48vh, 420px);
-    overflow: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     border-radius: 18px 18px 0 0;
     padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
   }
+  .chat-stream { min-height: 0; overflow: auto; flex: 1 1 auto; }
+  .chat textarea { height: 2.75rem; min-height: 0; resize: none; }
+  .chat .actions .btn { flex: 1 1 auto; min-width: 0; }
   html.is-framed .chat {
-    bottom: calc(96px + env(safe-area-inset-bottom));
+    bottom: 0;
     padding-bottom: 12px;
   }
+  .chat-fold { display: inline-flex; }
+  .chat.is-folded { max-height: none; overflow: hidden; }
+  .chat.is-folded > :not(.chat-head) { display: none; }
   .piece-board { padding-bottom: calc(48vh + 24px + env(safe-area-inset-bottom)); }
-  html.is-framed .piece-board { padding-bottom: calc(48vh + 112px + env(safe-area-inset-bottom)); }
+  .piece-board:has(.chat.is-folded) { padding-bottom: 88px; }
+  body:has(.chat.is-folded) #historySec { margin-bottom: 80px; }
+  body:has(.chat:not(.is-folded)) #historySec { margin-bottom: min(48vh, 420px); }
   .chat .btn { min-height: 44px; }
 }

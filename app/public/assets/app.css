@@ -118,9 +118,9 @@ a{color:var(--color-primary)}
   background:color-mix(in srgb,var(--color-surface) 72%,transparent);min-width:0;
 }
 .onb-map li:first-child{border-color:var(--color-primary);color:var(--color-primary)}
-.onb-actions{display:flex;gap:10px;margin-top:22px}
-.onb-actions .btn{flex:1;margin-top:0}
-.onb-actions .btn-ghost{flex:none}
+.onb-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.onb-actions .btn{flex:1 1 10rem;margin-top:0;min-width:0}
+.onb-actions .btn-ghost{flex:1 1 auto}
 @media (max-height:640px){.onb{align-content:start;padding-top:18px}}
 
 /* Casca */
@@ -201,6 +201,12 @@ a{color:var(--color-primary)}
   .top .logo{font-size:.72rem;letter-spacing:.14em}
   .top .who{text-align:right;max-width:46vw}
   .stage-body{padding:8px 16px var(--tabbar-clear)}
+  .shell.is-front .stage-body{padding:0}
+  .shell.is-front .front-frame{
+    height:calc(100% - var(--tabbar-clear));
+    flex:none;
+    align-self:flex-start;
+  }
   .hub{grid-template-columns:minmax(0,1fr)}
   .hub-task,.hub-angle,.hub-presence,.hub-create{grid-column:auto}
   .tabbar{

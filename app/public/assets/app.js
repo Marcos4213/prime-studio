@@ -118,7 +118,7 @@ async function boot() {
     state.clinic = data.clinic || null;
     if (data.clinic && data.clinic.profile) state.entrada = { ...data.clinic.profile };
     const filled = state.clinic && state.clinic.completeness ? Number(state.clinic.completeness.filled) : 0;
-    if (!state.onboarding.completo || filled === 0) location.hash = "#entrada";
+    if (!state.onboarding.completo || (filled === 0 && !entradaPulada(state.me.id))) location.hash = "#entrada";
     showApp();
   } else {
     showLogin();
@@ -344,11 +344,6 @@ function dressFrame(frame) {
     header.top, header.edu-top, .theme-bar, a.central-link, .edu-toplink { display: none !important; }
     .circulo, .wrap, .ind, .edu { max-width: none !important; width: 100% !important; }
     body { background: var(--color-bg); }
-    @media (max-width: 899px) {
-      .circulo, .wrap, .ind, .edu, .page, main {
-        padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
-      }
-    }
   `;
   doc.head.appendChild(style);
   doc.addEventListener("click", (event) => {
@@ -732,6 +727,24 @@ const ENTRADA_STEPS = [
 
 let entradaStep = 0;
 
+function entradaPulada(clientId) {
+  if (!clientId) return false;
+  try {
+    return localStorage.getItem("prime.entrada.pulado." + clientId) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function marcarEntradaPulada(clientId) {
+  if (!clientId) return;
+  try {
+    localStorage.setItem("prime.entrada.pulado." + clientId, "1");
+  } catch {
+    /* o próximo acesso volta a oferecer o perfil vazio */
+  }
+}
+
 function meterHtml(score) {
   const filled = score ? score.filled : 0;
   const total = score ? score.total : 10;
@@ -857,6 +870,7 @@ async function advanceEntrada(concluir) {
   }
   if (data.onboarding) state.onboarding = data.onboarding;
   if (concluir) {
+    marcarEntradaPulada(state.me && state.me.id);
     openHref("/hoje", { replace: true });
     return;
   }
