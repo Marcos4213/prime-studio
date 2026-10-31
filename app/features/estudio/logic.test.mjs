@@ -58,9 +58,14 @@ test("a página cabe no celular e deixa o hábito visível", () => {
   const page = html.replace("___ESTUDIO_CSS___", css).replace("___ESTUDIO_JS___", js);
   assert.equal(page.includes("___ESTUDIO_CSS___"), false);
   assert.equal(page.includes("___ESTUDIO_JS___"), false);
-  assert.match(page, /Por que abrir de novo amanhã/);
+  assert.doesNotMatch(page, /Por que abrir de novo amanhã/);
+  assert.match(page, /id="formatSec"/);
+  assert.match(page, /id="theme"/);
+  assert.doesNotMatch(page, /id="composer"[^>]*hidden/);
+  assert.doesNotMatch(page, /id="brand"/);
+  assert.doesNotMatch(page, /AIDA|StoryBrand|Treinar IA/);
   assert.match(page, /sem prompt de imagem/i);
-  assert.match(page, /Nada vai ao ar sozinho/);
+  assert.equal((page.match(/Nada vai ao ar sozinho/g) || []).length, 1);
   assert.match(css, /overflow-x:\s*hidden/);
   assert.doesNotMatch(css, /overflow-x:\s*(auto|scroll)/);
   assert.doesNotMatch(css, /100vw/);

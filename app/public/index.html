@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/tokens.css?v=3">
-<link rel="stylesheet" href="/assets/app.css?v=13">
+<link rel="stylesheet" href="/assets/app.css?v=15">
 </head>
 <body>
 <div id="boot" class="boot">Abrindo a central…</div>
@@ -59,7 +59,7 @@
     <section data-step="0">
       <p class="eyebrow">Primeiro acesso</p>
       <h1>A pergunta de todo dia: o que a clínica posta hoje.</h1>
-      <p class="lede">O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho.</p>
+      <p class="lede">Ela fica para o ok da clínica. O estúdio fica no centro.</p>
     </section>
 
     <section data-step="1" hidden>
@@ -69,10 +69,10 @@
       <ul class="onb-map">
         <li>Estúdio, no centro</li>
         <li>Presença</li>
-        <li>Link na bio</li>
         <li>Educação</li>
         <li>Comunidade</li>
         <li>Indicação</li>
+        <li>Leads</li>
       </ul>
     </section>
 
@@ -110,7 +110,6 @@
           <p class="who-name" data-who></p>
           <p class="who" data-mail></p>
         </div>
-        <button type="button" class="btn-ghost btn-xs" data-perfil aria-label="Perfil da marca">Perfil da marca</button>
         <button type="button" class="btn-ghost btn-xs" data-logout>Sair</button>
       </div>
     </aside>
@@ -121,6 +120,7 @@
       </header>
       <div class="stage-body">
         <section class="view is-active" data-view="hoje"></section>
+        <section class="view" data-view="leads"></section>
         <section class="view" data-view="entrada"></section>
         <section class="view" data-view="marca"></section>
         <section class="view" data-view="historico"></section>
@@ -131,21 +131,21 @@
       <button type="button" data-tab="hoje">Início</button>
       <button type="button" data-tab="presenca">Presença</button>
       <button type="button" data-tab="estudio" class="tab-studio">Estúdio</button>
-      <button type="button" data-tab="link-na-bio" aria-label="Link na bio">Link</button>
       <button type="button" data-tab="mais" aria-label="Mais seções" aria-expanded="false">Mais</button>
     </nav>
     <div class="mais" data-mais hidden>
       <div class="mais-sheet" role="menu" aria-label="Mais seções">
+        <button type="button" data-go="/leads">Leads</button>
         <button type="button" data-go="/educacao">Educação</button>
         <button type="button" data-go="/comunidade">Comunidade</button>
         <button type="button" data-go="/indicacao">Indicação</button>
-        <button type="button" data-go="/marca">Perfil da marca / Treinar IA</button>
+        <button type="button" data-go="/marca">Perfil</button>
         <button type="button" data-logout>Sair</button>
       </div>
     </div>
   </div>
 </template>
 
-<script src="/assets/app.js?v=13" defer></script>
+<script src="/assets/app.js?v=15" defer></script>
 </body>
 </html>

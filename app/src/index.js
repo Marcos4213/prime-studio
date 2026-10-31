@@ -13,9 +13,11 @@ import { copyMethodCatalog } from "./lib/copy-method.js";
 import {
   loadGeneratorProfile,
   publicClinic,
+  readBrandProfile,
   readLatestClinicProfile,
   saveClinicProfileVersion,
 } from "./lib/clinic-profile.js";
+import { pieceEstado, weekBars } from "./lib/hoje.js";
 import { findFeaturesDir, loadFeatures, toMenu } from "../features/load.js";
 import bakedMenu from "./feature-menu.json";
 
@@ -58,7 +60,9 @@ async function routeFront(request, env, url) {
     return handlePresenca(request, env, url);
   }
 
-  if (path === "/link-na-bio" || path.startsWith("/api/link-na-bio")) {
+  // Link na bio fica no código, fora da navegação e das rotas.
+  const LINK_NA_BIO_ATIVO = false;
+  if (LINK_NA_BIO_ATIVO && (path === "/link-na-bio" || path.startsWith("/api/link-na-bio"))) {
     const { handleLinkNaBio } = await import("../features/link-na-bio/handle.js");
     return handleLinkNaBio(request, env, url);
   }
@@ -103,6 +107,30 @@ async function hojeResumo(request, env) {
   }
 
   const onboarding = await readOnboarding(env, client.id);
+  let semana = weekBars([], new Date());
+  try {
+    const monday = semana[0]?.day || pair.todayKey;
+    const looks = await env.DB.prepare(
+      `SELECT day, site, instagram, google, bio FROM presence_looks
+        WHERE client_id = ? AND day >= ?`
+    )
+      .bind(client.id, monday)
+      .all();
+    semana = weekBars(looks.results || [], new Date());
+  } catch {
+    semana = weekBars([], new Date());
+  }
+  let peca = { id: "aberto", label: "Em aberto" };
+  try {
+    const pieces = await env.DB.prepare(
+      "SELECT status, created_at FROM pieces WHERE client_id = ? ORDER BY created_at DESC LIMIT 40"
+    )
+      .bind(client.id)
+      .all();
+    peca = pieceEstado(pieces.results || [], pair.todayKey);
+  } catch {
+    peca = { id: "aberto", label: "Em aberto" };
+  }
   return json({
     ok: true,
     weekday: pair.today.label,
@@ -110,7 +138,14 @@ async function hojeResumo(request, env) {
     tomorrow: pair.tomorrow.angle,
     presenca,
     tema_amanha: onboarding.tema_amanha || "",
+    peca,
+    semana,
   });
+}
+
+async function presentClinic(env, clientId, record) {
+  const brand = await readBrandProfile(env, clientId);
+  return publicClinic(record, brand);
 }
 
 async function handleApi(request, env, url, ctx) {
@@ -132,7 +167,7 @@ async function handleApi(request, env, url, ctx) {
 
   if (path === "/api/me" && method === "GET") {
     const onboarding = await readOnboarding(env, client.id);
-    const clinic = publicClinic(await readLatestClinicProfile(env, client.id));
+    const clinic = await presentClinic(env, client.id, await readLatestClinicProfile(env, client.id));
     return json({
       ok: true,
       client: publicClient(client),
@@ -153,6 +188,11 @@ async function handleApi(request, env, url, ctx) {
   if (path === "/api/profile" && method === "PUT") return putProfile(request, env, client);
 
   if (path === "/api/generate" && method === "POST") return generate(request, env, client);
+
+  if (path === "/api/leads" || path.startsWith("/api/leads/")) {
+    const { handleLeads } = await import("./lib/leads.js");
+    return handleLeads(request, env, url, client);
+  }
 
   if (path === "/api/history" && method === "GET") return listHistory(env, client);
 
@@ -231,7 +271,7 @@ async function postOnboarding(request, env, client) {
   let clinic = null;
   let perfilErro = "";
   try {
-    clinic = publicClinic(await saveClinicProfileVersion(env, client.id, { ...perfil, tema_amanha: tema }));
+    clinic = await presentClinic(env, client.id, await saveClinicProfileVersion(env, client.id, { ...perfil, tema_amanha: tema }));
   } catch (err) {
     if (err?.code === "perfil_indisponivel") perfilErro = "perfil_indisponivel";
     else throw err;
@@ -256,7 +296,7 @@ async function postOnboarding(request, env, client) {
 }
 
 async function getClinicProfile(env, client) {
-  const clinic = publicClinic(await readLatestClinicProfile(env, client.id));
+  const clinic = await presentClinic(env, client.id, await readLatestClinicProfile(env, client.id));
   return json({ ok: true, ...clinic, methods: copyMethodCatalog() });
 }
 
@@ -264,7 +304,7 @@ async function putClinicProfile(request, env, client) {
   const body = await readJson(request);
   const perfil = body.perfil && typeof body.perfil === "object" ? body.perfil : body;
   try {
-    const clinic = publicClinic(await saveClinicProfileVersion(env, client.id, perfil));
+    const clinic = await presentClinic(env, client.id, await saveClinicProfileVersion(env, client.id, perfil));
     return json({ ok: true, ...clinic, methods: copyMethodCatalog() });
   } catch (err) {
     if (err?.code === "perfil_indisponivel") return json({ ok: false, error: "perfil_indisponivel" }, 503);
@@ -336,7 +376,8 @@ async function putProfile(request, env, client) {
   )
     .bind(client.id, JSON.stringify(colors), JSON.stringify(fonts), tone, avoid, highlights, nowIso())
     .run();
-  return json({ ok: true });
+  const clinic = await presentClinic(env, client.id, await readLatestClinicProfile(env, client.id));
+  return json({ ok: true, clinic });
 }
 
 async function generate(request, env, client) {
@@ -374,7 +415,10 @@ async function generate(request, env, client) {
 
 async function listHistory(env, client) {
   const res = await env.DB.prepare(
-    "SELECT id, format, theme, source, status, created_at FROM pieces WHERE client_id = ? ORDER BY created_at DESC LIMIT 100"
+    `SELECT id, format, theme, source, status, created_at FROM pieces
+      WHERE client_id = ?
+      ORDER BY CASE WHEN status = 'aberto' THEN 0 WHEN status = 'rascunho' THEN 1 ELSE 2 END, created_at DESC
+      LIMIT 100`
   )
     .bind(client.id)
     .all();

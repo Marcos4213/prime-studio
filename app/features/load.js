@@ -25,6 +25,7 @@ export function toMenu(records) {
     if (!raw || typeof raw !== "object") continue;
     const title = typeof raw.title === "string" ? raw.title.trim().slice(0, 48) : "";
     const href = typeof raw.href === "string" ? raw.href.trim() : "";
+    if (raw.enabled === false) continue;
     if (!title || !HREF_RE.test(href) || href.includes("..")) continue;
     const orderNum = Number(raw.order);
     const order = Number.isFinite(orderNum) ? Math.min(999, Math.max(0, orderNum)) : 100;

@@ -28,13 +28,20 @@ const NAV = [
   { id: "hoje", title: "Início", href: "/hoje", icon: "inicio" },
   { id: "estudio", title: "Estúdio", href: "/estudio", icon: "estudio" },
   { id: "presenca", title: "Presença", href: "/presenca", icon: "presenca" },
-  { id: "link-na-bio", title: "Link na bio", href: "/link-na-bio", icon: "link" },
   { id: "educacao", title: "Educação", href: "/educacao", icon: "educacao" },
   { id: "comunidade", title: "Comunidade", href: "/comunidade", icon: "comunidade" },
   { id: "indicacao", title: "Indicação", href: "/indicacao", icon: "indicacao" },
+  { id: "leads", title: "Leads", href: "/leads", icon: "leads" },
 ];
-const FRONTS = new Set(NAV.filter((item) => item.id !== "hoje").map((item) => item.id));
-const MAIS = new Set(["educacao", "comunidade", "indicacao", "marca"]);
+const SHELL = new Set(["hoje", "leads"]);
+const FRONTS = new Set(NAV.filter((item) => !SHELL.has(item.id)).map((item) => item.id));
+const MAIS = new Set(["educacao", "comunidade", "indicacao", "marca", "leads"]);
+const NICHOS = [
+  { value: "saude", label: "Saúde" },
+  { value: "estetica", label: "Estética" },
+  { value: "bem-estar", label: "Bem-estar" },
+  { value: "odonto", label: "Odonto" },
+];
 
 function icon(name) {
   const paths = {
@@ -45,6 +52,7 @@ function icon(name) {
     educacao: '<path d="M3.5 7 12 3.5 20.5 7 12 10.5z"/><path d="M6.5 10.2V16c0 .4 2.4 2.5 5.5 2.5s5.5-2.1 5.5-2.5v-5.8"/>',
     comunidade: '<circle cx="8" cy="9" r="2.2"/><circle cx="16" cy="9" r="2.2"/><path d="M4.2 18.2c.5-2.3 2.1-3.6 3.8-3.6h.4c1.6 0 3.2 1.3 3.6 3.6"/><path d="M12.2 18.2c.4-2.3 2-3.6 3.6-3.6h.4c1.7 0 3.3 1.3 3.8 3.6"/>',
     indicacao: '<path d="M12 4.5v15"/><path d="M8 8.5h5.5a2.8 2.8 0 0 1 0 5.6H8.8a2.8 2.8 0 0 0 0 5.6H16"/>',
+    leads: '<path d="M7 4.5h10A1.5 1.5 0 0 1 18.5 6v14H8.5A2.5 2.5 0 0 1 6 17.5V6A1.5 1.5 0 0 1 7 4.5z"/><path d="M8.5 4.5v13"/><path d="M10.5 9h5.5M10.5 12.5h5.5M10.5 16h3.5"/>',
     mais: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
     marca: '<circle cx="12" cy="8" r="3"/><path d="M5.5 19.2c.8-3 3.2-4.6 6.5-4.6s5.7 1.6 6.5 4.6"/>',
   };
@@ -183,7 +191,7 @@ function wireChrome() {
     }
     const item = NAV.find((entry) => entry.id === id);
     if (!item) return;
-    const label = item.id === "link-na-bio" ? "Link" : item.title;
+    const label = item.title;
     const glyph = item.id === "estudio" ? `<span class="tab-orb">${icon(item.icon)}</span>` : icon(item.icon);
     btn.innerHTML = `${glyph}<span>${esc(label)}</span>`;
     btn.addEventListener("click", () => openHref(item.href));
@@ -229,6 +237,7 @@ function paneFromHash() {
   if (raw === "perfil") return "marca";
   if (raw === "entrada") return "entrada";
   if (raw === "historico" || raw === "marca") return raw;
+  if (raw === "leads") return "leads";
   if (raw === "inicio" || raw === "hoje" || !raw) return "hoje";
   if (FRONTS.has(raw)) return raw;
   return "hoje";
@@ -317,6 +326,7 @@ function showPane(id) {
   setActive(id);
   if (id === "historico") renderHistorico();
   if (id === "hoje") renderHoje();
+  if (id === "leads") renderLeads();
   if (id === "entrada") renderEntrada();
   if (id === "marca") renderMarca();
 }
@@ -349,6 +359,9 @@ function dressFrame(frame) {
     html, body { max-width: 100%; overflow-x: hidden; }
     body { background: var(--color-bg); }
     img, video, .chat, .visual, .piece-board, .file-btn { max-width: 100%; }
+    @media (max-width: 899px) {
+      .wrap, .edu, .circulo, .ind { padding-bottom: 24px !important; }
+    }
   `;
   doc.head.appendChild(style);
   doc.addEventListener("click", (event) => {
@@ -374,65 +387,60 @@ async function renderHoje() {
   if (!v) return;
   const ticket = ++hojeTicket;
   const nome = state.me && state.me.name;
-  v.innerHTML = `
-    <div class="hub">
-      <header class="hub-intro">
-        <p class="eyebrow">Início</p>
-        <h2>${esc(saudacao(nome))}</h2>
-      </header>
-      <article class="block hub-card hub-task">
-        <p class="eyebrow">Tarefa do dia</p>
-        <h3>Montar a peça de hoje</h3>
-        <p class="hint">Deixe pronta para o ok da clínica. Nada vai ao ar sozinho.</p>
-      </article>
-      <article class="block hub-card hub-angle">
-        <p class="eyebrow">Ângulo do dia</p>
-        <h3>Abrindo o ângulo…</h3>
-      </article>
-      <article class="block hub-card hub-presence">
-        <p class="eyebrow">Presença</p>
-        <h3>Olhando as portas…</h3>
-      </article>
-      <article class="block hub-card hub-create">
-        <p class="eyebrow">Atalho</p>
-        <h3>Criar post</h3>
-        <p class="hint">O estúdio monta a peça no tom da clínica.</p>
-        <button class="btn" id="goEstudio" type="button">Criar post</button>
-      </article>
-    </div>`;
-  const go = $("#goEstudio");
-  if (go) go.addEventListener("click", () => openHref("/estudio"));
+  const weekday = "";
+  v.innerHTML = hojeHtml({ nome, weekday, estado: "Em aberto", presenca: "", semana: [] });
+  wireHoje(v);
   const { ok, data } = await api("/api/hoje");
   if (ticket !== hojeTicket || !v.isConnected) return;
-  const angle = ok && data.ok ? data.angle : "O ângulo de hoje volta quando a central responder.";
-  const weekday = ok && data.ok && data.weekday ? data.weekday : "";
-  const tomorrow = ok && data.ok ? data.tomorrow : "";
-  const presenca = ok && data.ok ? data.presenca : "A presença ainda não respondeu.";
-  const tema = (ok && data.ok && data.tema_amanha) || state.onboarding.tema_amanha || "";
-  const task = $(".hub-task", v);
-  const angleCard = $(".hub-angle", v);
-  const presence = $(".hub-presence", v);
-  if (task) {
-    task.innerHTML = `
-      <p class="eyebrow">Tarefa do dia</p>
-      <h3>Montar a peça de hoje</h3>
-      <p class="hint">Deixe pronta para o ok da clínica. Nada vai ao ar sozinho.</p>
-      ${tema ? `<p class="hoje-tema">Tema combinado: <em>${esc(tema)}</em>.</p>` : ""}`;
-  }
-  if (angleCard) {
-    angleCard.innerHTML = `
-      <p class="eyebrow">Ângulo do dia${weekday ? ` · ${esc(weekday)}` : ""}</p>
-      <h3>${esc(angle)}</h3>
-      ${tomorrow ? `<p class="hint">Amanhã muda para: ${esc(tomorrow)}</p>` : ""}`;
-  }
-  if (presence) {
-    presence.innerHTML = `
-      <p class="eyebrow">Presença</p>
-      <h3>${esc(presenca)}</h3>
-      <button class="btn-ghost" type="button" data-go="/presenca">Ver a presença</button>`;
-    const button = $("[data-go]", presence);
-    if (button) button.addEventListener("click", () => openHref(button.dataset.go));
-  }
+  const estado = ok && data.ok && data.peca && data.peca.label ? data.peca.label : "Em aberto";
+  const day = ok && data.ok && data.weekday ? data.weekday : "";
+  const presenca = ok && data.ok && data.presenca ? data.presenca : "";
+  const semana = ok && data.ok && Array.isArray(data.semana) ? data.semana : [];
+  v.innerHTML = hojeHtml({ nome, weekday: day, estado, presenca, semana });
+  wireHoje(v);
+}
+
+function hojeHtml({ nome, weekday, estado, presenca, semana }) {
+  const bars = (semana.length ? semana : ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((label) => ({ label, visto: false })))
+    .map((bar) => {
+      const on = bar.visto === true;
+      return `<div class="week-col"><span class="week-bar${on ? " is-on" : ""}" aria-hidden="true"></span><span class="week-day">${esc(bar.label)}</span></div>`;
+    })
+    .join("");
+  const known = (semana || []).filter((bar) => bar.visto).map((bar) => bar.label);
+  const chartLabel = known.length
+    ? `Presença da semana. Dias com olhar registrado: ${known.join(", ")}.`
+    : "Presença da semana. Nenhum dia com olhar registrado nesta tela.";
+  return `
+    <div class="hoje">
+      <header class="hoje-intro">
+        <p class="eyebrow">Início</p>
+        <h2>${esc(saudacao(nome))}</h2>
+        ${weekday ? `<p class="hoje-day">${esc(weekday)}</p>` : ""}
+      </header>
+      <article class="hoje-strip">
+        <div class="hoje-copy">
+          <h3>Montar a peça de hoje</h3>
+          <p class="hoje-state"><i aria-hidden="true"></i>${esc(estado)}</p>
+        </div>
+        <button class="btn" id="goEstudio" type="button">Criar post</button>
+      </article>
+      <section class="hoje-week" aria-labelledby="hojePresenca">
+        <div class="hoje-week-head">
+          <h3 id="hojePresenca">Presença</h3>
+          <button class="btn-ghost btn-xs" type="button" data-go="/presenca">Ver a presença</button>
+        </div>
+        <div class="week-chart" role="img" aria-label="${esc(chartLabel)}">${bars}</div>
+        ${presenca ? `<p class="hoje-note">${esc(presenca)}</p>` : ""}
+      </section>
+    </div>`;
+}
+
+function wireHoje(v) {
+  const go = $("#goEstudio", v);
+  if (go) go.addEventListener("click", () => openHref("/estudio"));
+  const presence = $("[data-go]", v);
+  if (presence) presence.addEventListener("click", () => openHref(presence.dataset.go));
 }
 
 async function saveTema() {
@@ -637,11 +645,7 @@ function renderPiece(piece, fresh) {
   const warns = (o.warnings || []).length
     ? `<div class="warns"><b>Revisar antes de aprovar:</b><br>${o.warnings.map(esc).join("<br>")}</div>`
     : "";
-  const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
-  const methodWhy = o.copyMethod && o.copyMethod.why ? o.copyMethod.why : "Dentro do Método PRIME.";
-  const methodHtml = methodName
-    ? `<p class="method" data-copy-method>Método de copy: ${esc(methodName)}</p><p class="hint">${esc(methodWhy)}</p>`
-    : "";
+  const methodHtml = "";
   const srcBadge = `<span class="badge src-${piece.source}">${piece.source === "ia" ? "Gerado por IA" : "Exemplo"}</span>`;
   const stBadge = `<span class="badge st-${piece.status}">${piece.status}</span>`;
   const actions = fresh
@@ -681,7 +685,7 @@ const ENTRADA_STEPS = [
   {
     kicker: "Primeiro acesso",
     title: "A pergunta de todo dia: o que a clínica posta hoje.",
-    lede: "O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho. O estúdio fica no centro. Presença, Link na bio, Educação, Comunidade e Indicação entram no mesmo acesso. Dá para pular.",
+    lede: "Ela fica para o ok da clínica. O estúdio fica no centro. Presença, Educação, Comunidade, Indicação e o caderno entram no mesmo acesso. Dá para pular.",
     fields: [{ key: "nicho", label: "Nicho", kind: "nicho" }],
   },
   {
@@ -725,7 +729,12 @@ const ENTRADA_STEPS = [
     title: "Volte amanhã para a próxima peça.",
     lede: "Prova é autoridade real, sem número inventado. Se quiser, deixe o tema. A central abre por ele.",
     fields: [
-      { key: "provas", label: "Provas e autoridade", placeholder: "Formação ou tempo de casa, sem número inventado" },
+      {
+        key: "provas",
+        label: "Provas e autoridade",
+        note: "A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem de WhatsApp.",
+        placeholder: "Formação ou tempo de casa",
+      },
       { key: "tema_amanha", label: "Tema de amanhã", placeholder: "Ex.: um detalhe do espaço da clínica", rows: 1 },
     ],
   },
@@ -753,7 +762,7 @@ function marcarEntradaPulada(clientId) {
 
 function meterHtml(score) {
   const filled = score ? score.filled : 0;
-  const total = score ? score.total : 10;
+  const total = score ? score.total : 13;
   const pct = score ? score.percent : 0;
   return `<p class="complete"><span class="complete-label">${filled} de ${total} campos</span><span class="complete-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></p>`;
 }
@@ -778,12 +787,16 @@ function renderEntrada() {
       .map((field) => {
         if (field.kind === "nicho") {
           return `<div class="choices" role="radiogroup" aria-label="Nicho">
-            <button type="button" class="choice" role="radio" data-nicho="estetica" aria-checked="false">Estética</button>
-            <button type="button" class="choice" role="radio" data-nicho="odonto" aria-checked="false">Odonto</button>
+            ${NICHOS.map(
+              (nicho) =>
+                `<button type="button" class="choice" role="radio" data-nicho="${esc(nicho.value)}" aria-checked="false">${esc(nicho.label)}</button>`
+            ).join("")}
           </div>`;
         }
         const rows = field.rows || 3;
+        const note = field.note ? `<span class="field-note">${esc(field.note)}</span>` : "";
         return `<label class="form" for="ent-${field.key}">${esc(field.label)}
+          ${note}
           <textarea id="ent-${field.key}" data-field="${field.key}" rows="${rows}" maxlength="400" placeholder="${esc(field.placeholder || "")}"></textarea>
         </label>`;
       })
@@ -921,36 +934,26 @@ async function renderMarca() {
   };
   paintCompleteNav();
   const c = clinic.profile || {};
-  const structureLabel = {
-    post: "Post",
-    bio: "Bio",
-    "link-na-bio": "Link na bio",
-    anuncio: "Anúncio",
-    whatsapp: "WhatsApp",
-    site: "Site",
-  };
-  const methods = (clinic.methods || [])
-    .map((method) => `<li title="${esc(method.why || "")}"><span>${esc(structureLabel[method.structure] || method.structure)}</span> ${esc(method.name)}</li>`)
-    .join("");
+  const knownNiche = NICHOS.some((nicho) => nicho.value === c.nicho);
+  const extraNiche = c.nicho && !knownNiche ? `<option value="${esc(c.nicho)}">${esc(c.nicho)}</option>` : "";
   const versionLine = clinic.stored === false
     ? "O perfil versionado ainda não está neste banco."
     : clinic.version
       ? `Versão ${clinic.version}. Cada gravação acrescenta uma versão nova.`
-      : "Ainda sem versão. A primeira gravação começa o treino.";
+      : "Ainda sem versão. A primeira gravação começa o perfil.";
   v.innerHTML = `
     <div class="block perfil-treino">
-      <span class="eyebrow">Treinar IA</span>
-      <h2>Perfil da marca / Treinar IA</h2>
-      <p class="hint">A gente lê este perfil em cada peça. Post e WhatsApp seguem AIDA. A bio segue o 4U. O anúncio segue PAS. Link na bio e site seguem StoryBrand. Sem promessa, sem antes e depois, sem número inventado.</p>
+      <span class="eyebrow">Perfil</span>
+      <h2>Perfil da marca</h2>
+      <p class="hint">A gente lê este perfil em cada peça. Sem promessa, sem antes e depois, sem número inventado.</p>
       ${meterHtml(clinic.completeness)}
       <p class="hint" id="versionLine">${esc(versionLine)}</p>
-      <ul class="method-list">${methods}</ul>
       <div class="perfil-grid">
         <label class="form">Nicho
           <select id="pfNicho">
             <option value="">Escolher</option>
-            <option value="estetica">Estética</option>
-            <option value="odonto">Odonto</option>
+            ${extraNiche}
+            ${NICHOS.map((nicho) => `<option value="${esc(nicho.value)}">${esc(nicho.label)}</option>`).join("")}
           </select>
         </label>
         <label class="form">Cidade<textarea id="pfCidade" rows="2" maxlength="80">${esc(c.cidade || "")}</textarea></label>
@@ -961,7 +964,7 @@ async function renderMarca() {
         <label class="form">Tom de voz<textarea id="pfTom" rows="3" maxlength="400">${esc(c.tom || "")}</textarea></label>
         <label class="form">Objetivos<textarea id="pfObjetivos" rows="3" maxlength="400">${esc(c.objetivos || "")}</textarea></label>
         <label class="form">Objeções comuns<textarea id="pfObjecoes" rows="3" maxlength="400">${esc(c.objecoes || "")}</textarea></label>
-        <label class="form">Provas e autoridade<textarea id="pfProvas" rows="3" maxlength="400">${esc(c.provas || "")}</textarea></label>
+        <label class="form">Provas e autoridade<span class="field-note">A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem de WhatsApp.</span><textarea id="pfProvas" rows="3" maxlength="400">${esc(c.provas || "")}</textarea></label>
       </div>
       <button class="btn" id="saveClinic" type="button">Guardar versão</button>
       <span class="note" id="clinicSaved" hidden>Versão guardada.</span>
@@ -973,13 +976,13 @@ async function renderMarca() {
       <p class="hint">O que a peça respeita além do texto. Quanto mais completo, mais parece a clínica.</p>
       <p class="row"><button type="button" class="btn-ghost btn-xs" id="goHist">Peças guardadas</button></p>
 
-      <div class="eyebrow" style="margin:10px 0 4px">Cores</div>
+      <label class="form" for="colorIn">Cores</label>
       <div class="chips" id="colorChips"></div>
-      <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor">Adicionar</button></div>
+      <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor" type="button">Adicionar</button></div>
 
-      <div class="eyebrow" style="margin:16px 0 4px">Fontes</div>
+      <label class="form" for="fontIn">Fontes</label>
       <div class="chips" id="fontChips"></div>
-      <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont">Adicionar</button></div>
+      <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont" type="button">Adicionar</button></div>
 
       <div class="form" style="margin-top:16px">
         <label for="tone">Tom da clínica</label>
@@ -1071,7 +1074,7 @@ async function renderMarca() {
   $("#saveBrand").addEventListener("click", async () => {
     const btn = $("#saveBrand");
     btn.disabled = true;
-    const { ok } = await api("/api/profile", {
+    const { ok, data } = await api("/api/profile", {
       method: "PUT",
       body: {
         colors,
@@ -1083,11 +1086,270 @@ async function renderMarca() {
     });
     btn.disabled = false;
     if (ok) {
+      if (data && data.clinic) {
+        state.clinic = { ...(state.clinic || {}), ...data.clinic };
+        paintCompleteNav();
+        const meter = $(".complete", v);
+        if (meter && data.clinic.completeness) meter.outerHTML = meterHtml(data.clinic.completeness);
+      }
       const s = $("#brandSaved");
       s.hidden = false;
       setTimeout(() => (s.hidden = true), 2500);
     }
   });
+}
+
+// ---------- Leads ----------
+const LEAD_SUBJECTS = [
+  { id: "recuperacao", label: "Recuperação" },
+  { id: "follow-up", label: "Follow-up" },
+  { id: "remarcacao", label: "Remarcação" },
+  { id: "engajamento", label: "Engajamento" },
+];
+
+function moeda(centavos) {
+  return (Number(centavos) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function valorCampo(centavos) {
+  if (centavos == null || centavos === "") return "";
+  const n = Number(centavos);
+  if (!Number.isInteger(n)) return "";
+  return (n / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function resumoTexto(resumo) {
+  if (!resumo || resumo.vazio) return "Nada lançado neste mês.";
+  const partes = [
+    `${resumo.leads} ${resumo.leads === 1 ? "lead" : "leads"}`,
+    `${resumo.fechados} ${resumo.fechados === 1 ? "fechado" : "fechados"}`,
+  ];
+  if (resumo.valor_centavos != null) partes.push(moeda(resumo.valor_centavos));
+  return partes.join(" · ");
+}
+
+let leadsTicket = 0;
+let leadAtual = null;
+
+async function renderLeads() {
+  const v = $('[data-view="leads"]');
+  if (!v) return;
+  const ticket = ++leadsTicket;
+  v.innerHTML = `<div class="block"><span class="spin">Abrindo o caderno…</span></div>`;
+  const { ok, data } = await api("/api/leads");
+  if (ticket !== leadsTicket || !v.isConnected) return;
+  if (!ok || !data.ok) {
+    const msg = data.error === "sem_tabela" ? "O caderno ainda não está neste banco." : "Não foi possível abrir o caderno.";
+    v.innerHTML = `<div class="block"><h2>Leads</h2><p class="err">${esc(msg)}</p></div>`;
+    return;
+  }
+  const items = Array.isArray(data.items) ? data.items : [];
+  let atual = null;
+  if (leadAtual === "") {
+    atual = null;
+  } else {
+    if (leadAtual && !items.some((item) => item.id === leadAtual)) leadAtual = null;
+    if (!leadAtual && items[0]) leadAtual = items[0].id;
+    atual = items.find((item) => item.id === leadAtual) || null;
+  }
+  v.innerHTML = leadsHtml(data.resumo, items, atual);
+  wireLeads(v, atual);
+}
+
+function leadsHtml(resumo, items, atual) {
+  const lista = items.length
+    ? items
+        .map((item) => {
+          const on = atual && item.id === atual.id ? " is-on" : "";
+          const meta = [item.servico, item.status_label].filter(Boolean).join(" · ");
+          return `<button type="button" class="lead-item${on}" data-lead="${esc(item.id)}">
+            <span class="t">${esc(item.name)}</span>
+            <span class="m">${esc(meta || "Sem serviço")}</span>
+          </button>`;
+        })
+        .join("")
+    : `<p class="empty">Nenhum lead neste caderno.</p>`;
+  const a = atual || {};
+  const status = a.status || "aberto";
+  const assuntoOpts = LEAD_SUBJECTS.map((item) => `<option value="${esc(item.id)}">${esc(item.label)}</option>`).join("");
+  const contato = a.ultimo_contato
+    ? `Último contato ${new Date(a.ultimo_contato).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`
+    : "Ainda sem contato por aqui.";
+  return `
+    <div class="leads">
+      <header class="leads-head">
+        <p class="eyebrow">Caderno</p>
+        <h2>Leads</h2>
+        <p class="leads-resumo" data-resumo>${esc(resumoTexto(resumo))}</p>
+      </header>
+      <div class="leads-grid">
+        <div class="leads-list" aria-label="Leads">${lista}</div>
+        <form class="leads-editor block" id="leadForm">
+          <h3>${atual ? "Este lead" : "Novo lead"}</h3>
+          <div class="leads-fields">
+            <label class="form" for="ldServico">Serviço
+              <textarea id="ldServico" name="servico" rows="2" maxlength="120" placeholder="O que a clínica oferece">${esc(a.servico || "")}</textarea>
+            </label>
+            <label class="form" for="ldValor">Valor
+              <input id="ldValor" name="valor" inputmode="decimal" maxlength="20" value="${esc(valorCampo(a.valor_centavos))}" placeholder="Só se a clínica digitou">
+            </label>
+            <label class="form" for="ldStatus">Status
+              <select id="ldStatus" name="status">
+                <option value="aberto"${status === "aberto" ? " selected" : ""}>Não fechou</option>
+                <option value="fechado"${status === "fechado" ? " selected" : ""}>Fechou</option>
+                <option value="pago"${status === "pago" ? " selected" : ""}>Pago</option>
+              </select>
+            </label>
+            <label class="form" for="ldWhats">WhatsApp
+              <input id="ldWhats" name="whatsapp" maxlength="40" inputmode="tel" autocomplete="tel" value="${esc(a.whatsapp || "")}" placeholder="DDD e número">
+            </label>
+          </div>
+          <div class="leads-msg">
+            <label class="form" for="ldAssunto">Assunto
+              <select id="ldAssunto" name="assunto">${assuntoOpts}</select>
+            </label>
+            <button class="btn-ghost" type="button" id="ldGerar"${atual ? "" : " disabled"}>Montar mensagem</button>
+            <label class="form" for="ldTexto">Mensagem
+              <textarea id="ldTexto" name="text" rows="5" maxlength="700" placeholder="A clínica edita antes de enviar."></textarea>
+            </label>
+            <button class="btn" type="button" id="ldEnviar"${atual ? "" : " disabled"}>Enviar no WhatsApp</button>
+            <p class="note">O envio abre o WhatsApp da clínica. Nada dispara sozinho.</p>
+          </div>
+          <div class="leads-fields">
+            <label class="form" for="ldNome">Nome
+              <textarea id="ldNome" name="name" required rows="2" maxlength="80" autocomplete="name">${esc(a.name || "")}</textarea>
+            </label>
+            <label class="form" for="ldContato">Contato
+              <textarea id="ldContato" name="contact" rows="2" maxlength="80" autocomplete="tel">${esc(a.contact || "")}</textarea>
+            </label>
+            <label class="form" for="ldOrigem">Origem
+              <textarea id="ldOrigem" name="origin" rows="2" maxlength="80">${esc(a.origin || "")}</textarea>
+            </label>
+          </div>
+          <label class="form" for="ldHist">Histórico comercial
+            <textarea id="ldHist" name="historico" rows="2" maxlength="800" placeholder="O que a clínica anotou. Sem prontuário.">${esc(a.historico || "")}</textarea>
+          </label>
+          <p class="note" id="ldContatoQuando">${esc(contato)}</p>
+          <div class="leads-actions">
+            <button class="btn" type="submit" id="ldSave">${atual ? "Guardar" : "Incluir lead"}</button>
+            ${atual ? `<button class="btn-ghost" type="button" id="ldNovo">Novo</button>` : ""}
+          </div>
+          <p class="err" id="ldErr" role="alert" hidden></p>
+        </form>
+      </div>
+    </div>`;
+}
+
+function leadBody() {
+  return {
+    name: $("#ldNome").value,
+    contact: $("#ldContato").value,
+    origin: $("#ldOrigem").value,
+    servico: $("#ldServico").value,
+    valor: $("#ldValor").value,
+    status: $("#ldStatus").value,
+    whatsapp: $("#ldWhats").value,
+    historico: $("#ldHist").value,
+  };
+}
+
+function leadErro(data) {
+  if (data && data.error === "valor") return "Valor não reconhecido. Deixe em branco ou digite o que a clínica cobrou.";
+  if (data && data.error === "campos") return "O lead precisa de um nome.";
+  return "Não foi possível guardar.";
+}
+
+function wireLeads(v, atual) {
+  $$("[data-lead]", v).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      leadAtual = btn.dataset.lead;
+      renderLeads();
+    });
+  });
+  const novo = $("#ldNovo", v);
+  if (novo) {
+    novo.addEventListener("click", () => {
+      leadAtual = "";
+      renderLeads();
+    });
+  }
+  const form = $("#leadForm", v);
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("#ldErr", v);
+      const btn = $("#ldSave", v);
+      if (err) err.hidden = true;
+      if (btn) btn.disabled = true;
+      const path = atual ? `/api/leads/${atual.id}` : "/api/leads";
+      const { ok, data } = await api(path, { method: atual ? "PATCH" : "POST", body: leadBody() });
+      if (btn) btn.disabled = false;
+      if (!ok || !data.ok) {
+        if (err) {
+          err.textContent = leadErro(data);
+          err.hidden = false;
+        }
+        return;
+      }
+      leadAtual = data.item && data.item.id ? data.item.id : leadAtual;
+      renderLeads();
+    });
+  }
+  const gerar = $("#ldGerar", v);
+  if (gerar && atual) {
+    gerar.addEventListener("click", async () => {
+      const err = $("#ldErr", v);
+      if (err) err.hidden = true;
+      gerar.disabled = true;
+      const { ok, data } = await api(`/api/leads/${atual.id}/mensagem`, {
+        method: "POST",
+        body: { assunto: $("#ldAssunto", v).value },
+      });
+      gerar.disabled = false;
+      if (!ok || !data.ok) {
+        if (err) {
+          err.textContent = data.error === "ia_indisponivel" ? "Não foi possível montar a mensagem agora." : "Não foi possível montar a mensagem.";
+          err.hidden = false;
+        }
+        return;
+      }
+      const box = $("#ldTexto", v);
+      if (box) box.value = data.text || "";
+    });
+  }
+  const enviar = $("#ldEnviar", v);
+  if (enviar && atual) {
+    enviar.addEventListener("click", async () => {
+      const err = $("#ldErr", v);
+      const text = $("#ldTexto", v) ? $("#ldTexto", v).value : "";
+      if (err) err.hidden = true;
+      if (!String(text).trim()) {
+        if (err) {
+          err.textContent = "Escreva ou monte a mensagem antes de enviar.";
+          err.hidden = false;
+        }
+        return;
+      }
+      enviar.disabled = true;
+      const { ok, data } = await api(`/api/leads/${atual.id}/whatsapp`, {
+        method: "POST",
+        body: { text, assunto: $("#ldAssunto", v).value },
+      });
+      enviar.disabled = false;
+      if (!ok || !data.ok || !data.url) {
+        if (err) {
+          err.textContent = "Não foi possível abrir o WhatsApp.";
+          err.hidden = false;
+        }
+        return;
+      }
+      const quando = $("#ldContatoQuando", v);
+      if (quando && data.ultimo_contato) {
+        quando.textContent = `Último contato ${new Date(data.ultimo_contato).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`;
+      }
+      window.open(data.url, "_blank", "noopener");
+    });
+  }
 }
 
 // ---------- Histórico ----------

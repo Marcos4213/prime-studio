@@ -12,12 +12,6 @@
     "order": 20
   },
   {
-    "id": "link-na-bio",
-    "title": "Link na bio",
-    "href": "/link-na-bio",
-    "order": 30
-  },
-  {
     "id": "comunidade",
     "title": "Comunidade",
     "href": "/comunidade",
