@@ -1,6 +1,7 @@
 // Estúdio e as outras estruturas: geração com Gemini e rascunho de exemplo.
-// A chave vem SÓ do ambiente (env.GEMINI_API_KEY). Sem chave, ou se a API
-// não responder, o app devolve o rascunho local. A chave não entra em log,
+// A chave vem SÓ do ambiente (env.GEMINI_API_KEY). Sem chave, o app devolve
+// o rascunho local. Com chave, a peça principal só entra se o Gemini responder;
+// falha vira indisponível, sem gravar o exemplo. A chave não entra em log,
 // erro ou texto da peça.
 import { chooseCopyMethod, structureForFormat, suggestLine } from "./copy-method.js";
 
@@ -173,7 +174,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
   } catch (err) {
     const extra = /timeout|aborted/i.test(String(err?.message || err)) ? await probeHost() : "";
     logFallback(err, key, extra);
-    return { ...finishMock(format, theme, profile, mode, method), fallback: redactSecrets(`${err?.message || err} ${extra}`.trim(), key) };
+    return { unavailable: true, motivo: copyMotivo(err) };
   }
 }
 
@@ -213,7 +214,7 @@ export async function reviseCopy(env, { instruction, text, profile, structure } 
     return { ok: true, text: next, model, warnings: brandGuard({ text: next }), source: "ia" };
   } catch (err) {
     logFallback(err, key);
-    return { ok: false, motivo: "falha" };
+    return { ok: false, motivo: copyMotivo(err) };
   }
 }
 
@@ -246,8 +247,26 @@ function attach(output, method) {
   return { ...output, copyMethod: method, warnings: brandGuard(output) };
 }
 
-// O flash atual às vezes responde 503 ou não devolve cabeçalho. O 3.6 estável entra só então.
+// O flash atual às vezes responde 503, esgota a cota ou não devolve cabeçalho.
+// O 3.6 estável entra só então. Cota não repete no mesmo modelo.
 const FALLBACK_MODEL = "gemini-3.6-flash";
+
+function copyMotivo(err) {
+  const msg = String(err?.message || "");
+  if (/429|RESOURCE_EXHAUSTED/.test(msg)) return "cota";
+  if (/timeout|aborted|gemini_500|gemini_502|gemini_503|UNAVAILABLE|INTERNAL|gemini_vazio/i.test(msg)) return "indisponivel";
+  return "falha";
+}
+
+function retrySameModel(err, model, primary, attempt) {
+  const msg = String(err?.message || "");
+  if (/429|RESOURCE_EXHAUSTED/.test(msg)) return false;
+  const transient = /gemini_500|gemini_502|gemini_503|UNAVAILABLE|INTERNAL|gemini_vazio/.test(msg);
+  const timedOut = /timeout|aborted/i.test(msg);
+  if (!transient && !timedOut) return false;
+  if (timedOut && model === primary) return false;
+  return attempt === 0;
+}
 
 async function generateParsed(env, key, args) {
   const primary = geminiModel(env);
@@ -256,12 +275,12 @@ async function generateParsed(env, key, args) {
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const parsed = await callGemini(key, { ...args, model, timeoutMs: model === primary ? 10000 : 14000 });
+        const parsed = await callGemini(key, { ...args, model, timeoutMs: model === primary ? 14000 : 18000 });
         return { parsed, model };
       } catch (err) {
         last = err;
         logFallback(err, key, model);
-        if (!/503/.test(String(err?.message || ""))) break;
+        if (!retrySameModel(err, model, primary, attempt)) break;
       }
     }
   }

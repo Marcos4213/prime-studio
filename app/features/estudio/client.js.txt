@@ -232,13 +232,13 @@ function chatHtml() {
     '<label class="chat-label">Pedido' +
     '<textarea data-chat-input maxlength="400" rows="2" aria-label="Pedido de ajuste" placeholder="mais curto, tom mais acolhedor, troca o fundo, corrige essa frase"></textarea>' +
     "</label>" +
+    '<p class="err" data-chat-err hidden></p>' +
     '<div class="actions">' +
     '<button type="button" class="btn" data-chat-send>Aplicar</button>' +
     '<button type="button" class="btn" data-chat-use aria-pressed="false">Usar esta</button>' +
     '<button type="button" class="btn-ghost" data-chat-undo>Desfazer</button>' +
     "</div>" +
     '<p class="note">A conversa fica nesta tela, no método da peça e no perfil da clínica. A peça guardada não muda.</p>' +
-    '<p class="err" data-chat-err hidden></p>' +
     "</div></div></aside>"
   );
 }
@@ -404,6 +404,7 @@ function wireVisual(el, piece) {
   function imageFallbackText(motivo) {
     if (motivo === "cota") return "A cota de imagens acabou por agora. Nada foi publicado.";
     if (motivo === "sem_chave") return "Sem chave de IA: a imagem não foi gerada. Nada foi publicado.";
+    if (motivo === "modelo") return "O modelo de imagem não está disponível. Nada foi publicado.";
     return "A imagem não veio agora. Nada foi publicado. Você pode tentar de novo.";
   }
 
@@ -721,9 +722,15 @@ function wireChat(el, piece, visualApi) {
       if (res.status === 401) return showLogin();
       if (!res.ok || !res.data.ok || !res.data.version) {
         err.hidden = false;
-        err.textContent = res.data.motivo === "sem_chave"
+        const motivo = res.data.motivo;
+        err.textContent = motivo === "sem_chave"
           ? "A conversa precisa da IA. Nada foi alterado."
-          : "O ajuste não veio agora. A versão anterior continua.";
+          : motivo === "cota"
+            ? "A cota da IA acabou por agora. A versão anterior continua."
+            : motivo === "indisponivel"
+              ? "A IA não respondeu agora. A versão anterior continua."
+              : "O ajuste não veio agora. A versão anterior continua.";
+        err.scrollIntoView({ block: "nearest" });
         return;
       }
       input.value = "";
@@ -738,6 +745,7 @@ function wireChat(el, piece, visualApi) {
       reply.textContent = "Versão nova. Nada foi publicado.";
       log.appendChild(reply);
       log.scrollTop = log.scrollHeight;
+      if (preview) preview.scrollIntoView({ block: "nearest" });
     } finally {
       busy = false;
       send.disabled = false;
@@ -784,7 +792,11 @@ async function generate() {
       ? "Escolha câmera ou narração antes de montar o vídeo."
       : res.data.error === "formato_invalido"
         ? "Escolha o formato de novo."
-        : "Não foi possível montar a peça. Nada foi publicado.";
+        : res.data.error === "ia_indisponivel"
+          ? (res.data.motivo === "cota"
+            ? "A cota da IA acabou por agora. Nada foi publicado."
+            : "A IA não respondeu agora. Nada foi publicado. Tente de novo.")
+          : "Não foi possível montar a peça. Nada foi publicado.";
     return;
   }
   const box = qs("#result");

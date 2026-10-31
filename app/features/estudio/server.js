@@ -72,6 +72,9 @@ export async function handleEstudioGenerate(request, env) {
     console.log(JSON.stringify({ level: "error", msg: redactSecrets(err?.message || err), path: "/api/estudio/generate" }));
     return json({ ok: false, error: "falha_ia" }, 502);
   }
+  if (result?.unavailable || !result?.output) {
+    return json({ ok: false, error: "ia_indisponivel", motivo: result?.motivo || "indisponivel" });
+  }
 
   const id = uid("pc");
   const created = nowIso();

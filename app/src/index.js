@@ -354,6 +354,9 @@ async function generate(request, env, client) {
   } catch (err) {
     return json({ ok: false, error: "falha_ia", detail: redactSecrets(err?.message || err) }, 502);
   }
+  if (result?.unavailable || !result?.output) {
+    return json({ ok: false, error: "ia_indisponivel", motivo: result?.motivo || "indisponivel" });
+  }
 
   const id = uid("pc");
   const created = nowIso();

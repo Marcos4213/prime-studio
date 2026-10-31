@@ -4,6 +4,8 @@ import { redactSecrets } from "./ai.js";
 
 export const IMAGE_MODEL = "gemini-nano-banana-2.1";
 const IMAGE_FALLBACK = "gemini-3.1-flash-lite-image";
+// Só entra se os dois ids documentados responderem 404. A cota não chama este.
+const IMAGE_LEGACY = "gemini-2.5-flash-image";
 const INTERACTIONS = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
 export const IMAGE_RATIOS = new Set(["1:1", "4:5", "9:16"]);
@@ -146,16 +148,31 @@ export async function generateClinicImage(env, { kind, ratio, profile, caption, 
   });
   const models = [IMAGE_MODEL, IMAGE_FALLBACK];
   let last = "falha";
+  let missing = 0;
   for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const made = await callImage(key, model, prompt, ratio, photo);
-        return { ok: true, model, ...made };
-      } catch (err) {
-        last = err?.motivo || "falha";
-        console.log(JSON.stringify({ level: "warn", msg: "gemini_imagem", detail: redactSecrets(err?.message || err, key), model }));
-        if (last !== "indisponivel" && last !== "cota") break;
-      }
+    const made = await attemptImage(key, model, prompt, ratio, photo);
+    if (made.ok) return made;
+    last = made.motivo;
+    if (last === "modelo") missing += 1;
+  }
+  if (missing === models.length) {
+    const made = await attemptImage(key, IMAGE_LEGACY, prompt, ratio, photo);
+    if (made.ok) return made;
+    last = made.motivo;
+  }
+  return { ok: false, motivo: last };
+}
+
+async function attemptImage(key, model, prompt, ratio, photo) {
+  let last = "falha";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const made = await callImage(key, model, prompt, ratio, photo);
+      return { ok: true, model, ...made };
+    } catch (err) {
+      last = err?.motivo || "falha";
+      console.log(JSON.stringify({ level: "warn", msg: "gemini_imagem", detail: redactSecrets(err?.message || err, key), model }));
+      if (last !== "indisponivel") break;
     }
   }
   return { ok: false, motivo: last };

@@ -192,7 +192,7 @@ a{color:var(--color-primary)}
 .tabbar{display:none}
 .mais{display:none}
 @media (max-width:899px){
-  :root{--tabbar-clear:calc(112px + env(safe-area-inset-bottom))}
+  :root{--tabbar-clear:calc(136px + env(safe-area-inset-bottom))}
   .shell{grid-template-columns:minmax(0,1fr);height:100dvh}
   .rail{display:none}
   .top{

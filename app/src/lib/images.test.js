@@ -86,6 +86,57 @@ test("a imagem também sai de inlineData", () => {
   assert.equal(found.b64, "GERADA");
 });
 
+test("cota tenta cada modelo uma vez e não chama o modelo antigo", async () => {
+  const prev = globalThis.fetch;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    return new Response("{}", { status: 429 });
+  };
+  try {
+    const made = await generateClinicImage(
+      { GEMINI_API_KEY: SECRET },
+      { kind: "post", ratio: "1:1", caption: "Convite sóbrio.", profile: {} }
+    );
+    assert.equal(made.ok, false);
+    assert.equal(made.motivo, "cota");
+    assert.equal(urls.length, 2);
+    assert.equal(urls.some((url) => url.includes("gemini-2.5-flash-image")), false);
+    assert.equal(JSON.stringify(made).includes(SECRET), false);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
+test("404 nos dois modelos documentados tenta o modelo de imagem estável", async () => {
+  const prev = globalThis.fetch;
+  const models = [];
+  globalThis.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    models.push(body.model);
+    assert.equal(String(url).includes(SECRET), false);
+    if (body.model === "gemini-2.5-flash-image") {
+      return new Response(JSON.stringify({ output_image: { data: btoa("ok"), mime_type: "image/png" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    return new Response("{}", { status: 404 });
+  };
+  try {
+    const made = await generateClinicImage(
+      { GEMINI_API_KEY: SECRET },
+      { kind: "stories", ratio: "9:16", caption: "Convite sóbrio.", profile: {} }
+    );
+    assert.equal(made.ok, true);
+    assert.equal(made.model, "gemini-2.5-flash-image");
+    assert.deepEqual(models, ["gemini-nano-banana-2.1", "gemini-3.1-flash-lite-image", "gemini-2.5-flash-image"]);
+    assert.equal(JSON.stringify(made).includes(SECRET), false);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
 test("400 no formato completo repete sem image_size e não vaza a chave", async () => {
   const prev = globalThis.fetch;
   const bodies = [];

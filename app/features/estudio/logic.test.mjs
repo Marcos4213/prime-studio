@@ -87,6 +87,8 @@ test("a página cabe no celular e deixa o hábito visível", () => {
   assert.doesNotMatch(html + js.replaceAll(avisoFoto, ""), /faturamento|antes e depois|paciente/i);
   assert.match(js, /Importar foto/);
   assert.match(js, /data-chat/);
+  assert.ok(js.indexOf("data-chat-err") < js.indexOf("data-chat-send"));
+  assert.match(css, /html\.is-framed \.chat\.is-open[\s\S]*padding-bottom:\s*calc\(36px \+ env\(safe-area-inset-bottom\)\)/);
   const server = fs.readFileSync(new URL("server.js", dir), "utf8");
   const upload = server.slice(server.indexOf("export async function handleEstudioUpload"), server.indexOf("export async function handleEstudioChat"));
   assert.equal(upload.includes("handleEstudioUpload"), true);

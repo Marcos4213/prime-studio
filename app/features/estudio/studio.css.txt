@@ -567,8 +567,13 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-pri
   .chat .actions .btn { flex: 1 1 auto; min-width: 0; }
   html.is-framed .chat {
     bottom: 0;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
   }
+  html.is-framed .chat.is-open {
+    max-height: min(72vh, 640px);
+    padding-bottom: calc(36px + env(safe-area-inset-bottom));
+  }
+  .chat-dock .err { margin: 0 0 8px; }
   .chat:not(.is-open) .chat-body,
   .chat:not(.is-open) .hint { display: none; }
   .chat.is-open {

@@ -23,7 +23,7 @@ test("rascunho sem chave não pede para configurar IA e mostra o método", async
   assert.match(result.output.caption, /A gente abre a porta/);
 });
 
-test("falha da API cai no rascunho e não devolve a chave", async () => {
+test("falha da API com chave não grava o exemplo e não devolve a chave", async () => {
   const prev = globalThis.fetch;
   globalThis.fetch = async () => {
     throw new Error(`rede caiu ${SECRET} x-goog-api-key: ${SECRET}`);
@@ -34,11 +34,13 @@ test("falha da API cai no rascunho e não devolve a chave", async () => {
       { format: "post", theme: "luz da recepção", profile: { cidade: "Curitiba" } }
     );
     const packed = JSON.stringify(result);
-    assert.equal(result.source, "mock");
-    assert.equal(result.output.copyMethod.name, "AIDA");
+    assert.equal(result.unavailable, true);
+    assert.equal(result.motivo, "falha");
+    assert.equal(result.output, undefined);
+    assert.equal(result.source, undefined);
     assert.equal(packed.includes(SECRET), false);
     assert.equal(packed.includes("AIza"), false);
-    assert.equal(packed.includes("configure a chave"), false);
+    assert.equal(packed.includes("Exemplo"), false);
   } finally {
     globalThis.fetch = prev;
   }
@@ -164,6 +166,28 @@ test("a conversa devolve a versão nova e não a chave", async () => {
     assert.equal(revised.ok, true);
     assert.equal(revised.source, "ia");
     assert.match(revised.text, /acolhedor/);
+    assert.equal(JSON.stringify(revised).includes(SECRET), false);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
+test("cota na conversa não vira texto local", async () => {
+  const prev = globalThis.fetch;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    return new Response(JSON.stringify({ error: { status: "RESOURCE_EXHAUSTED" } }), { status: 429 });
+  };
+  try {
+    const revised = await reviseCopy(
+      { GEMINI_API_KEY: SECRET },
+      { instruction: "mais curto", text: "A gente recebe com luz natural." }
+    );
+    assert.equal(revised.ok, false);
+    assert.equal(revised.motivo, "cota");
+    assert.equal(revised.text, undefined);
+    assert.equal(urls.length, 2);
     assert.equal(JSON.stringify(revised).includes(SECRET), false);
   } finally {
     globalThis.fetch = prev;
