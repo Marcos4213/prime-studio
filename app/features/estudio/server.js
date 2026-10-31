@@ -207,7 +207,12 @@ export async function handleEstudioChat(request, env) {
   if (target === "legenda") {
     let revised;
     try {
-      revised = await reviseCopy(env, { instruction, text: clean(body.text, 4000), profile });
+      revised = await reviseCopy(env, {
+        instruction,
+        text: clean(body.text, 4000),
+        profile,
+        structure: clean(body.structure, 20),
+      });
     } catch (err) {
       console.log(JSON.stringify({ level: "warn", msg: "gemini_conversa", detail: redactSecrets(err?.message || err) }));
       revised = { ok: false, motivo: "falha" };
@@ -240,7 +245,7 @@ export async function handleEstudioChat(request, env) {
       ratio,
       profile,
       caption: clean(body.text, 500),
-      theme: instruction,
+      pedido: instruction,
       photo,
     });
   } catch (err) {

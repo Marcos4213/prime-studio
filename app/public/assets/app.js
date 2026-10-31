@@ -638,8 +638,9 @@ function renderPiece(piece, fresh) {
     ? `<div class="warns"><b>Revisar antes de aprovar:</b><br>${o.warnings.map(esc).join("<br>")}</div>`
     : "";
   const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
+  const methodWhy = o.copyMethod && o.copyMethod.why ? o.copyMethod.why : "Dentro do Método PRIME.";
   const methodHtml = methodName
-    ? `<p class="method" data-copy-method>Método de copy: ${esc(methodName)}</p><p class="hint">Dentro do Método PRIME.</p>`
+    ? `<p class="method" data-copy-method>Método de copy: ${esc(methodName)}</p><p class="hint">${esc(methodWhy)}</p>`
     : "";
   const srcBadge = `<span class="badge src-${piece.source}">${piece.source === "ia" ? "Gerado por IA" : "Exemplo"}</span>`;
   const stBadge = `<span class="badge st-${piece.status}">${piece.status}</span>`;
@@ -892,7 +893,7 @@ async function renderMarca() {
     site: "Site",
   };
   const methods = (clinic.methods || [])
-    .map((method) => `<li><span>${esc(structureLabel[method.structure] || method.structure)}</span> ${esc(method.name)}</li>`)
+    .map((method) => `<li title="${esc(method.why || "")}"><span>${esc(structureLabel[method.structure] || method.structure)}</span> ${esc(method.name)}</li>`)
     .join("");
   const versionLine = clinic.stored === false
     ? "O perfil versionado ainda não está neste banco."
@@ -903,7 +904,7 @@ async function renderMarca() {
     <div class="block perfil-treino">
       <span class="eyebrow">Treinar IA</span>
       <h2>Perfil da marca / Treinar IA</h2>
-      <p class="hint">A gente lê este perfil para montar post, bio, link na bio, anúncio, WhatsApp e site. Sem promessa, sem antes e depois, sem número inventado.</p>
+      <p class="hint">A gente lê este perfil em cada peça. Post e WhatsApp seguem AIDA. A bio segue o 4U. O anúncio segue PAS. Link na bio e site seguem StoryBrand. Sem promessa, sem antes e depois, sem número inventado.</p>
       ${meterHtml(clinic.completeness)}
       <p class="hint" id="versionLine">${esc(versionLine)}</p>
       <ul class="method-list">${methods}</ul>

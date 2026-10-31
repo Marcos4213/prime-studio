@@ -198,8 +198,8 @@ export function renderEditorPage() {
 <header class="intro">
   <p class="eyebrow">Presença única</p>
   <h1>Link na bio</h1>
-  <p class="lead">A paciente sai do Instagram e cai aqui. Em três segundos, ela precisa ver a mesma clínica do site, do perfil e do Google.</p>
-  <p class="method" data-copy-method>Método de copy: StoryBrand, dentro do Método PRIME.</p>
+  <p class="lead">Quem sai do Instagram cai aqui. Em três segundos, a gente precisa parecer a mesma clínica do site, do perfil e do Google.</p>
+  <p class="method" data-copy-method>Método de copy: StoryBrand, dentro do Método PRIME. A clínica guia. As quatro portas são o plano.</p>
   <p id="habitChip" class="habit is-none">A bio ainda não foi revisada</p>
 </header>
 <div class="stage">
@@ -222,7 +222,7 @@ export function renderEditorPage() {
 
     <section class="card">
       <h2>A página</h2>
-      <p class="hint">O nome e a frase que a paciente lê ao abrir.</p>
+      <p class="hint">O nome e a frase que a pessoa lê ao abrir.</p>
       <label class="field"><span>Nome na bio</span><input class="bare" id="displayName" maxlength="60" autocomplete="organization"></label>
       <p class="field-err" data-err="display_name" hidden></p>
       <label class="field"><span>Frase</span><input class="bare" id="line" maxlength="110" autocomplete="off"></label>
@@ -259,7 +259,7 @@ export function renderEditorPage() {
     </div>
   </form>
   <aside class="preview" aria-label="Prévia da página">
-    <p class="eyebrow">Como a paciente vê</p>
+    <p class="eyebrow">Como quem chega vê</p>
     <div class="phone">
       <div class="screen">
         <div class="ear" aria-hidden="true"></div>

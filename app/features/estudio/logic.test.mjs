@@ -20,7 +20,8 @@ test("mock respeita o formato e não inventa pessoa nem prompt no vídeo", async
   const post = await generatePiece({}, { format: "post", theme: "o espaço", profile: { colors: ["dourado"], fonts: ["Inter"] } });
   assert.equal(post.source, "mock");
   assert.match(post.output.imagePrompt, /dourado/);
-  assert.match(post.output.imagePrompt, /sem pessoa em destaque/i);
+  assert.match(post.output.imagePrompt, /equipe em rotina/i);
+  assert.doesNotMatch(post.output.imagePrompt, /sem pessoa em destaque/i);
   assert.equal(post.output.script, undefined);
   assert.deepEqual(post.output.warnings, []);
 
@@ -81,7 +82,9 @@ test("a página cabe no celular e deixa o hábito visível", () => {
   assert.match(tokens, /--color-accent-text:\s*var\(--color-on-primary\)/);
   assert.match(css, /\.btn \{[^}]*background:\s*var\(--color-accent\)/);
   assert.match(css, /var\(--color-gold\)/);
-  assert.doesNotMatch(html + js, /faturamento|antes e depois|paciente/i);
+  const notice = "Use fotos de pacientes apenas com autorização de uso de imagem.";
+  assert.match(js, /Use fotos de pacientes apenas com autorização de uso de imagem\./);
+  assert.doesNotMatch((html + js).split(notice).join(""), /faturamento|antes e depois|paciente/i);
   assert.match(html, /recepcao\.webp/);
   assert.match(html, /sala\.webp/);
   assert.match(html, /espera\.webp/);

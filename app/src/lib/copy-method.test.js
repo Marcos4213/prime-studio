@@ -11,7 +11,7 @@ test("cada estrutura escolhe um método dentro do PRIME", () => {
     bio: "4U",
     "link-na-bio": "StoryBrand",
     anuncio: "PAS",
-    whatsapp: "PAS",
+    whatsapp: "AIDA",
     site: "StoryBrand",
   };
   for (const [structure, name] of Object.entries(expected)) {
@@ -29,9 +29,21 @@ test("cada estrutura escolhe um método dentro do PRIME", () => {
 test("a frase sugerida usa o perfil e passa no guarda-corpo", () => {
   const line = suggestLine("post", { cidade: "Curitiba", tom: "sóbrio", diferenciais: "luz natural" });
   assert.match(line.line, /Curitiba/);
+  assert.match(line.line, /luz natural/);
+  assert.match(line.line, /sóbrio/);
   assert.match(line.line, /a gente/i);
   assert.equal(line.name, "AIDA");
+  assert.doesNotMatch(line.line, /chama atenção|o interesse fica|o desejo/i);
   assert.deepEqual(brandGuard({ line: line.line, note: line.note }), []);
+  const ad = suggestLine("anuncio", { cidade: "Curitiba" });
+  assert.equal(ad.name, "PAS");
+  assert.match(ad.line, /escuro/);
+  assert.doesNotMatch(ad.line, /espalhada/);
+  const chat = suggestLine("whatsapp", { cidade: "Curitiba" });
+  assert.equal(chat.name, "AIDA");
+  assert.match(chat.line, /nosso time/);
+  assert.match(chat.line, /mensagem/);
+  assert.deepEqual(brandGuard({ line: chat.line }), []);
 });
 
 test("o perfil sanitiza o nicho e mede a completude", () => {
