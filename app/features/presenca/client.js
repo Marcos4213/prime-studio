@@ -185,10 +185,13 @@ function pill() {
 
 function addressLine(ch) {
   const href = safeHref(ch.href);
+  const block = el("div", "addr-block");
+  block.append(el("p", "addr-label", "Endereço"));
   const line = el("p", href ? "addr" : "addr is-empty");
+  block.append(line);
   if (!ch.address) {
     line.textContent = "Endereço ainda não anotado.";
-    return line;
+    return block;
   }
   if (href) {
     const a = document.createElement("a");
@@ -200,7 +203,7 @@ function addressLine(ch) {
   } else {
     line.textContent = ch.address;
   }
-  return line;
+  return block;
 }
 
 function addressForm(ch, open) {
@@ -220,7 +223,7 @@ function addressForm(ch, open) {
   input.autocomplete = "off";
   input.spellcheck = false;
   input.inputMode = ch.input_mode === "url" ? "url" : "text";
-  input.placeholder = ch.placeholder || "https://";
+  input.placeholder = ch.placeholder || "Endereço desta clínica";
   input.value = ch.address || "";
   const button = el("button", "save", "Salvar");
   button.type = "submit";

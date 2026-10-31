@@ -1,6 +1,7 @@
 // Imagens do estúdio. A chave fica só em env.GEMINI_API_KEY e não entra em log.
 // Compliance CFM/CFO vale para o que a IA gera. A foto importada pela clínica não passa por esta trava.
 import { redactSecrets } from "./ai.js";
+import { stripPatientCounts } from "./provas.js";
 
 export const IMAGE_MODEL = "gemini-nano-banana-2.1";
 const IMAGE_FALLBACK = "gemini-3.1-flash-lite-image";
@@ -41,7 +42,7 @@ export function imagePrompt({ kind, profile, caption, theme, fromPhoto, pedido }
   ]
     .filter(Boolean)
     .join(" ");
-  const line = String(caption || "").replace(/\s+/g, " ").trim().slice(0, 320);
+  const line = stripPatientCounts(String(caption || "").replace(/\s+/g, " ").trim()).slice(0, 320);
   const use = kind === "stories" ? "stories vertical" : kind === "capa" ? "capa quadrada" : "post";
   const palette = `Paleta Petróleo Clínico: ${PALETTE}.`;
   const rules = fromPhoto

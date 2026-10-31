@@ -78,13 +78,8 @@ function showStudio() {
   } else {
     note.hidden = true;
   }
-  qs("#todayLabel").textContent = boot.today.label;
-  qs("#todayAngle").textContent = boot.today.angle;
-  qs("#tomorrowLabel").textContent = boot.tomorrow.label;
-  qs("#tomorrowAngle").textContent = boot.tomorrow.angle;
-  qs("#habitWhy").textContent =
-    "Amanhã o ângulo muda para “" + boot.tomorrow.angle + "”. A peça de hoje fica no acervo — é o motivo de abrir de novo.";
-  loadBrand();
+  const composer = qs("#composer");
+  if (composer) composer.hidden = false;
   loadHistory();
 }
 
@@ -105,9 +100,7 @@ function syncGen() {
   btn.disabled = state.busy || !state.format || videoNeedsMode;
 }
 
-function setTodayStatus(has) {
-  qs("#todayStatus").textContent = has ? "A peça de hoje já está no acervo." : "Ainda não há peça hoje.";
-}
+function setTodayStatus() {}
 
 async function copyText(text, btn) {
   const value = String(text || "");
@@ -183,11 +176,7 @@ function buildPiece(piece) {
     ? '<div class="warns"><p><strong>Revisar antes de aprovar</strong></p><ul>' +
       o.warnings.map((w) => "<li>" + esc(w) + "</li>").join("") + "</ul></div>"
     : "";
-  const methodName = o.copyMethod && o.copyMethod.name ? o.copyMethod.name : "";
-  const methodHtml = methodName
-    ? '<p class="method" data-copy-method>Método de copy: ' + esc(methodName) + "</p>" +
-      '<p class="hint">' + esc((o.copyMethod && o.copyMethod.why) || "Dentro do Método PRIME. A gente escreve no tom da clínica.") + "</p>"
-    : "";
+  const methodHtml = "";
   const src = piece.source === "ia" ? "Gerado por IA" : "Exemplo";
   const srcClass = piece.source === "ia" ? "ok" : "wait";
   const approved = piece.status === "aprovado";
@@ -975,11 +964,6 @@ function wire() {
     location.reload();
   });
 
-  qs("#useAngle").addEventListener("click", () => {
-    qs("#theme").value = boot.today.angle;
-    if (state.format) qs("#theme").focus();
-  });
-
   document.querySelectorAll(".fmt").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.format = btn.dataset.format;
@@ -991,16 +975,6 @@ function wire() {
       const composer = qs("#composer");
       composer.hidden = false;
       qs("#delivers").textContent = btn.dataset.delivers || "";
-      const methodByFormat = {
-        post: "AIDA. No feed, a primeira frase segura o scroll.",
-        carousel: "AIDA. A primeira tela segura, a última convida.",
-        video: "AIDA. O gancho abre e o convite fecha.",
-      };
-      const formatMethod = qs("#formatMethod");
-      if (formatMethod) {
-        formatMethod.hidden = false;
-        formatMethod.textContent = "Método de copy: " + (methodByFormat[state.format] || "AIDA. Dentro do Método PRIME.");
-      }
       const isVideo = state.format === "video";
       qs("#modeBox").hidden = !isVideo;
       if (!isVideo) {
@@ -1028,55 +1002,6 @@ function wire() {
   });
 
   qs("#gen").addEventListener("click", generate);
-
-  const addColor = () => {
-    const val = qs("#colorIn").value.trim();
-    if (!val || state.colors.length >= 8) return;
-    state.colors.push(val.slice(0, 24));
-    qs("#colorIn").value = "";
-    drawColors();
-  };
-  const addFont = () => {
-    const val = qs("#fontIn").value.trim();
-    if (!val || state.fonts.length >= 6) return;
-    state.fonts.push(val.slice(0, 60));
-    qs("#fontIn").value = "";
-    drawFonts();
-  };
-  qs("#addColor").addEventListener("click", addColor);
-  qs("#addFont").addEventListener("click", addFont);
-  qs("#colorIn").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addColor();
-    }
-  });
-  qs("#fontIn").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addFont();
-    }
-  });
-
-  qs("#saveBrand").addEventListener("click", async () => {
-    const btn = qs("#saveBrand");
-    const msg = qs("#brandMsg");
-    btn.disabled = true;
-    const res = await api("/api/profile", {
-      method: "PUT",
-      body: {
-        colors: state.colors,
-        fonts: state.fonts,
-        tone: qs("#tone").value,
-        avoid: qs("#avoid").value,
-        highlights: qs("#highlights").value,
-      },
-    });
-    btn.disabled = false;
-    if (res.status === 401) return showLogin();
-    msg.hidden = false;
-    msg.textContent = res.ok ? "Marca guardada. A próxima peça já sai neste tom." : "Não foi possível guardar a marca.";
-  });
 
   qs("#histClose").addEventListener("click", () => {
     qs("#histPiece").replaceChildren();

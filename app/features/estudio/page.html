@@ -54,34 +54,6 @@
 
   <div class="studio-layout">
   <div class="studio-main">
-  <section class="block habit" aria-label="Hábito do dia">
-    <p class="eyebrow">Por que abrir de novo amanhã</p>
-    <div class="habit-grid">
-      <div>
-        <p class="kicker">Hoje · <span id="todayLabel"></span></p>
-        <p class="angle" id="todayAngle"></p>
-        <p class="status" id="todayStatus">Olhando o acervo…</p>
-      </div>
-      <div class="habit-tomorrow">
-        <p class="kicker">Amanhã · <span id="tomorrowLabel"></span></p>
-        <p class="angle dim" id="tomorrowAngle"></p>
-      </div>
-    </div>
-    <p class="habit-why" id="habitWhy"></p>
-    <button type="button" class="btn-ghost" id="useAngle">Usar o ângulo de hoje</button>
-  </section>
-
-  <section class="block photos" aria-label="Referência visual">
-    <figure class="hero">
-      <img src="/features/estudio/recepcao.webp" alt="Recepção em pedra clara, espelho com arco dourado e orquídeas, sem pessoas">
-    </figure>
-    <div class="pair">
-      <img src="/features/estudio/sala.webp" alt="Sala de atendimento com cadeira, janela e luz natural, sem pessoas">
-      <img src="/features/estudio/espera.webp" alt="Sala de espera clara com planta e bancos, sem pessoas">
-    </div>
-    <p class="photo-note">Fotos reais de espaço. A imagem gerada não simula resultado. A foto importada pela clínica fica fora dessa trava.</p>
-  </section>
-
   <section class="block" id="formatSec">
     <p class="eyebrow">Comece por aqui</p>
     <h2>Formato</h2>
@@ -102,9 +74,8 @@
     </div>
   </section>
 
-  <section class="block" id="composer" hidden>
+  <section class="block" id="composer">
     <p class="delivers" id="delivers"></p>
-    <p class="method" id="formatMethod" data-copy-method hidden></p>
     <div id="modeBox" hidden>
       <p class="kicker">Como gravar</p>
       <div class="modes" role="radiogroup" aria-label="Como gravar">
@@ -124,33 +95,15 @@
     <p id="genErr" class="err" hidden></p>
   </section>
 
-  <section class="block" id="brand">
-    <p class="eyebrow">Memória da marca</p>
-    <h2>Cores, fontes e tom</h2>
-    <p class="hint">A próxima peça sai neste padrão. Quanto mais completo, mais parece a clínica.</p>
-
-    <p class="kicker">Cores</p>
-    <div class="chips" id="colorChips"></div>
-    <div class="add-row">
-      <input id="colorIn" type="text" maxlength="24" placeholder="Nome ou código da cor" aria-label="Nova cor">
-      <button type="button" class="btn-ghost" id="addColor">Adicionar</button>
+  <section class="block photos" aria-label="Referência visual">
+    <figure class="hero">
+      <img src="/features/estudio/recepcao.webp" alt="Recepção em pedra clara, espelho com arco dourado e orquídeas, sem pessoas">
+    </figure>
+    <div class="pair">
+      <img src="/features/estudio/sala.webp" alt="Sala de atendimento com cadeira, janela e luz natural, sem pessoas">
+      <img src="/features/estudio/espera.webp" alt="Sala de espera clara com planta e bancos, sem pessoas">
     </div>
-
-    <p class="kicker">Fontes</p>
-    <div class="chips" id="fontChips"></div>
-    <div class="add-row">
-      <input id="fontIn" type="text" maxlength="60" placeholder="Cormorant Garamond" aria-label="Nova fonte">
-      <button type="button" class="btn-ghost" id="addFont">Adicionar</button>
-    </div>
-
-    <label for="tone">Tom da clínica</label>
-    <textarea id="tone" maxlength="1200" rows="3" placeholder="Sóbrio, acolhedor, direto"></textarea>
-    <label for="avoid">O que a clínica nunca diz</label>
-    <textarea id="avoid" maxlength="1200" rows="2" placeholder="Promessas, temas e palavras fora do tom"></textarea>
-    <label for="highlights">O que destaca a clínica</label>
-    <textarea id="highlights" maxlength="1200" rows="2" placeholder="O que a torna única, sem número e sem promessa"></textarea>
-    <button type="button" class="btn btn-block" id="saveBrand">Salvar marca</button>
-    <p class="note" id="brandMsg" hidden></p>
+    <p class="photo-note">Fotos reais de espaço. A imagem gerada não simula resultado. A foto importada pela clínica fica fora dessa trava.</p>
   </section>
 
   <section class="block" id="historySec">
@@ -162,19 +115,6 @@
     <div id="histPiece"></div>
   </section>
   </div>
-  <aside class="studio-side">
-  <section class="block photos" aria-label="Referência visual">
-    <p class="eyebrow">Referência</p>
-    <figure class="hero">
-      <img src="/features/estudio/recepcao.webp" alt="Recepção em pedra clara, espelho com arco dourado e orquídeas, sem pessoas">
-    </figure>
-    <div class="pair">
-      <img src="/features/estudio/sala.webp" alt="Sala de atendimento com cadeira, janela e luz natural, sem pessoas">
-      <img src="/features/estudio/espera.webp" alt="Sala de espera clara com planta e bancos, sem pessoas">
-    </div>
-    <p class="photo-note">Espaço real, como referência. A imagem da peça segue este visual, sem pessoa em destaque.</p>
-  </section>
-  </aside>
   <section id="result" hidden aria-live="polite"></section>
   </div>
 </div>

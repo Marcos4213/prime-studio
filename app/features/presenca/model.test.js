@@ -7,11 +7,16 @@ test("endereço vazio é ausência, não um link", () => {
   assert.deepEqual(normalizeAddress("site", "  "), { ok: true, value: "", href: null });
 });
 
-test("rejeita endereço que não é link http", () => {
+test("rejeita esquema perigoso e guarda o endereço escrito", () => {
   assert.equal(normalizeAddress("site", "javascript:alert(1)").ok, false);
   assert.equal(normalizeAddress("bio", "data:text/html,hi").ok, false);
-  assert.equal(normalizeAddress("google", "clinica").ok, false);
-  assert.equal(normalizeAddress("instagram", "perfil com espaço").ok, false);
+  const written = normalizeAddress("google", "Rua da Clínica, 120");
+  assert.equal(written.ok, true);
+  assert.equal(written.value, "Rua da Clínica, 120");
+  assert.equal(written.href, null);
+  const note = normalizeAddress("instagram", "perfil com espaço");
+  assert.equal(note.ok, true);
+  assert.equal(note.href, null);
 });
 
 test("aceita site https e perfil @ do Instagram", () => {

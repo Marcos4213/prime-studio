@@ -10,8 +10,8 @@ export const CHANNELS = [
     look: "Abrir o site e ver se a primeira tela ainda é a clínica.",
     photo: "/presenca/media/site.webp",
     photoAlt: "Recepção clara, com balcão, orquídeas e porta de vidro.",
-    addressLabel: "Endereço do site",
-    placeholder: "https://",
+    addressLabel: "Endereço",
+    placeholder: "Endereço desta clínica",
     inputMode: "url",
   },
   {
@@ -22,8 +22,8 @@ export const CHANNELS = [
     look: "Abrir o perfil e ver o que está no ar.",
     photo: "/presenca/media/instagram.webp",
     photoAlt: "Bandeja com frascos, vela e tecido claro.",
-    addressLabel: "Perfil",
-    placeholder: "@perfil ou https://",
+    addressLabel: "Endereço",
+    placeholder: "Endereço ou @perfil, se houver",
     inputMode: "text",
   },
   {
@@ -34,8 +34,8 @@ export const CHANNELS = [
     look: "Abrir o perfil do Google como quem busca a clínica.",
     photo: "/presenca/media/google.webp",
     photoAlt: "Sala de espera branca, com árvore e sofás baixos.",
-    addressLabel: "Perfil do Google",
-    placeholder: "https://",
+    addressLabel: "Endereço",
+    placeholder: "Endereço desta clínica",
     inputMode: "url",
   },
   {
@@ -44,8 +44,8 @@ export const CHANNELS = [
     role: "A porta única",
     line: "Um link que junta as outras portas.",
     look: "Abrir o link da bio e ver se os destinos estão lá.",
-    addressLabel: "Link da bio",
-    placeholder: "https://",
+    addressLabel: "Endereço",
+    placeholder: "Endereço desta clínica",
     inputMode: "url",
     photo: "/presenca/media/bio.webp",
     photoAlt: "Sala clara com sofás, poltronas e espelho redondo.",
@@ -88,8 +88,8 @@ export function normalizeAddress(id, raw) {
     .trim()
     .slice(0, 300);
   if (!value) return { ok: true, value: "", href: null };
-  if (/\s/.test(value)) return { ok: false };
   if (/^(javascript|data|vbscript):/i.test(value)) return { ok: false };
+  if (/\s/.test(value)) return { ok: true, value, href: null };
 
   if (id === "instagram") {
     const handle = value.match(/^@([A-Za-z0-9._]{1,30})$/);
@@ -102,7 +102,7 @@ export function normalizeAddress(id, raw) {
   try {
     url = new URL(value);
   } catch {
-    return { ok: false };
+    return { ok: true, value, href: null };
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") return { ok: false };
   if (!url.hostname) return { ok: false };

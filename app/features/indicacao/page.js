@@ -127,10 +127,6 @@ export function pageHtml(clinicName) {
     `<main>
   ${hero()}
   <p class="lede">Quem indica ganha. Quem chega também.</p>
-  <div class="seg" role="tablist" aria-label="Quem indica">
-    <button type="button" class="is-on" data-type="cliente" role="tab" aria-selected="true">Cliente</button>
-    <button type="button" data-type="profissional" role="tab" aria-selected="false">Profissional</button>
-  </div>
   <p class="hint" id="hint">${c.hint}</p>
   <div class="pair" id="pair">
     <article class="reward">

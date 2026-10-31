@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { GEMINI_MODEL, chatInstruction, generatePiece, generateStructureCopy, redactSecrets, reviseCopy } from "./ai.js";
+import { stripPatientCounts } from "./provas.js";
 
 const SECRET = "AIzaTESTKEYSHOULDNOTLEAK123456";
 
@@ -224,6 +225,34 @@ test("sem chave a conversa não inventa texto", async () => {
   assert.equal(revised.ok, false);
   assert.equal(revised.motivo, "sem_chave");
   assert.equal(revised.text, undefined);
+});
+
+test("a contagem gravada em provas não entra no pedido da legenda", async () => {
+  const prev = globalThis.fetch;
+  globalThis.fetch = async (_url, opts) => {
+    const body = JSON.parse(opts.body);
+    const packed = JSON.stringify(body);
+    assert.equal(packed.includes("100mil"), false);
+    assert.equal(packed.includes("paciêntes"), false);
+    assert.match(packed, /Curitiba/);
+    return geminiResponse({
+      caption: "Mais de 100mil paciêntes conhecem o espaço.",
+      imagePrompt: "Sala com Mais de 100mil paciêntes.",
+    });
+  };
+  try {
+    const result = await generatePiece(
+      { GEMINI_API_KEY: SECRET },
+      { format: "post", theme: "recepção", profile: { cidade: "Curitiba", provas: "Mais de 100mil paciêntes" } }
+    );
+    assert.equal(result.output.caption.includes("100mil"), false);
+    assert.equal(result.output.caption.includes("paciêntes"), false);
+    assert.equal(result.output.imagePrompt.includes("paciêntes"), false);
+    assert.equal(result.output.imagePrompt.includes("100mil"), false);
+    assert.equal(stripPatientCounts(result.output.caption), result.output.caption);
+  } finally {
+    globalThis.fetch = prev;
+  }
 });
 
 test("redact corta a chave mesmo quando o texto a repete", () => {
