@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { GEMINI_MODEL, generatePiece, generateStructureCopy, redactSecrets } from "./ai.js";
+import { GEMINI_MODEL, chatInstruction, generatePiece, generateStructureCopy, redactSecrets, reviseCopy } from "./ai.js";
 
 const SECRET = "AIzaTESTKEYSHOULDNOTLEAK123456";
 
@@ -134,6 +134,44 @@ test("se o flash atual não responde, o flash estável anterior entrega a legend
   } finally {
     globalThis.fetch = prev;
   }
+});
+
+test("o pedido da conversa leva o texto e a trava, sem a chave", () => {
+  const instruction = chatInstruction({ instruction: "mais curto", text: "Um convite sóbrio para conhecer o espaço." });
+  assert.match(instruction, /mais curto/);
+  assert.match(instruction, /CFM/);
+  assert.match(instruction, /antes e depois/i);
+  assert.equal(instruction.includes(SECRET), false);
+});
+
+test("a conversa devolve a versão nova e não a chave", async () => {
+  const prev = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => {
+    assert.equal(String(url).includes(SECRET), false);
+    const body = JSON.parse(opts.body);
+    assert.match(body.contents[0].parts[0].text, /tom mais acolhedor/);
+    assert.match(body.systemInstruction.parts[0].text, /CFM/);
+    return geminiResponse({ text: "A gente recebe com um tom mais acolhedor e um convite sóbrio." });
+  };
+  try {
+    const revised = await reviseCopy(
+      { GEMINI_API_KEY: SECRET },
+      { instruction: "tom mais acolhedor", text: "Conheça o espaço.", profile: { nicho: "odonto", cidade: "Curitiba" } }
+    );
+    assert.equal(revised.ok, true);
+    assert.equal(revised.source, "ia");
+    assert.match(revised.text, /acolhedor/);
+    assert.equal(JSON.stringify(revised).includes(SECRET), false);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
+test("sem chave a conversa não inventa texto", async () => {
+  const revised = await reviseCopy({}, { instruction: "mais curto", text: "Texto da clínica." });
+  assert.equal(revised.ok, false);
+  assert.equal(revised.motivo, "sem_chave");
+  assert.equal(revised.text, undefined);
 });
 
 test("redact corta a chave mesmo quando o texto a repete", () => {

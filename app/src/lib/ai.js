@@ -167,6 +167,38 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
 }
 
 // Bio, link na bio, anúncio, WhatsApp e site. O mesmo Gemini, com o método da estrutura.
+export function chatInstruction({ instruction, text }) {
+  return [
+    "A clínica pediu um ajuste no texto desta peça. Aplique o pedido e devolva a versão nova.",
+    `Pedido da clínica: ${instruction}`,
+    "Texto atual:",
+    text,
+    'Responda apenas JSON {"text": string}.',
+    "Compliance CFM e CFO neste texto gerado: sem promessa de resultado, sem antes e depois, sem rosto ou corpo simulando resultado, sem número inventado.",
+  ].join("\n");
+}
+
+export async function reviseCopy(env, { instruction, text, profile } = {}) {
+  const ask = str(instruction).slice(0, 400);
+  const current = str(text).slice(0, 4000);
+  if (!ask || !current) return { ok: false, motivo: "pedido" };
+  const key = geminiKey(env);
+  if (!key) return { ok: false, motivo: "sem_chave" };
+  try {
+    const { parsed, model } = await generateParsed(env, key, {
+      profile,
+      method: null,
+      instruction: chatInstruction({ instruction: ask, text: current }),
+    });
+    const next = str(parsed.text);
+    if (!next) return { ok: false, motivo: "vazio" };
+    return { ok: true, text: next, model, warnings: brandGuard({ text: next }), source: "ia" };
+  } catch (err) {
+    logFallback(err, key);
+    return { ok: false, motivo: "falha" };
+  }
+}
+
 export async function generateStructureCopy(env, { structure, profile, theme } = {}) {
   const method = chooseCopyMethod(structure);
   const local = suggestLine(method.structure, profile);

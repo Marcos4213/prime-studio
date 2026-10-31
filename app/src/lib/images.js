@@ -52,13 +52,31 @@ export function imageMotivo(status) {
 export function extractGeneratedImage(data, inputB64 = "") {
   const direct = data?.output_image || data?.outputImage;
   if (direct?.data && direct.data !== inputB64) return packImage(direct);
+  const found = [];
   const steps = Array.isArray(data?.steps) ? data.steps : [];
   const modelSteps = steps.filter((step) => /model|output/i.test(String(step?.type || step?.role || "")));
-  const pool = modelSteps.length ? modelSteps : [];
-  const found = [];
-  for (const step of pool) collectImages(step, found);
+  for (const step of modelSteps) collectImages(step, found);
+  const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
+  for (const cand of candidates) collectImages(cand?.content?.parts, found);
   const fresh = found.filter((img) => img.b64 && img.b64 !== inputB64);
   return fresh.at(-1) || null;
+}
+
+export function imageRequest({ model, prompt, ratio, photo, simple }) {
+  const input = photo?.b64
+    ? [
+        { type: "image", data: photo.b64, mime_type: photoMime(photo.mime) },
+        { type: "text", text: String(prompt || "") },
+      ]
+    : String(prompt || "");
+  const response_format = { type: "image", aspect_ratio: ratio || "1:1" };
+  if (!simple) response_format.image_size = "1K";
+  return { model, input, response_format };
+}
+
+function photoMime(mime) {
+  if (mime === "image/png" || mime === "image/webp" || mime === "image/jpeg") return mime;
+  return "image/jpeg";
 }
 
 function packImage(node) {
@@ -70,6 +88,15 @@ function packImage(node) {
 
 function collectImages(node, out) {
   if (!node || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectImages(item, out);
+    return;
+  }
+  const inline = node.inlineData || node.inline_data;
+  if (inline) {
+    const packed = packImage(inline);
+    if (packed) out.push(packed);
+  }
   if ((node.type === "image" || node.mime_type || node.mimeType) && typeof node.data === "string") {
     const packed = packImage(node);
     if (packed) out.push(packed);
@@ -111,41 +138,60 @@ export async function generateClinicImage(env, { kind, ratio, profile, caption, 
 }
 
 async function callImage(key, model, prompt, ratio, photo) {
-  const input = [{ type: "text", text: prompt }];
-  if (photo?.b64) input.push({ type: "image", data: photo.b64, mime_type: photo.mime || "image/jpeg" });
-  const resp = await fetch(INTERACTIONS, {
+  let last = imageError("falha", 0);
+  for (const simple of [false, true]) {
+    try {
+      return await postJson(key, INTERACTIONS, imageRequest({ model, prompt, ratio, photo, simple }), photo?.b64 || "");
+    } catch (err) {
+      last = err;
+      if (err.status !== 400) throw err;
+    }
+  }
+  const parts = [{ text: prompt }];
+  if (photo?.b64) parts.push({ inline_data: { mime_type: photoMime(photo.mime), data: photo.b64 } });
+  return postJson(
+    key,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      contents: [{ role: "user", parts }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        imageConfig: { aspectRatio: ratio || "1:1" },
+      },
+    },
+    photo?.b64 || "",
+    last
+  );
+}
+
+function imageError(motivo, status) {
+  const err = new Error(status ? `gemini_imagem_${status}` : "gemini_imagem");
+  err.motivo = motivo;
+  err.status = status || 0;
+  return err;
+}
+
+async function postJson(key, url, body, inputB64, prior) {
+  const resp = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      model,
-      input,
-      response_format: {
-        type: "image",
-        mime_type: "image/png",
-        aspect_ratio: ratio,
-        image_size: "1K",
-      },
-    }),
+    body: JSON.stringify(body),
     signal: AbortSignal.timeout(32000),
   });
   if (!resp.ok) {
-    const err = new Error(`gemini_imagem_${resp.status}`);
-    err.motivo = imageMotivo(resp.status);
-    throw err;
+    throw imageError(imageMotivo(resp.status), resp.status);
   }
   let data;
   try {
     data = await resp.json();
   } catch {
-    const err = new Error("gemini_imagem_json");
-    err.motivo = "falha";
-    throw err;
+    if (prior) throw prior;
+    throw imageError("falha", 0);
   }
-  const image = extractGeneratedImage(data, photo?.b64 || "");
+  const image = extractGeneratedImage(data, inputB64);
   if (!image?.b64) {
-    const err = new Error("gemini_imagem_vazia");
-    err.motivo = "falha";
-    throw err;
+    if (prior) throw prior;
+    throw imageError("falha", 0);
   }
   return { bytes: decodeB64(image.b64), mime: image.mime.startsWith("image/") ? image.mime : "image/png" };
 }

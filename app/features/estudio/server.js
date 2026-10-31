@@ -5,7 +5,7 @@ import studioCss from "./studio.css.txt";
 import clientJs from "./client.js.txt";
 import { json, uid, nowIso, clean, parseCookies } from "../../src/lib/http.js";
 import { getClientFromSession } from "../../src/lib/auth.js";
-import { generatePiece, FORMATS, redactSecrets } from "../../src/lib/ai.js";
+import { generatePiece, reviseCopy, FORMATS, redactSecrets } from "../../src/lib/ai.js";
 import { generateClinicImage, IMAGE_KINDS, IMAGE_RATIOS } from "../../src/lib/images.js";
 import { loadGeneratorProfile } from "../../src/lib/clinic-profile.js";
 import { dailyPair } from "./logic.js";
@@ -16,6 +16,7 @@ export async function handleEstudio(request, env, url) {
   if (path === "/api/estudio/generate" && request.method === "POST") return handleEstudioGenerate(request, env);
   if (path === "/api/estudio/imagem" && request.method === "POST") return handleEstudioImage(request, env);
   if (path === "/api/estudio/fotos" && request.method === "POST") return handleEstudioUpload(request, env);
+  if (path === "/api/estudio/chat" && request.method === "POST") return handleEstudioChat(request, env);
   const file = path.match(/^\/api\/estudio\/imagens\/([a-zA-Z0-9_-]+)$/);
   if (file && (request.method === "GET" || request.method === "HEAD")) return handleEstudioFile(request, env, file[1]);
   if (request.method !== "GET" && request.method !== "HEAD" && request.method !== "POST") {
@@ -191,6 +192,70 @@ export async function handleEstudioUpload(request, env) {
   const key = objectKey(client, name);
   await env.VIDEOS.put(key, bytes, { httpMetadata: { contentType: mime } });
   return json({ ok: true, foto: { id: name, url: `/api/estudio/imagens/${name}` } });
+}
+
+export async function handleEstudioChat(request, env) {
+  const client = await sessionClient(request, env);
+  if (!client) return json({ ok: false, error: "nao_autenticado" }, 401);
+
+  const body = await readJson(request);
+  const instruction = clean(body.instruction, 400);
+  const target = body.target === "legenda" ? "legenda" : body.target === "imagem" || body.target === "foto" ? "imagem" : "";
+  if (!target || !instruction) return json({ ok: false, error: "pedido" }, 422);
+
+  const profile = (await loadGeneratorProfile(env, client)).profile;
+  if (target === "legenda") {
+    let revised;
+    try {
+      revised = await reviseCopy(env, { instruction, text: clean(body.text, 4000), profile });
+    } catch (err) {
+      console.log(JSON.stringify({ level: "warn", msg: "gemini_conversa", detail: redactSecrets(err?.message || err) }));
+      revised = { ok: false, motivo: "falha" };
+    }
+    if (!revised.ok) return json({ ok: false, error: "conversa_indisponivel", motivo: revised.motivo || "falha" }, 200);
+    return json({
+      ok: true,
+      target: "legenda",
+      version: { text: revised.text, warnings: revised.warnings || [], model: revised.model || "", source: "ia" },
+    });
+  }
+
+  if (!env.VIDEOS) return json({ ok: false, error: "imagem_indisponivel", motivo: "arquivo" }, 503);
+  const kind = IMAGE_KINDS[body.kind] ? body.kind : "post";
+  const ratio = IMAGE_RATIOS.has(body.ratio) ? body.ratio : IMAGE_KINDS[kind].ratio;
+  const origem = clean(body.origem, 48);
+  let photo = null;
+  if (origem) {
+    const key = objectKey(client, origem);
+    const stored = key ? await env.VIDEOS.get(key) : null;
+    if (!stored) return json({ ok: false, error: "foto_ausente" }, 404);
+    const bytes = new Uint8Array(await stored.arrayBuffer());
+    photo = { b64: encodeB64(bytes), mime: stored.httpMetadata?.contentType || "image/jpeg" };
+  }
+
+  let made;
+  try {
+    made = await generateClinicImage(env, {
+      kind,
+      ratio,
+      profile,
+      caption: clean(body.text, 500),
+      theme: instruction,
+      photo,
+    });
+  } catch (err) {
+    console.log(JSON.stringify({ level: "warn", msg: "gemini_imagem", detail: redactSecrets(err?.message || err) }));
+    made = { ok: false, motivo: "falha" };
+  }
+  if (!made.ok) return json({ ok: false, error: "imagem_indisponivel", motivo: made.motivo || "falha" }, 200);
+
+  const name = uid("img");
+  await env.VIDEOS.put(objectKey(client, name), made.bytes, { httpMetadata: { contentType: made.mime || "image/png" } });
+  return json({
+    ok: true,
+    target: "imagem",
+    version: { id: name, url: `/api/estudio/imagens/${name}`, source: "ia", model: made.model || "" },
+  });
 }
 
 export async function handleEstudioFile(request, env, name) {

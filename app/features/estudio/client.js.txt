@@ -1,3 +1,8 @@
+try {
+  if (window.parent !== window) document.documentElement.classList.add("is-framed");
+} catch {
+  /* página solta */
+}
 const boot = JSON.parse(document.getElementById("studio-boot").textContent);
 const qs = (s, el = document) => el.querySelector(s);
 const ORDINALS = ["Primeira", "Segunda", "Terceira", "Quarta", "Quinta", "Sexta", "Sétima", "Oitava"];
@@ -133,8 +138,8 @@ function buildPiece(piece) {
     copies.push(String(text || ""));
     return '<button type="button" class="btn-ghost btn-xs" data-copy-i="' + i + '">Copiar ' + esc(label) + "</button>";
   };
-  const field = (label, text) =>
-    '<p class="lbl">' + label + '</p><p class="copy">' + (text ? esc(text) : "—") + "</p>";
+  const field = (label, text, live) =>
+    '<p class="lbl">' + label + '</p><p class="copy"' + (live ? " data-live-copy" : "") + ">" + (text ? esc(text) : "—") + "</p>";
 
   let body = "";
   if (piece.format === "video") {
@@ -144,16 +149,18 @@ function buildPiece(piece) {
     const tips = Array.isArray(rec.tips) ? rec.tips : [];
     const scriptText = [sc.hook, sc.body, sc.cta].filter(Boolean).join("\n\n");
     body =
+      '<div data-live-copy>' +
       field("Gancho", sc.hook) +
       field("Desenvolvimento", sc.body) +
       field("Chamada", sc.cta) +
+      "</div>" +
       '<p class="lbl">Como gravar — ' + esc(modeLabel) + "</p>" +
       '<ul class="tips">' + tips.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul>" +
       '<div class="actions">' + copyBtn("roteiro", scriptText) + "</div>";
   } else if (piece.format === "carousel") {
     const slides = Array.isArray(o.slides) ? o.slides : [];
     body =
-      field("Legenda", o.caption) +
+      field("Legenda", o.caption, true) +
       '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
       slides
         .map((s, i) => {
@@ -168,7 +175,7 @@ function buildPiece(piece) {
         .join("");
   } else {
     body =
-      field("Legenda", o.caption) +
+      field("Legenda", o.caption, true) +
       '<div class="actions">' + copyBtn("legenda", o.caption) + "</div>" +
       '<p class="lbl">Prompt de imagem</p><p class="prompt">' + esc(o.imagePrompt) + "</p>" +
       '<div class="actions">' + copyBtn("prompt", o.imagePrompt) + "</div>";
@@ -193,10 +200,39 @@ function buildPiece(piece) {
     : '<div class="actions"><button type="button" class="btn" data-approve>Marcar como aprovado</button></div>' +
       '<p class="note">Isso não publica. A peça espera o ok da Prime e da clínica.</p>';
   const html =
-    '<article class="sheet"><p class="badges"><span class="badge ' + srcClass + '">' + esc(src) +
+    '<div class="piece-main"><article class="sheet"><p class="badges"><span class="badge ' + srcClass + '">' + esc(src) +
     '</span><span class="badge ' + (approved ? "ok" : "") + '">' + esc(st) + "</span></p><h3>" +
-    esc(title) + "</h3>" + methodHtml + body + warns + approve + "</article>" + visualHtml();
+    esc(title) + "</h3>" + methodHtml + body + warns + approve + "</article>" + visualHtml() + "</div>" + chatHtml();
   return { html, copies };
+}
+
+function chatHtml() {
+  const tab = (id, label, hidden) =>
+    '<button type="button" class="pick" data-chat-target="' + id + '"' + (hidden ? " hidden" : "") + ">" + label + "</button>";
+  return (
+    '<aside class="chat" data-chat>' +
+    '<p class="eyebrow">Conversa</p>' +
+    "<h3>Ajustar esta peça</h3>" +
+    '<div class="picks" role="tablist" aria-label="O que ajustar">' +
+    tab("legenda", "Legenda", false) +
+    tab("imagem", "Imagem", true) +
+    tab("foto", "Foto", true) +
+    "</div>" +
+    '<ol class="chat-log" data-chat-log></ol>' +
+    '<p class="copy" data-chat-preview></p>' +
+    '<ol class="versions" data-versions></ol>' +
+    '<p class="warns" data-chat-warns hidden></p>' +
+    '<label for="chatAsk">Pedido</label>' +
+    '<textarea id="chatAsk" data-chat-input maxlength="400" rows="3" placeholder="mais curto, tom mais acolhedor, troca o fundo, corrige essa frase"></textarea>' +
+    '<div class="actions">' +
+    '<button type="button" class="btn" data-chat-send>Aplicar</button>' +
+    '<button type="button" class="btn-ghost" data-chat-undo>Desfazer</button>' +
+    '<button type="button" class="btn-ghost" data-chat-use>Usar esta</button>' +
+    "</div>" +
+    '<p class="note">A conversa fica nesta tela. A peça guardada não muda.</p>' +
+    '<p class="err" data-chat-err hidden></p>' +
+    "</aside>"
+  );
 }
 
 function pieceCaption(piece) {
@@ -242,11 +278,13 @@ function visualHtml() {
 
 function mountPiece(el, piece) {
   const built = buildPiece(piece);
+  el.classList.add("piece-board");
   el.innerHTML = built.html;
   el.querySelectorAll("[data-copy-i]").forEach((btn) => {
     btn.addEventListener("click", () => copyText(built.copies[Number(btn.getAttribute("data-copy-i"))], btn));
   });
-  wireVisual(el, piece);
+  const visualApi = wireVisual(el, piece);
+  wireChat(el, piece, visualApi);
   const approveBtn = el.querySelector("[data-approve]");
   if (!approveBtn) return;
   approveBtn.addEventListener("click", async () => {
@@ -276,6 +314,24 @@ function wireVisual(el, piece) {
   const baseCap = visual.querySelector("[data-base-caption]");
   const compose = visual.querySelector("[data-compose]");
   const photoErr = visual.querySelector("[data-photo-err]");
+  const hooks = { image: null, photo: null };
+
+  function showGenerated(image) {
+    fallback.hidden = true;
+    figure.hidden = false;
+    img.src = image.url;
+    img.alt = "Imagem gerada para a peça";
+    down.href = image.url + "?download=1";
+    figure.setAttribute("data-image-model", image.model || "");
+  }
+
+  function showPhoto(foto, caption) {
+    stateVis.origem = foto.id || "";
+    base.hidden = false;
+    baseImg.src = foto.url;
+    baseCap.textContent = caption || pieceCaption(piece) || "A clínica, no tom do nosso time.";
+    compose.hidden = false;
+  }
 
   function paintPicks() {
     visual.querySelectorAll("[data-kind]").forEach((btn) => {
@@ -325,12 +381,8 @@ function wireVisual(el, piece) {
         : "A imagem não veio agora. Nada foi publicado. Você pode tentar de novo.";
       return;
     }
-    fallback.hidden = true;
-    figure.hidden = false;
-    img.src = res.data.image.url;
-    img.alt = "Imagem gerada para a peça";
-    down.href = res.data.image.url + "?download=1";
-    figure.setAttribute("data-image-model", res.data.image.model || "");
+    showGenerated(res.data.image);
+    if (hooks.image) hooks.image(res.data.image);
   }
 
   visual.querySelector("[data-make-image]").addEventListener("click", () => runImage(false));
@@ -352,12 +404,182 @@ function wireVisual(el, piece) {
       photoErr.textContent = "Não foi possível guardar a foto. Nada foi apagado.";
       return;
     }
-    stateVis.origem = data.foto.id;
-    base.hidden = false;
-    baseImg.src = data.foto.url;
-    baseCap.textContent = pieceCaption(piece) || "A clínica, no tom do nosso time.";
-    compose.hidden = false;
+    showPhoto(data.foto, pieceCaption(piece));
+    if (hooks.photo) hooks.photo(data.foto);
   });
+
+  return { stateVis, showGenerated, showPhoto, hooks };
+}
+
+function wireChat(el, piece, visualApi) {
+  const chat = el.querySelector("[data-chat]");
+  if (!chat || !visualApi) return;
+  if (!piece._chat) {
+    piece._chat = {
+      target: "legenda",
+      legenda: { versions: [{ text: pieceCaption(piece), source: "original", warnings: [] }], index: 0, applied: 0 },
+      imagem: { versions: [], index: 0, applied: -1 },
+      foto: { versions: [], index: 0, applied: -1 },
+    };
+  }
+  const pack = piece._chat;
+  const log = chat.querySelector("[data-chat-log]");
+  const preview = chat.querySelector("[data-chat-preview]");
+  const versions = chat.querySelector("[data-versions]");
+  const warns = chat.querySelector("[data-chat-warns]");
+  const input = chat.querySelector("[data-chat-input]");
+  const err = chat.querySelector("[data-chat-err]");
+  const send = chat.querySelector("[data-chat-send]");
+  let busy = false;
+
+  function bucket() {
+    return pack[pack.target];
+  }
+  function active() {
+    const b = bucket();
+    return b.versions[b.index] || null;
+  }
+  function applyToPiece(name, version) {
+    if (name === "legenda") {
+      const live = el.querySelector("[data-live-copy]");
+      if (live) live.textContent = version.text || "—";
+      if (piece.format === "video") {
+        const script = { ...((piece.output || {}).script || {}), hook: version.text || "", body: "", cta: "" };
+        piece.output = { ...(piece.output || {}), script };
+      } else {
+        piece.output = { ...(piece.output || {}), caption: version.text || "" };
+      }
+      return;
+    }
+    if (name === "imagem" && version.url) visualApi.showGenerated(version);
+    if (name === "foto" && version.url) visualApi.showPhoto(version, pieceCaption(piece));
+  }
+  function paint() {
+    chat.querySelectorAll("[data-chat-target]").forEach((btn) => {
+      const name = btn.getAttribute("data-chat-target");
+      btn.hidden = name !== "legenda" && pack[name].versions.length === 0;
+      btn.classList.toggle("is-on", name === pack.target);
+    });
+    versions.replaceChildren();
+    const b = bucket();
+    b.versions.forEach((v, i) => {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-ghost btn-xs";
+      const mark = i === b.applied ? " · em uso" : i === b.index ? " · vista" : "";
+      btn.textContent = "Versão " + (i + 1) + mark;
+      btn.addEventListener("click", () => {
+        b.index = i;
+        paint();
+      });
+      li.appendChild(btn);
+      versions.appendChild(li);
+    });
+    const v = active();
+    if (pack.target === "legenda") preview.textContent = v && v.text ? v.text : "—";
+    else if (v && v.url) preview.textContent = v.source === "foto" ? "Foto da clínica, nesta versão." : "Imagem gerada, nesta versão.";
+    else preview.textContent = "Gere ou importe a imagem para pedir um retoque.";
+    const list = v && Array.isArray(v.warnings) ? v.warnings : [];
+    warns.hidden = !list.length;
+    warns.textContent = list.join(" ");
+    chat.querySelector("[data-chat-undo]").disabled = !b.versions.length || b.index <= 0;
+  }
+  function pushVersion(name, version, focus) {
+    const b = pack[name];
+    b.versions.push(version);
+    const index = b.versions.length - 1;
+    b.index = index;
+    b.applied = index;
+    if (focus) {
+      pack.target = name;
+      applyToPiece(name, version);
+    }
+    paint();
+  }
+  function useIndex(index) {
+    const b = bucket();
+    if (!b.versions[index]) return;
+    b.index = index;
+    b.applied = index;
+    applyToPiece(pack.target, b.versions[index]);
+    paint();
+  }
+
+  visualApi.hooks.image = (image) => {
+    pushVersion("imagem", { id: image.id, url: image.url, source: "ia", model: image.model || "" }, false);
+  };
+  visualApi.hooks.photo = (foto) => {
+    pushVersion("foto", { id: foto.id, url: foto.url, source: "foto" }, false);
+  };
+
+  chat.querySelectorAll("[data-chat-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pack.target = btn.getAttribute("data-chat-target");
+      paint();
+    });
+  });
+  chat.querySelector("[data-chat-undo]").addEventListener("click", () => {
+    if (bucket().index > 0) useIndex(bucket().index - 1);
+  });
+  chat.querySelector("[data-chat-use]").addEventListener("click", () => useIndex(bucket().index));
+  send.addEventListener("click", async () => {
+    const instruction = input.value.trim();
+    err.hidden = true;
+    if (!instruction || busy) return;
+    const name = pack.target;
+    const current = active();
+    if (name !== "legenda" && (!current || !current.id)) {
+      err.hidden = false;
+      err.textContent = "Gere ou importe a imagem antes do retoque.";
+      return;
+    }
+    busy = true;
+    send.disabled = true;
+    const asked = document.createElement("li");
+    asked.textContent = instruction;
+    log.appendChild(asked);
+    const res = await api("/api/estudio/chat", {
+      method: "POST",
+      body: {
+        target: name === "legenda" ? "legenda" : "imagem",
+        instruction,
+        text: name === "legenda" ? (current && current.text) || "" : pieceCaption(piece),
+        kind: visualApi.stateVis.kind,
+        ratio: visualApi.stateVis.ratio,
+        origem: name === "legenda" ? "" : current.id,
+      },
+    });
+    busy = false;
+    send.disabled = false;
+    if (res.status === 401) return showLogin();
+    if (!res.ok || !res.data.ok || !res.data.version) {
+      err.hidden = false;
+      err.textContent = res.data.motivo === "sem_chave"
+        ? "A conversa precisa da IA. Nada foi alterado."
+        : "O ajuste não veio agora. A versão anterior continua.";
+      return;
+    }
+    input.value = "";
+    const made = res.data.version;
+    if (name === "legenda") {
+      pushVersion("legenda", { text: made.text, warnings: made.warnings || [], source: "ia", model: made.model || "" }, true);
+    } else {
+      pushVersion(name, { id: made.id, url: made.url, source: "ia", model: made.model || "" }, true);
+    }
+    const reply = document.createElement("li");
+    reply.className = "from-ia";
+    reply.textContent = "Nova versão pronta.";
+    log.appendChild(reply);
+  });
+
+  const leg = pack.legenda.versions[pack.legenda.applied];
+  if (leg && pack.legenda.applied > 0) applyToPiece("legenda", leg);
+  const imgV = pack.imagem.versions[pack.imagem.applied];
+  if (imgV && imgV.url) visualApi.showGenerated(imgV);
+  const fotoV = pack.foto.versions[pack.foto.applied];
+  if (fotoV && fotoV.url) visualApi.showPhoto(fotoV, pieceCaption(piece));
+  paint();
 }
 
 async function generate() {
