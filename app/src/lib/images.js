@@ -17,7 +17,7 @@ export const IMAGE_KINDS = {
   capa: { label: "Capa", ratio: "1:1" },
 };
 
-const PALETTE = "petróleo #0F4C5C, fundo #F7F5F0, dourado #B08D57 só como detalhe fino";
+const PALETTE = "petróleo, fundo areia, dourado só como detalhe fino";
 
 function namedList(value) {
   if (!Array.isArray(value)) return [];

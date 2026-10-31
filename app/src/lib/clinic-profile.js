@@ -13,7 +13,7 @@ export const PROFILE_FIELDS = [
   { key: "cidade", label: "Cidade", max: 80 },
   { key: "objetivos", label: "Objetivos", max: 400 },
   { key: "objecoes", label: "Objeções comuns", max: 400 },
-  { key: "provas", label: "Provas e autoridade. A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem.", max: 400 },
+  { key: "provas", label: "Provas e autoridade. A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem de WhatsApp.", max: 400 },
 ];
 
 const NICHO = new Set(["saude", "estetica", "bem-estar", "odonto"]);

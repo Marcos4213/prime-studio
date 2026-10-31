@@ -211,7 +211,7 @@ export async function reviseCopy(env, { instruction, text, profile, structure } 
       method,
       instruction: chatInstruction({ instruction: ask, text: current, method }),
     });
-    const next = str(parsed.text);
+    const next = stripPatientCounts(str(parsed.text));
     if (!next) return { ok: false, motivo: "vazio" };
     return { ok: true, text: next, model, warnings: brandGuard({ text: next }), source: "ia" };
   } catch (err) {

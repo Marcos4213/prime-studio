@@ -103,7 +103,7 @@ function paint(host, view, ui) {
   frag.append(p("eyebrow", "Olhar de hoje"));
   frag.append(el("p", "date", view.today?.label || ""));
   frag.append(el("h1", "", "Presença"));
-  frag.append(p("lede", "Site, Instagram, Google e o link na bio. Uma presença só."));
+  frag.append(p("lede", "Site, Instagram e Google. Uma presença só."));
   if (view.clinic) frag.append(p("clinic", view.clinic));
 
   const habit = el("section", "habit");

@@ -417,7 +417,7 @@ async function listHistory(env, client) {
   const res = await env.DB.prepare(
     `SELECT id, format, theme, source, status, created_at FROM pieces
       WHERE client_id = ?
-      ORDER BY CASE WHEN status = 'rascunho' THEN 0 ELSE 1 END, created_at DESC
+      ORDER BY CASE WHEN status = 'aberto' THEN 0 WHEN status = 'rascunho' THEN 1 ELSE 2 END, created_at DESC
       LIMIT 100`
   )
     .bind(client.id)

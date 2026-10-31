@@ -1,5 +1,5 @@
-// Presença é uma só: site, Instagram, Google e link na bio.
-// Não há métrica aqui. O que não foi medido não vira número.
+// Presença na tela: site, Instagram e Google.
+// O link na bio continua gravado, fora desta tela. Não há métrica. O que não foi medido não vira número.
 
 export const CHANNELS = [
   {
@@ -53,6 +53,7 @@ export const CHANNELS = [
 ];
 
 const ORDER = ["site", "instagram", "google", "bio"];
+const DOORS = CHANNELS.filter((ch) => ch.id !== "bio");
 const SPOKEN = {
   site: "o site",
   instagram: "o Instagram",
@@ -111,9 +112,12 @@ export function normalizeAddress(id, raw) {
 }
 
 export function summarize(seenIds) {
-  const seen = ORDER.filter((id) => seenIds.includes(id)).map((id) => SPOKEN[id]);
+  const ids = Array.isArray(seenIds) ? seenIds : [];
+  const seen = DOORS.map((ch) => ch.id)
+    .filter((id) => ids.includes(id))
+    .map((id) => SPOKEN[id]);
   if (seen.length === 0) return "Nenhuma porta vista hoje.";
-  if (seen.length === 4) return "As quatro portas vistas hoje.";
+  if (seen.length === DOORS.length) return "As três portas vistas hoje.";
   if (seen.length === 1) return `Você viu ${seen[0]} hoje.`;
   if (seen.length === 2) return `Você viu ${seen[0]} e ${seen[1]} hoje.`;
   return `Você viu ${seen[0]}, ${seen[1]} e ${seen[2]} hoje.`;
@@ -127,7 +131,7 @@ export function daysLabel(n) {
 }
 
 export function buildView({ profile, look, days, clinic, now } = {}) {
-  const channels = CHANNELS.map((ch) => {
+  const channels = DOORS.map((ch) => {
     const stored = profile?.[ch.id] || "";
     const norm = normalizeAddress(ch.id, stored);
     const address = norm.ok ? norm.value : "";

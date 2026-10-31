@@ -220,6 +220,24 @@ test("cota na conversa não vira texto local", async () => {
   }
 });
 
+test("o retoque recorta a contagem de pacientes na saída", async () => {
+  const prev = globalThis.fetch;
+  globalThis.fetch = async () =>
+    geminiResponse({ text: "A gente recebe. Mais de 100mil paciêntes conhecem o espaço." });
+  try {
+    const revised = await reviseCopy(
+      { GEMINI_API_KEY: SECRET },
+      { instruction: "mais curto", text: "A gente recebe no espaço." }
+    );
+    assert.equal(revised.ok, true);
+    assert.equal(revised.text.includes("100mil"), false);
+    assert.equal(revised.text.includes("paciêntes"), false);
+    assert.match(revised.text, /A gente recebe/);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
 test("sem chave a conversa não inventa texto", async () => {
   const revised = await reviseCopy({}, { instruction: "mais curto", text: "Texto da clínica." });
   assert.equal(revised.ok, false);

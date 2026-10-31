@@ -194,7 +194,7 @@ a{color:var(--color-primary)}
 .tabbar{display:none}
 .mais{display:none}
 @media (max-width:899px){
-  :root{--tabbar-clear:calc(4.75rem + env(safe-area-inset-bottom))}
+  :root{--tabbar-clear:calc(6.5rem + env(safe-area-inset-bottom))}
   .shell{grid-template-columns:minmax(0,1fr);height:100dvh}
   .rail{display:none}
   .top{
@@ -430,9 +430,16 @@ a{color:var(--color-primary)}
   .leads-list{order:2}
   .leads-actions{grid-auto-flow:row}
   .leads h2{font-size:2rem}
-  .leads-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .leads-editor .form input,.leads-editor .form select,.leads-editor .form textarea{padding:10px 12px}
-  #ldEnviar{scroll-margin-bottom:calc(var(--tabbar-clear) + 12px)}
+  .leads-fields{grid-template-columns:minmax(0,1fr)}
+  .leads-editor .form{min-width:0}
+  .leads-editor .form input,.leads-editor .form select,.leads-editor .form textarea{
+    min-width:0;width:100%;max-width:100%;padding:10px 12px;overflow-wrap:anywhere;
+  }
+  .leads-editor .form textarea{
+    field-sizing:content;min-height:4.75rem;white-space:pre-wrap;overflow:hidden;
+  }
+  #ldTexto{min-height:8rem}
+  #ldSave,#ldEnviar,#ldNome,#ldServico{scroll-margin-bottom:calc(var(--tabbar-clear) + 12px)}
 }
 
 @media (prefers-color-scheme: dark) {

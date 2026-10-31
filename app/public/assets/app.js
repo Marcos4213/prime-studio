@@ -685,7 +685,7 @@ const ENTRADA_STEPS = [
   {
     kicker: "Primeiro acesso",
     title: "A pergunta de todo dia: o que a clínica posta hoje.",
-    lede: "O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho. O estúdio fica no centro. Presença, Educação, Comunidade, Indicação e o caderno entram no mesmo acesso. Dá para pular.",
+    lede: "Ela fica para o ok da clínica. O estúdio fica no centro. Presença, Educação, Comunidade, Indicação e o caderno entram no mesmo acesso. Dá para pular.",
     fields: [{ key: "nicho", label: "Nicho", kind: "nicho" }],
   },
   {
@@ -732,7 +732,7 @@ const ENTRADA_STEPS = [
       {
         key: "provas",
         label: "Provas e autoridade",
-        note: "A contagem de pacientes não entra na peça nem na mensagem.",
+        note: "A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem de WhatsApp.",
         placeholder: "Formação ou tempo de casa",
       },
       { key: "tema_amanha", label: "Tema de amanhã", placeholder: "Ex.: um detalhe do espaço da clínica", rows: 1 },
@@ -964,7 +964,7 @@ async function renderMarca() {
         <label class="form">Tom de voz<textarea id="pfTom" rows="3" maxlength="400">${esc(c.tom || "")}</textarea></label>
         <label class="form">Objetivos<textarea id="pfObjetivos" rows="3" maxlength="400">${esc(c.objetivos || "")}</textarea></label>
         <label class="form">Objeções comuns<textarea id="pfObjecoes" rows="3" maxlength="400">${esc(c.objecoes || "")}</textarea></label>
-        <label class="form">Provas e autoridade<span class="field-note">A contagem de pacientes não entra na peça nem na mensagem.</span><textarea id="pfProvas" rows="3" maxlength="400">${esc(c.provas || "")}</textarea></label>
+        <label class="form">Provas e autoridade<span class="field-note">A contagem de pacientes não entra na legenda, no anúncio, na imagem nem na mensagem de WhatsApp.</span><textarea id="pfProvas" rows="3" maxlength="400">${esc(c.provas || "")}</textarea></label>
       </div>
       <button class="btn" id="saveClinic" type="button">Guardar versão</button>
       <span class="note" id="clinicSaved" hidden>Versão guardada.</span>
@@ -976,13 +976,13 @@ async function renderMarca() {
       <p class="hint">O que a peça respeita além do texto. Quanto mais completo, mais parece a clínica.</p>
       <p class="row"><button type="button" class="btn-ghost btn-xs" id="goHist">Peças guardadas</button></p>
 
-      <div class="eyebrow" style="margin:10px 0 4px">Cores</div>
+      <label class="form" for="colorIn">Cores</label>
       <div class="chips" id="colorChips"></div>
-      <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor">Adicionar</button></div>
+      <div class="inline"><input id="colorIn" type="text" placeholder="código ou nome da cor" maxlength="24"><button class="btn-ghost btn-xs" id="addColor" type="button">Adicionar</button></div>
 
-      <div class="eyebrow" style="margin:16px 0 4px">Fontes</div>
+      <label class="form" for="fontIn">Fontes</label>
       <div class="chips" id="fontChips"></div>
-      <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont">Adicionar</button></div>
+      <div class="inline"><input id="fontIn" type="text" placeholder="Ex.: Cormorant Garamond" maxlength="60"><button class="btn-ghost btn-xs" id="addFont" type="button">Adicionar</button></div>
 
       <div class="form" style="margin-top:16px">
         <label for="tone">Tom da clínica</label>
@@ -1188,7 +1188,7 @@ function leadsHtml(resumo, items, atual) {
           <h3>${atual ? "Este lead" : "Novo lead"}</h3>
           <div class="leads-fields">
             <label class="form" for="ldServico">Serviço
-              <input id="ldServico" name="servico" maxlength="120" value="${esc(a.servico || "")}" placeholder="O que a clínica oferece">
+              <textarea id="ldServico" name="servico" rows="2" maxlength="120" placeholder="O que a clínica oferece">${esc(a.servico || "")}</textarea>
             </label>
             <label class="form" for="ldValor">Valor
               <input id="ldValor" name="valor" inputmode="decimal" maxlength="20" value="${esc(valorCampo(a.valor_centavos))}" placeholder="Só se a clínica digitou">
@@ -1217,13 +1217,13 @@ function leadsHtml(resumo, items, atual) {
           </div>
           <div class="leads-fields">
             <label class="form" for="ldNome">Nome
-              <input id="ldNome" name="name" required maxlength="80" autocomplete="name" value="${esc(a.name || "")}">
+              <textarea id="ldNome" name="name" required rows="2" maxlength="80" autocomplete="name">${esc(a.name || "")}</textarea>
             </label>
             <label class="form" for="ldContato">Contato
-              <input id="ldContato" name="contact" maxlength="80" autocomplete="tel" value="${esc(a.contact || "")}">
+              <textarea id="ldContato" name="contact" rows="2" maxlength="80" autocomplete="tel">${esc(a.contact || "")}</textarea>
             </label>
             <label class="form" for="ldOrigem">Origem
-              <input id="ldOrigem" name="origin" maxlength="80" value="${esc(a.origin || "")}">
+              <textarea id="ldOrigem" name="origin" rows="2" maxlength="80">${esc(a.origin || "")}</textarea>
             </label>
           </div>
           <label class="form" for="ldHist">Histórico comercial

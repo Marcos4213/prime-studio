@@ -202,7 +202,7 @@ function chatHtml() {
     "<div><p class=\"eyebrow\">Conversa</p><h3>Ajustar esta peça</h3></div>" +
     '<button type="button" class="btn-ghost chat-toggle" data-chat-toggle aria-expanded="false">Abrir conversa</button>' +
     "</div>" +
-    '<p class="hint">Peça o retoque. Nada vai ao ar sozinho.</p>' +
+    '<p class="hint">Peça o retoque.</p>' +
     '<div class="chat-body" data-chat-body>' +
     '<div class="chat-stream">' +
     '<div class="picks" role="tablist" aria-label="O que ajustar">' +
@@ -449,13 +449,13 @@ function wireVisual(el, piece) {
     if (hooks.useGenerated) hooks.useGenerated();
     const btn = visual.querySelector("[data-use-image]");
     btn.setAttribute("aria-pressed", "true");
-    markChosen("Esta imagem fica na peça. Nada vai ao ar sozinho.");
+    markChosen("Esta imagem fica na peça.");
   });
   if (usePhoto) {
     usePhoto.addEventListener("click", () => {
       if (hooks.usePhoto) hooks.usePhoto();
       usePhoto.setAttribute("aria-pressed", "true");
-      markChosen("Esta foto fica na peça. Nada vai ao ar sozinho.");
+      markChosen("Esta foto fica na peça.");
     });
   }
   compose.addEventListener("click", () => runImage(true));
@@ -887,7 +887,7 @@ async function loadHistory() {
       dateStyle: "short",
       timeStyle: "short",
     });
-    const st = it.status === "aprovado" ? "Aprovado" : "Rascunho";
+    const st = it.status === "aprovado" ? "Aprovado" : it.status === "aberto" ? "Em aberto" : "Rascunho";
     const src = it.source === "ia" ? "IA" : "exemplo";
     meta.textContent = when + " · " + st + " · " + src;
     btn.append(title, meta);
