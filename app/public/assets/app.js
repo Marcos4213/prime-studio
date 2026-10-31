@@ -891,9 +891,28 @@ function paintEntrada(moveFocus) {
     const heading = v.querySelector(`[data-entrada-step="${entradaStep}"] h2`);
     if (heading) {
       heading.tabIndex = -1;
-      heading.focus();
+      heading.focus({ preventScroll: true });
     }
   }
+  requestAnimationFrame(() => clearEntrada(v));
+}
+
+function clearEntrada(v) {
+  const stage = document.querySelector(".stage-body");
+  const bar = document.querySelector(".tabbar");
+  if (!stage) return;
+  const step = v.querySelector(`[data-entrada-step="${entradaStep}"]`);
+  const field = step && step.querySelector("[data-field], .choices");
+  const next = $("#entradaNext", v);
+  const barOn = bar && getComputedStyle(bar).display !== "none";
+  const limit = (barOn ? bar.getBoundingClientRect().top : window.innerHeight) - 12;
+  const lift = (el) => {
+    if (!el) return;
+    const bottom = el.getBoundingClientRect().bottom;
+    if (bottom > limit) stage.scrollTop += bottom - limit;
+  };
+  lift(field);
+  lift(next);
 }
 
 async function advanceEntrada(concluir) {

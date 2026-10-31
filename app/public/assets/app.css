@@ -156,7 +156,7 @@ a{color:var(--color-primary)}
 .shell.is-collapsed .rail-foot .btn-ghost{padding:10px 8px}
 .rail-collapse{
   background:transparent;color:var(--color-primary);border:1px solid var(--color-line);
-  border-radius:999px;min-height:36px;padding:6px 12px;font:600 .75rem var(--sans);cursor:pointer;
+  border-radius:999px;min-height:44px;padding:10px 14px;font:600 .75rem var(--sans);cursor:pointer;
 }
 .rail-menu{display:grid;gap:4px;min-width:0;align-content:start}
 .nav-link{
@@ -433,6 +433,9 @@ a{color:var(--color-primary)}
   .leads-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:899px){
+  .entrada .onb-actions{position:static}
+  .entrada .card-render.still-wide{height:168px}
+  .entrada textarea,.entrada .choices{scroll-margin-bottom:calc(var(--tabbar-clear) + 16px)}
   .hoje-strip,.hoje-week,.leads-card{grid-template-columns:minmax(0,1fr)}
   .hoje-strip > .card-render,.hoje-week > .card-render,.leads-card > .card-render{height:156px;min-height:0}
   .hoje-strip .btn,.leads-actions .btn,.leads-msg .btn,.leads-msg .btn-ghost{width:100%}

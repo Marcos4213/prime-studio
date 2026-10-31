@@ -17,7 +17,7 @@ img{max-width:100%;height:auto}
 .kicker{margin-top:14px;color:var(--color-accent);letter-spacing:.24em;text-transform:uppercase;font-size:.68rem;font-weight:600}
 .kicker-sub{color:var(--color-muted);font-size:.92rem;margin:6px 0 14px;max-width:34ch}
 .hero{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--color-line)}
-.hero img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center}
+.hero img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;object-position:center;background:var(--color-bg)}
 .hero-copy{position:absolute;left:0;right:0;bottom:0;padding:104px 16px 28px;background:linear-gradient(180deg,transparent 0%,var(--color-bg) 46%,var(--color-bg) 100%)}
 .eyebrow{color:var(--color-accent);letter-spacing:.16em;text-transform:uppercase;font-size:.66rem;font-weight:600}
 .edu h1,.edu h2{font-family:var(--serif);font-weight:500;letter-spacing:-.015em;line-height:1.08;overflow-wrap:anywhere;color:var(--color-text)}
@@ -38,7 +38,7 @@ img{max-width:100%;height:auto}
 .edu .btn:focus-visible,.edu .btn-ghost:focus-visible,.tomorrow:focus-visible,.spine a:focus-visible,.week a:focus-visible,.edu-toplink:focus-visible,.edu-logo:focus-visible,.textlink:focus-visible{outline:2px solid var(--color-accent);outline-offset:3px}
 .done-note{font-family:var(--serif);font-style:italic;color:var(--color-accent);font-size:1.28rem;line-height:1.25}
 .tomorrow{display:flex;gap:12px;align-items:center;margin-top:22px;padding:10px;border-radius:18px;border:1px solid var(--color-accent);background:var(--color-surface);text-decoration:none;color:inherit;min-width:0}
-.tomorrow img{width:72px;height:72px;flex:none;object-fit:cover;border-radius:12px;border:1px solid var(--color-line)}
+.tomorrow img{width:72px;height:72px;flex:none;object-fit:contain;border-radius:12px;border:1px solid var(--color-line);background:var(--color-surface)}
 .tomorrow span{min-width:0;display:block}
 .tomorrow strong{display:block;font-family:var(--serif);font-size:1.28rem;font-weight:500;line-height:1.15;margin:3px 0;color:var(--color-text)}
 .tomorrow small{display:block;color:var(--color-muted);font-size:.78rem}

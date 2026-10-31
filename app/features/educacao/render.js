@@ -94,7 +94,7 @@ ${body}
 </main>
 <footer class="foot">
   <p>Prime Studio · educação da Central</p>
-  <p>Fotos de espaços reais do nosso acervo.</p>
+  <p>Objetos em vidro, pedra e papel.</p>
 </footer>
 </div>
 ${CLIENT}
