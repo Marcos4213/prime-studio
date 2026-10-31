@@ -138,6 +138,31 @@ test("se o flash atual não responde, o flash estável anterior entrega a legend
   }
 });
 
+test("cota nos flashes novos tenta o flash 2.5 estável", async () => {
+  const prev = globalThis.fetch;
+  const models = [];
+  globalThis.fetch = async (url) => {
+    const model = String(url).split("/models/")[1].split(":")[0];
+    models.push(model);
+    if (model === "gemini-2.5-flash") {
+      return geminiResponse({
+        caption: "A gente abre a recepção com luz natural e um convite sóbrio.",
+        imagePrompt: "Recepção sem pessoa e sem texto.",
+      });
+    }
+    return new Response(JSON.stringify({ error: { status: "RESOURCE_EXHAUSTED" } }), { status: 429 });
+  };
+  try {
+    const result = await generatePiece({ GEMINI_API_KEY: SECRET }, { format: "post", theme: "recepção", profile: {} });
+    assert.equal(result.source, "ia");
+    assert.equal(result.model, "gemini-2.5-flash");
+    assert.deepEqual(models, ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-2.5-flash"]);
+    assert.equal(JSON.stringify(result).includes(SECRET), false);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
 test("o pedido da conversa leva o texto e a trava, sem a chave", () => {
   const instruction = chatInstruction({ instruction: "mais curto", text: "Um convite sóbrio para conhecer o espaço." });
   assert.match(instruction, /mais curto/);
@@ -187,7 +212,7 @@ test("cota na conversa não vira texto local", async () => {
     assert.equal(revised.ok, false);
     assert.equal(revised.motivo, "cota");
     assert.equal(revised.text, undefined);
-    assert.equal(urls.length, 2);
+    assert.equal(urls.length, 3);
     assert.equal(JSON.stringify(revised).includes(SECRET), false);
   } finally {
     globalThis.fetch = prev;

@@ -247,9 +247,10 @@ function attach(output, method) {
   return { ...output, copyMethod: method, warnings: brandGuard(output) };
 }
 
-// O flash atual às vezes responde 503, esgota a cota ou não devolve cabeçalho.
-// O 3.6 estável entra só então. Cota não repete no mesmo modelo.
+// 3.8 e 3.6 estão na documentação estável do Gemini (outubro de 2026).
+// Se a chave não os aceita (404) ou a cota deles acaba (429), o flash 2.5 estável entra uma vez.
 const FALLBACK_MODEL = "gemini-3.6-flash";
+const STABLE_FLASH = "gemini-2.5-flash";
 
 function copyMotivo(err) {
   const msg = String(err?.message || "");
@@ -268,9 +269,14 @@ function retrySameModel(err, model, primary, attempt) {
   return attempt === 0;
 }
 
+function textModels(env) {
+  const primary = geminiModel(env);
+  return [...new Set([primary, FALLBACK_MODEL, STABLE_FLASH])];
+}
+
 async function generateParsed(env, key, args) {
   const primary = geminiModel(env);
-  const models = primary === FALLBACK_MODEL ? [primary] : [primary, FALLBACK_MODEL];
+  const models = textModels(env);
   let last = new Error("gemini_vazio");
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {

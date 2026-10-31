@@ -86,11 +86,11 @@ test("a imagem também sai de inlineData", () => {
   assert.equal(found.b64, "GERADA");
 });
 
-test("cota tenta cada modelo uma vez e não chama o modelo antigo", async () => {
+test("cota tenta os modelos novos e o flash de imagem estável uma vez", async () => {
   const prev = globalThis.fetch;
-  const urls = [];
-  globalThis.fetch = async (url) => {
-    urls.push(String(url));
+  const models = [];
+  globalThis.fetch = async (_url, opts) => {
+    models.push(JSON.parse(opts.body).model);
     return new Response("{}", { status: 429 });
   };
   try {
@@ -100,8 +100,7 @@ test("cota tenta cada modelo uma vez e não chama o modelo antigo", async () => 
     );
     assert.equal(made.ok, false);
     assert.equal(made.motivo, "cota");
-    assert.equal(urls.length, 2);
-    assert.equal(urls.some((url) => url.includes("gemini-2.5-flash-image")), false);
+    assert.deepEqual(models, ["gemini-nano-banana-2.1", "gemini-3.1-flash-lite-image", "gemini-2.5-flash-image"]);
     assert.equal(JSON.stringify(made).includes(SECRET), false);
   } finally {
     globalThis.fetch = prev;

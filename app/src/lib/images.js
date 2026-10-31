@@ -5,6 +5,7 @@ import { redactSecrets } from "./ai.js";
 export const IMAGE_MODEL = "gemini-nano-banana-2.1";
 const IMAGE_FALLBACK = "gemini-3.1-flash-lite-image";
 // Só entra se os dois ids documentados responderem 404. A cota não chama este.
+// Flash de imagem estável e ainda servido. Entra se os ids novos derem 404 ou cota.
 const IMAGE_LEGACY = "gemini-2.5-flash-image";
 const INTERACTIONS = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
@@ -149,13 +150,15 @@ export async function generateClinicImage(env, { kind, ratio, profile, caption, 
   const models = [IMAGE_MODEL, IMAGE_FALLBACK];
   let last = "falha";
   let missing = 0;
+  let quota = false;
   for (const model of models) {
     const made = await attemptImage(key, model, prompt, ratio, photo);
     if (made.ok) return made;
     last = made.motivo;
     if (last === "modelo") missing += 1;
+    if (last === "cota") quota = true;
   }
-  if (missing === models.length) {
+  if (missing === models.length || quota) {
     const made = await attemptImage(key, IMAGE_LEGACY, prompt, ratio, photo);
     if (made.ok) return made;
     last = made.motivo;
