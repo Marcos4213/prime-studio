@@ -18,6 +18,7 @@ import {
   saveClinicProfileVersion,
 } from "./lib/clinic-profile.js";
 import { pieceEstado, weekBars } from "./lib/hoje.js";
+import { isShellPath, shellIndexRequest } from "./lib/shell-routes.js";
 import { findFeaturesDir, loadFeatures, toMenu } from "../features/load.js";
 import bakedMenu from "./feature-menu.json";
 
@@ -49,6 +50,7 @@ async function routeFront(request, env, url) {
   const path = url.pathname;
 
   if (path === "/api/hoje" && request.method === "GET") return hojeResumo(request, env);
+  if (isShellPath(path) && (request.method === "GET" || request.method === "HEAD")) return env.ASSETS.fetch(shellIndexRequest(request));
 
   if (path === "/estudio" || path === "/estudio/" || path.startsWith("/api/estudio/")) {
     const mod = await import("../features/estudio/server.js");
