@@ -46,10 +46,14 @@
     </div>
   </header>
 
-  <h1>Estúdio</h1>
-  <p class="lede">A peça de hoje, no tom da clínica. Nada vai ao ar sozinho.</p>
-  <p id="aiNote" class="note warn" hidden></p>
+  <div class="studio-intro">
+    <h1>Estúdio</h1>
+    <p class="lede">A peça de hoje, no tom da clínica. Nada vai ao ar sozinho.</p>
+    <p id="aiNote" class="note warn" hidden></p>
+  </div>
 
+  <div class="studio-layout">
+  <div class="studio-main">
   <section class="block habit" aria-label="Hábito do dia">
     <p class="eyebrow">Por que abrir de novo amanhã</p>
     <div class="habit-grid">
@@ -65,17 +69,6 @@
     </div>
     <p class="habit-why" id="habitWhy"></p>
     <button type="button" class="btn-ghost" id="useAngle">Usar o ângulo de hoje</button>
-  </section>
-
-  <section class="block photos" aria-label="Referência visual">
-    <figure class="hero">
-      <img src="/features/estudio/recepcao.webp" alt="Recepção em pedra clara, espelho com arco dourado e orquídeas, sem pessoas">
-    </figure>
-    <div class="pair">
-      <img src="/features/estudio/sala.webp" alt="Sala de atendimento com cadeira, janela e luz natural, sem pessoas">
-      <img src="/features/estudio/espera.webp" alt="Sala de espera clara com planta e bancos, sem pessoas">
-    </div>
-    <p class="photo-note">Fotos reais de espaço. O prompt descreve o visual — não gera pessoa.</p>
   </section>
 
   <section class="block" id="formatSec">
@@ -120,8 +113,6 @@
     <p id="genErr" class="err" hidden></p>
   </section>
 
-  <section id="result" hidden aria-live="polite"></section>
-
   <section class="block" id="brand">
     <p class="eyebrow">Memória da marca</p>
     <h2>Cores, fontes e tom</h2>
@@ -159,6 +150,22 @@
     <button type="button" class="btn-ghost btn-xs" id="histClose" hidden>Fechar peça</button>
     <div id="histPiece"></div>
   </section>
+  </div>
+  <aside class="studio-side">
+  <section class="block photos" aria-label="Referência visual">
+    <p class="eyebrow">Referência</p>
+    <figure class="hero">
+      <img src="/features/estudio/recepcao.webp" alt="Recepção em pedra clara, espelho com arco dourado e orquídeas, sem pessoas">
+    </figure>
+    <div class="pair">
+      <img src="/features/estudio/sala.webp" alt="Sala de atendimento com cadeira, janela e luz natural, sem pessoas">
+      <img src="/features/estudio/espera.webp" alt="Sala de espera clara com planta e bancos, sem pessoas">
+    </div>
+    <p class="photo-note">Espaço real, como referência. A imagem da peça segue este visual, sem pessoa em destaque.</p>
+  </section>
+  </aside>
+  <section id="result" hidden aria-live="polite"></section>
+  </div>
 </div>
 
 <script type="application/json" id="studio-boot">___ESTUDIO_BOOT___</script>

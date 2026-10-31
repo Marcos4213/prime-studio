@@ -296,7 +296,10 @@ function showPane(id) {
   $$(".view").forEach((view) => view.classList.toggle("is-active", !front && view.dataset.view === id));
   const frame = $("[data-front]");
   const shell = $("[data-shell]");
-  if (shell) shell.classList.toggle("is-front", front);
+  if (shell) {
+    shell.classList.toggle("is-front", front);
+    shell.classList.toggle("is-studio", id === "estudio");
+  }
   if (frame) {
     if (front) {
       const item = state.menu.find((entry) => entry.id === id) || NAV.find((entry) => entry.id === id);
@@ -343,7 +346,9 @@ function dressFrame(frame) {
   style.textContent = `
     header.top, header.edu-top, .theme-bar, a.central-link, .edu-toplink { display: none !important; }
     .circulo, .wrap, .ind, .edu { max-width: none !important; width: 100% !important; }
+    html, body { max-width: 100%; overflow-x: hidden; }
     body { background: var(--color-bg); }
+    img, video, .chat, .visual, .piece-board, .file-btn { max-width: 100%; }
     @media (max-width: 899px) {
       .circulo, .wrap, .ind, .edu, .page, main {
         padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
