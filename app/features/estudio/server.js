@@ -73,6 +73,7 @@ export async function handleEstudioGenerate(request, env) {
       theme,
       output: result.output,
       source: result.source,
+      model: result.model || "",
       status: "rascunho",
       created_at: created,
     },

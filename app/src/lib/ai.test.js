@@ -7,7 +7,7 @@ const SECRET = "AIzaTESTKEYSHOULDNOTLEAK123456";
 function geminiResponse(payload) {
   return new Response(
     JSON.stringify({
-      choices: [{ message: { content: JSON.stringify(payload) } }],
+      candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] } }],
     }),
     { status: 200, headers: { "content-type": "application/json" } }
   );
@@ -50,13 +50,13 @@ test("resposta do Gemini vira a legenda e o modelo flash", async () => {
   globalThis.fetch = async (url, opts) => {
     called = String(url);
     const headers = opts.headers || {};
-    assert.equal(headers.authorization, `Bearer ${SECRET}`);
+    assert.equal(headers["x-goog-api-key"], SECRET);
     assert.equal(String(url).includes(SECRET), false);
     const body = JSON.parse(opts.body);
-    assert.equal(body.model, GEMINI_MODEL);
-    assert.match(body.messages[0].content, /AIDA/);
-    assert.match(body.messages[0].content, /CFM/);
-    assert.equal(body.response_format.type, "json_object");
+    assert.match(body.systemInstruction.parts[0].text, /AIDA/);
+    assert.match(body.systemInstruction.parts[0].text, /CFM/);
+    assert.equal(body.generationConfig.responseMimeType, "application/json");
+    assert.equal(body.generationConfig.thinkingConfig.thinkingLevel, "low");
     return geminiResponse({
       caption: "Nosso time abre a recepção com luz natural e um convite sóbrio para conhecer o espaço.",
       imagePrompt: "Fotografia da recepção, sem pessoa e sem texto.",
@@ -69,7 +69,7 @@ test("resposta do Gemini vira a legenda e o modelo flash", async () => {
     );
     assert.equal(result.source, "ia");
     assert.equal(result.model, GEMINI_MODEL);
-    assert.match(called, /\/openai\/chat\/completions$/);
+    assert.match(called, new RegExp(`${GEMINI_MODEL}:generateContent`));
     assert.match(result.output.caption, /recepção/);
     assert.equal(result.output.copyMethod.name, "AIDA");
     assert.equal(JSON.stringify(result).includes(SECRET), false);
@@ -109,6 +109,28 @@ test("bio, anúncio e site escolhem o método e podem vir do Gemini", async () =
     assert.equal(site.name, "StoryBrand");
     assert.equal(bio.source, "ia");
     assert.equal(site.line.includes("convite sóbrio"), true);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
+test("se o flash atual não responde, o flash estável anterior entrega a legenda", async () => {
+  const prev = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async (url) => {
+    calls += 1;
+    if (String(url).includes(GEMINI_MODEL)) throw new Error("The operation was aborted due to timeout");
+    return geminiResponse({
+      caption: "Nosso time recebe com luz natural e um convite sóbrio.",
+      imagePrompt: "Recepção sem pessoa e sem texto.",
+    });
+  };
+  try {
+    const result = await generatePiece({ GEMINI_API_KEY: SECRET }, { format: "post", theme: "recepção", profile: {} });
+    assert.equal(calls >= 2, true);
+    assert.equal(result.source, "ia");
+    assert.equal(result.model, "gemini-2.5-flash");
+    assert.equal(JSON.stringify(result).includes(SECRET), false);
   } finally {
     globalThis.fetch = prev;
   }

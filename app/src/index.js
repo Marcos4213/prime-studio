@@ -369,7 +369,7 @@ async function generate(request, env, client) {
 
   return json({
     ok: true,
-    piece: { id, format, theme, output: result.output, source: result.source, status: "rascunho", created_at: created },
+    piece: { id, format, theme, output: result.output, source: result.source, model: result.model || "", status: "rascunho", created_at: created },
   });
 }
 

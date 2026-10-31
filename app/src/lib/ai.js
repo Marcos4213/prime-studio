@@ -152,14 +152,13 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
     return finishMock(format, theme, profile, mode, method);
   }
   try {
-    const parsed = await callGemini(env, key, {
+    const { parsed, model } = await generateParsed(env, key, {
       profile,
       method,
       instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
-      timeoutMs: 50000,
     });
     const output = normalize(format, parsed, mode);
-    return { source: "ia", model: geminiModel(env), output: attach(output, method) };
+    return { source: "ia", model, output: attach(output, method) };
   } catch (err) {
     const extra = /timeout|aborted/i.test(String(err?.message || err)) ? await probeHost() : "";
     logFallback(err, key, extra);
@@ -174,15 +173,14 @@ export async function generateStructureCopy(env, { structure, profile, theme } =
   const key = geminiKey(env);
   if (!key) return { ...local, source: "mock" };
   try {
-    const parsed = await callGemini(env, key, {
+    const { parsed, model } = await generateParsed(env, key, {
       profile,
       method,
       instruction: `Estrutura: ${method.structure}. Escreva uma frase de copy no método ${method.name}. ${method.note}\nTema: ${theme || "presença da clínica"}\nResponda JSON {"line": string}. Sem promessa de resultado, sem antes e depois, sem número inventado.`,
-      timeoutMs: 12000,
     });
     const line = str(parsed.line) || local.line;
     const warnings = brandGuard({ line });
-    return { ...method, line, source: "ia", model: geminiModel(env), warnings };
+    return { ...method, line, source: "ia", model, warnings };
   } catch (err) {
     logFallback(err, key);
     return { ...local, source: "mock" };
@@ -198,31 +196,48 @@ function attach(output, method) {
   return { ...output, copyMethod: method, warnings: brandGuard(output) };
 }
 
-async function callGemini(env, key, { profile, method, instruction, timeoutMs }) {
-  const model = geminiModel(env);
-  const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+// O flash atual às vezes não devolve cabeçalho (timeout/503). O 2.5 estável entra só então.
+const FALLBACK_MODEL = "gemini-2.5-flash";
+
+async function generateParsed(env, key, args) {
+  const primary = geminiModel(env);
+  const models = primary === FALLBACK_MODEL ? [primary] : [primary, FALLBACK_MODEL];
+  let last = new Error("gemini_vazio");
+  for (const model of models) {
+    try {
+      const parsed = await callGemini(key, { ...args, model, timeoutMs: model === primary ? 10000 : 14000 });
+      return { parsed, model };
+    } catch (err) {
+      last = err;
+      logFallback(err, key, model);
+    }
+  }
+  throw last;
+}
+
+async function callGemini(key, { profile, method, instruction, model, timeoutMs }) {
+  const resp = await fetch(`${GEMINI_URL}/${model}:generateContent`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${key}`,
+      "x-goog-api-key": key,
     },
     body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt(profile, method) },
-        { role: "user", content: instruction },
-      ],
-      response_format: { type: "json_object" },
+      systemInstruction: { parts: [{ text: systemPrompt(profile, method) }] },
+      contents: [{ role: "user", parts: [{ text: instruction }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        ...(model === GEMINI_MODEL ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
+      },
     }),
-    signal: AbortSignal.timeout(timeoutMs || 22000),
+    signal: AbortSignal.timeout(timeoutMs || 10000),
   });
   const raw = await resp.text();
   if (!resp.ok) {
     let code = `gemini_${resp.status}`;
     try {
-      const err = JSON.parse(raw)?.error || {};
-      const status = typeof err.status === "string" ? err.status : typeof err.code === "string" ? err.code : "";
-      if (/^[A-Z0-9_]+$/.test(status)) code = `${code}_${status}`;
+      const status = JSON.parse(raw)?.error?.status;
+      if (typeof status === "string" && /^[A-Z0-9_]+$/.test(status)) code = `${code}_${status}`;
     } catch {
       code = `gemini_${resp.status}`;
     }
@@ -234,8 +249,11 @@ async function callGemini(env, key, { profile, method, instruction, timeoutMs })
   } catch {
     throw new Error("gemini_json");
   }
-  const text = data?.choices?.[0]?.message?.content;
-  if (typeof text !== "string" || !text.trim()) throw new Error("gemini_vazio");
+  const parts = data?.candidates?.[0]?.content?.parts;
+  const text = Array.isArray(parts)
+    ? parts.filter((part) => part && typeof part.text === "string" && !part.thought).map((part) => part.text).join("").trim()
+    : "";
+  if (!text) throw new Error("gemini_vazio");
   try {
     return JSON.parse(text);
   } catch {
