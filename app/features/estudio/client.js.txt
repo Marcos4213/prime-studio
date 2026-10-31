@@ -270,6 +270,7 @@ function visualHtml() {
     '<img data-gen-img alt="Imagem gerada para a peça">' +
     '<div class="actions"><a class="btn" data-download href="#">Baixar</a>' +
     '<button type="button" class="btn-ghost" data-regen>Regerar</button></div></figure>' +
+    '<p class="notice">Use fotos de pacientes apenas com autorização de uso de imagem.</p>' +
     '<label class="btn-ghost btn-block file-btn">Importar foto<input type="file" accept="image/jpeg,image/png,image/webp" data-photo></label>' +
     '<p class="note" data-photo-err hidden></p>' +
     '<figure class="post-base" data-post-base hidden>' +
