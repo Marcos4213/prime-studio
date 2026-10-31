@@ -156,7 +156,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
       profile,
       method,
       instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
-      timeoutMs: 22000,
+      timeoutMs: 50000,
     });
     const output = normalize(format, parsed, mode);
     return { source: "ia", model: geminiModel(env), output: attach(output, method) };
