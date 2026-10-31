@@ -57,8 +57,30 @@ test("o perfil sanitiza o nicho e mede a completude", () => {
   assert.equal(merged.tom, "direto");
   const score = completeness(merged);
   assert.equal(score.filled, 3);
-  assert.equal(score.total, 10);
-  assert.equal(score.percent, 30);
+  assert.equal(score.total, 13);
+  assert.equal(score.percent, 23);
+  const full = completeness(
+    {
+      nicho: "saude",
+      especialidades: "a",
+      procedimentos: "a",
+      publico: "a",
+      diferenciais: "a",
+      tom: "a",
+      cidade: "a",
+      objetivos: "a",
+      objecoes: "a",
+      provas: "a",
+    },
+    { colors: ["areia"], fonts: ["Inter"], tone: "sóbrio" }
+  );
+  assert.equal(full.percent, 100);
+  assert.equal(completeness(merged, { colors: ["areia"] }).percent < 100, true);
+  const kept = mergeClinicProfile({ nicho: "outro-ja-gravado", cidade: "Santos" }, { tom: "direto" });
+  assert.equal(kept.nicho, "outro-ja-gravado");
+  assert.equal(sanitizeClinicProfile({ nicho: "bem-estar" }).nicho, "bem-estar");
+  assert.equal(sanitizeClinicProfile({ nicho: "saude" }).nicho, "saude");
+  assert.equal(mergeClinicProfile({ nicho: "outro-ja-gravado" }, { nicho: "xyz-novo" }).nicho, "outro-ja-gravado");
 });
 
 test("a migração do perfil é só aditiva", () => {

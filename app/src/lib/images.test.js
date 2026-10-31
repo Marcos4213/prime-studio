@@ -12,9 +12,10 @@ test("o prompt da imagem gerada leva paleta e compliance", () => {
     theme: "recepção",
     fromPhoto: false,
   });
-  assert.match(prompt, /#0F4C5C/);
-  assert.match(prompt, /#F7F5F0/);
-  assert.match(prompt, /#B08D57/);
+  assert.match(prompt, /petróleo/);
+  assert.match(prompt, /fundo areia/);
+  assert.match(prompt, /dourado só como detalhe fino/);
+  assert.doesNotMatch(prompt, /#[0-9A-Fa-f]{3,8}/);
   assert.match(prompt, /antes e depois/i);
   assert.match(prompt, /CFM/);
   assert.match(prompt, /simulando resultado/i);

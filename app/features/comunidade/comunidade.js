@@ -12,7 +12,7 @@
     {
       kicker: "Próxima volta",
       title: "Um ângulo, em uma frase",
-      body: "Espaço, rotina ou um detalhe do cuidado. A frase fica na sua central e o estúdio monta a peça no tom da clínica. Daqui nada vai ao ar.",
+      body: "Espaço, rotina ou um detalhe do cuidado. A frase fica na sua central. Daqui nada vai ao ar.",
     },
   ];
 

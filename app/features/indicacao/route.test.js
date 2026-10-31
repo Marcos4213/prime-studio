@@ -87,6 +87,7 @@ test("página logada traz o fluxo e não inventa valor", () => {
   assert.match(html, /Indicar esta clínica/);
   assert.match(html, /60 dias/);
   assert.match(html, /15%/);
+  assert.doesNotMatch(visible(html), /Profissional/);
   assert.match(html, /overflow-x:hidden/);
   assert.match(html, /Clínica Serra/);
   assert.equal(/faturamento|R\$|meses/.test(visible(html)), false);

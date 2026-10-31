@@ -7,7 +7,7 @@
   "scripts": {
     "predev": "node features/load.js --write src/feature-menu.json",
     "dev": "wrangler dev",
-    "test": "node --test features/load.test.js src/lib/copy-method.test.js src/lib/ai.test.js src/lib/images.test.js",
+    "test": "node --test",
     "db:create": "wrangler d1 create prime-central",
     "db:migrate:local": "wrangler d1 migrations apply prime-central --local",
     "db:migrate:remote": "wrangler d1 migrations apply prime-central --remote",

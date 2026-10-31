@@ -4,6 +4,7 @@
 // falha vira indisponível, sem gravar o exemplo. A chave não entra em log,
 // erro ou texto da peça.
 import { chooseCopyMethod, structureForFormat, suggestLine } from "./copy-method.js";
+import { provasForPiece, stripPatientCounts } from "./provas.js";
 
 const FORMATS = new Set(["post", "carousel", "video"]);
 
@@ -69,7 +70,7 @@ function brandBlock(profile) {
     profile.cidade ? `Cidade: ${profile.cidade}` : "",
     profile.objetivos ? `Objetivos: ${profile.objetivos}` : "",
     profile.objecoes ? `Objeções comuns: ${profile.objecoes}` : "",
-    profile.provas ? `Provas e autoridade: ${profile.provas}` : "",
+    provasForPiece(profile.provas) ? `Provas e autoridade, sem contagem de pacientes: ${provasForPiece(profile.provas)}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -92,6 +93,7 @@ const RULES = [
   "- Sem rosto ou corpo de paciente simulando resultado. Foto importada pela clínica não entra nesta trava.",
   "- Sem dado de saúde, diagnóstico ou caso de quem foi atendido.",
   "- Sem número inventado (métrica, preço, percentual, prazo, estatística). Se o perfil não trouxe, não cite.",
+  "- Contagem de pacientes não entra na legenda, no anúncio nem na imagem, mesmo se já estiver gravada no perfil.",
   "- Nada aqui publica sozinho: é um rascunho para aprovação humana.",
   "- Português do Brasil. Fale como \"nosso time\" ou \"a gente\". Não abra com \"você\".",
   "- Escreva a peça. Não explique o método e não nomeie as batidas no texto.",
@@ -169,7 +171,7 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
       method,
       instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "o dia a dia da clínica"}\nResponda apenas o JSON, curto.`,
     });
-    const output = normalize(format, parsed, mode);
+    const output = fencePiece(normalize(format, parsed, mode));
     return { source: "ia", model, output: attach(output, method) };
   } catch (err) {
     const extra = /timeout|aborted/i.test(String(err?.message || err)) ? await probeHost() : "";
@@ -209,7 +211,7 @@ export async function reviseCopy(env, { instruction, text, profile, structure } 
       method,
       instruction: chatInstruction({ instruction: ask, text: current, method }),
     });
-    const next = str(parsed.text);
+    const next = stripPatientCounts(str(parsed.text));
     if (!next) return { ok: false, motivo: "vazio" };
     return { ok: true, text: next, model, warnings: brandGuard({ text: next }), source: "ia" };
   } catch (err) {
@@ -229,7 +231,7 @@ export async function generateStructureCopy(env, { structure, profile, theme } =
       method,
       instruction: `Estrutura: ${method.structure}. ${method.job || ""}\nEscreva a copy no método ${method.name}, sem nomear as batidas.\nTema: ${theme || "o dia a dia da clínica"}\nResponda JSON {"line": string}.`,
     });
-    const line = str(parsed.line) || local.line;
+    const line = stripPatientCounts(str(parsed.line) || local.line);
     const warnings = brandGuard({ line });
     return { ...method, line, source: "ia", model, warnings };
   } catch (err) {
@@ -239,8 +241,103 @@ export async function generateStructureCopy(env, { structure, profile, theme } =
 }
 
 function finishMock(format, theme, profile, mode, method) {
-  const output = mockPiece(format, theme, profile, mode, method);
+  const output = fencePiece(mockPiece(format, theme, profile, mode, method));
   return { source: "mock", output: attach(output, method) };
+}
+
+function fencePiece(output) {
+  if (!output || typeof output !== "object") return output;
+  const next = { ...output };
+  if (next.caption) next.caption = stripPatientCounts(next.caption);
+  if (next.imagePrompt) next.imagePrompt = stripPatientCounts(next.imagePrompt);
+  if (Array.isArray(next.slides)) {
+    next.slides = next.slides.map((slide) => ({
+      ...slide,
+      title: stripPatientCounts(slide?.title || ""),
+      imagePrompt: stripPatientCounts(slide?.imagePrompt || ""),
+    }));
+  }
+  if (next.script) {
+    next.script = {
+      hook: stripPatientCounts(next.script.hook || ""),
+      body: stripPatientCounts(next.script.body || ""),
+      cta: stripPatientCounts(next.script.cta || ""),
+    };
+  }
+  return next;
+}
+
+const LEAD_SUBJECT = {
+  recuperacao: "a conversa comercial ficou em aberto e a clínica quer retomar, sem promessa",
+  "follow-up": "um follow-up curto da conversa comercial",
+  remarcacao: "remarcar a conversa ou a visita, sem promessa de resultado",
+  engajamento: "manter o contato comercial, sem urgência falsa e sem número",
+};
+
+export function localLeadDraft({ name, servico, historico, subject, profile } = {}) {
+  const nome = str(name).slice(0, 80);
+  const serv = str(servico).slice(0, 120);
+  const hist = stripPatientCounts(str(historico)).slice(0, 280);
+  const about = serv ? ` sobre ${serv}` : "";
+  const who = nome ? ` ${nome},` : "";
+  const memory = hist ? ` Do que ficou anotado: ${hist}.` : "";
+  const open = `Aqui é o nosso time.${who}`;
+  let text = `${open} a gente segue a conversa${about}.${memory} Se quiser continuar, responda esta mensagem.`;
+  if (subject === "recuperacao") {
+    text = `${open} a conversa${about} ficou em aberto.${memory} Se ainda fizer sentido, responda esta mensagem.`;
+  } else if (subject === "remarcacao") {
+    text = `${open} dá para remarcar a conversa${about}.${memory} Diga um horário que funcione.`;
+  } else if (subject === "engajamento") {
+    text = `${open} a gente quer manter o contato${about}.${memory} Se quiser falar com o nosso time, responda.`;
+  }
+  if (profile?.tom || profile?.tone) {
+    /* o tom entra na geração; o texto da clínica não anuncia o rótulo */
+  }
+  text = stripPatientCounts(text).replace(/\s{2,}/g, " ").trim();
+  return { source: "mock", text, model: "" };
+}
+
+function leadInstruction({ name, servico, historico, subject }) {
+  const job = LEAD_SUBJECT[subject] || LEAD_SUBJECT["follow-up"];
+  return [
+    "Escreva uma mensagem de WhatsApp, curta, humana, em duas a quatro linhas.",
+    `Assunto comercial: ${job}.`,
+    name ? `Nome do lead: ${name}.` : "Sem nome.",
+    servico ? `Serviço comercial digitado pela clínica: ${servico}.` : "Sem serviço digitado.",
+    historico ? `Histórico comercial digitado pela clínica, não é prontuário: ${historico}.` : "Sem histórico digitado.",
+    'Fale como "nosso time" ou "a gente". Não abra com "você".',
+    "Sem promessa de resultado de saúde, sem antes e depois, sem queixa, sem procedimento clínico, sem contagem de pacientes.",
+    "Não invente número, preço ou prazo.",
+    "Não nomeie método de copy.",
+    'Responda apenas JSON {"text": string}.',
+  ].join("\n");
+}
+
+export async function draftCommercialMessage(env, input = {}) {
+  const safe = {
+    name: str(input.name).slice(0, 80),
+    servico: str(input.servico).slice(0, 120),
+    historico: stripPatientCounts(str(input.historico)).slice(0, 800),
+    subject: LEAD_SUBJECT[input.subject] ? input.subject : "follow-up",
+    profile: { ...(input.profile || {}), provas: provasForPiece(input.profile?.provas || "") },
+  };
+  const local = localLeadDraft(safe);
+  const key = geminiKey(env);
+  if (!key) return local;
+  const method = chooseCopyMethod("whatsapp");
+  try {
+    const { parsed, model } = await generateParsed(env, key, {
+      profile: safe.profile,
+      method,
+      instruction: leadInstruction(safe),
+    });
+    const text = stripPatientCounts(str(parsed.text || parsed.line || parsed.message));
+    if (!text) return { unavailable: true, motivo: "vazio" };
+    return { source: "ia", text, model, warnings: brandGuard({ text }) };
+  } catch (err) {
+    logFallback(err, key);
+    return { unavailable: true, motivo: copyMotivo(err) };
+  }
 }
 
 function attach(output, method) {

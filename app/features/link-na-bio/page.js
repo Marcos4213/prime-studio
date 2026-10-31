@@ -198,8 +198,7 @@ export function renderEditorPage() {
 <header class="intro">
   <p class="eyebrow">Presença única</p>
   <h1>Link na bio</h1>
-  <p class="lead">Quem sai do Instagram cai aqui. Em três segundos, a gente precisa parecer a mesma clínica do site, do perfil e do Google.</p>
-  <p class="method" data-copy-method>Método de copy: StoryBrand, dentro do Método PRIME. A clínica guia. As quatro portas são o plano.</p>
+  <p class="lead">Quem sai do Instagram cai aqui. Em três segundos, a gente precisa parecer a mesma clínica do site, do perfil e do Google. A clínica guia. As quatro portas são o plano.</p>
   <p id="habitChip" class="habit is-none">A bio ainda não foi revisada</p>
 </header>
 <div class="stage">
