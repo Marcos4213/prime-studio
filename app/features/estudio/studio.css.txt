@@ -1,6 +1,8 @@
 /* Cores só pelas variáveis de /assets/tokens.css. Sem hex neste arquivo. */
 * { box-sizing: border-box; }
 html, body { margin: 0; max-width: 100%; overflow-x: hidden; }
+html.is-framed .err,
+html.is-framed #genErr { scroll-margin-bottom: calc(36px + env(safe-area-inset-bottom)); }
 body {
   min-height: 100vh;
   background: var(--color-bg);

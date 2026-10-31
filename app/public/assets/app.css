@@ -192,7 +192,7 @@ a{color:var(--color-primary)}
 .tabbar{display:none}
 .mais{display:none}
 @media (max-width:899px){
-  :root{--tabbar-clear:calc(136px + env(safe-area-inset-bottom))}
+  :root{--tabbar-clear:calc(168px + env(safe-area-inset-bottom))}
   .shell{grid-template-columns:minmax(0,1fr);height:100dvh}
   .rail{display:none}
   .top{
@@ -205,8 +205,9 @@ a{color:var(--color-primary)}
   .stage-body{padding:8px 16px var(--tabbar-clear)}
   .shell.is-front .stage-body{padding:0}
   .shell.is-front .front-frame{
-    height:calc(100% - var(--tabbar-clear));
-    flex:none;
+    height:calc(100dvh - 72px - var(--tabbar-clear));
+    max-height:calc(100dvh - 72px - var(--tabbar-clear));
+    flex:0 0 auto;
     align-self:flex-start;
   }
   .hub{grid-template-columns:minmax(0,1fr)}
