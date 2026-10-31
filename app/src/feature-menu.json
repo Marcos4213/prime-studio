@@ -1,0 +1,38 @@
+[
+  {
+    "id": "estudio",
+    "title": "Estúdio",
+    "href": "/estudio",
+    "order": 1
+  },
+  {
+    "id": "presenca",
+    "title": "Presença",
+    "href": "/presenca",
+    "order": 20
+  },
+  {
+    "id": "link-na-bio",
+    "title": "Link na bio",
+    "href": "/link-na-bio",
+    "order": 30
+  },
+  {
+    "id": "comunidade",
+    "title": "Comunidade",
+    "href": "/comunidade",
+    "order": 40
+  },
+  {
+    "id": "educacao",
+    "title": "Educação",
+    "href": "/educacao",
+    "order": 40
+  },
+  {
+    "id": "indicacao",
+    "title": "Indicação",
+    "href": "/indicacao",
+    "order": 70
+  }
+]

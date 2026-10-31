@@ -1,0 +1,35 @@
+/* Petróleo Clínico. Modo claro é o padrão. */
+/* --color-muted, --color-line e --color-danger são derivados. Não são cor de marca. */
+:root {
+  --color-bg: #F7F5F0;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F7F5F0;
+  --color-text: #1A2328;
+  --color-primary: #0F4C5C;
+  --color-on-primary: #FFFFFF;
+  --color-success: #2E7D5B;
+  --color-gold: #B08D57;
+  --color-accent: var(--color-primary);
+  --color-accent-text: var(--color-on-primary);
+  --color-muted: #4D5356;
+  --color-line: #7D8282;
+  --color-danger: #143842;
+  color-scheme: light;
+}
+
+/* Modo escuro opcional. Fundo derivado de #0F4C5C. O CTA passa a ser o dourado. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #08262E;
+    --color-surface: #0A313B;
+    --color-surface-2: #0B3A46;
+    --color-text: #F7F5F0;
+    --color-success: #8EB7A3;
+    --color-accent: var(--color-gold);
+    --color-accent-text: #1A2328;
+    --color-muted: #C0C5C3;
+    --color-line: #7B898B;
+    --color-danger: #B8C7C8;
+    color-scheme: dark;
+  }
+}

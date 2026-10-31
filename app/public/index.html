@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Central do Cliente — Prime Studio</title>
+<meta name="theme-color">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/tokens.css?v=3">
+<link rel="stylesheet" href="/assets/app.css?v=13">
+</head>
+<body>
+<div id="boot" class="boot">Abrindo a central…</div>
+
+<main id="loginView" class="gate" hidden>
+  <aside class="gate-photo" aria-hidden="true">
+    <img
+      src="/assets/fotos/recepcao-clinica-800.webp"
+      srcset="/assets/fotos/recepcao-clinica-800.webp 800w, /assets/fotos/recepcao-clinica-1600.webp 1600w"
+      sizes="(min-width: 900px) 46vw, 100vw"
+      alt=""
+      width="1600"
+      height="1100">
+    <div class="gate-caption">
+      <span class="logo">PRIME<span>STUDIO</span></span>
+      <p>Central do Cliente</p>
+    </div>
+  </aside>
+  <section class="gate-panel">
+    <div class="gate-card">
+      <div class="gate-brand"><span class="logo">PRIME<span>STUDIO</span></span></div>
+      <p class="eyebrow">Acesso da clínica</p>
+      <h1>Entrar na <em>central</em></h1>
+      <p class="lede">O lugar da peça do dia, no tom da sua clínica.</p>
+      <form id="loginForm" class="form" autocomplete="on">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required autocomplete="email" inputmode="email" spellcheck="false" placeholder="voce@suaclinica.com">
+        <label for="password">Senha</label>
+        <div class="field-secret">
+          <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Sua senha">
+          <button type="button" class="secret-toggle" id="togglePass" aria-pressed="false" aria-controls="password">Mostrar</button>
+        </div>
+        <button class="btn" type="submit">Entrar</button>
+        <p id="loginErr" class="err" role="alert" hidden></p>
+      </form>
+      <p class="fine">Acesso entregue pela Prime Studio. Continua sendo da clínica.</p>
+    </div>
+  </section>
+</main>
+
+<main id="onboardingView" class="onb" hidden>
+  <form id="onbForm" class="onb-card" aria-live="polite">
+    <div class="brand"><span class="logo">PRIME<span>STUDIO</span></span></div>
+    <div class="onb-bar" id="onbBar" aria-hidden="true"><i></i><i></i><i></i></div>
+    <p class="onb-count" id="onbCount">1 de 3</p>
+
+    <section data-step="0">
+      <p class="eyebrow">Primeiro acesso</p>
+      <h1>A pergunta de todo dia: o que a clínica posta hoje.</h1>
+      <p class="lede">O estúdio monta a peça no tom de vocês. Ela fica para o ok da clínica. Nada vai ao ar sozinho.</p>
+    </section>
+
+    <section data-step="1" hidden>
+      <p class="eyebrow">O mapa</p>
+      <h1>Tudo no mesmo acesso.</h1>
+      <p class="lede">O estúdio fica no centro. As outras frentes entram no menu quando estão ligadas.</p>
+      <ul class="onb-map">
+        <li>Estúdio, no centro</li>
+        <li>Presença</li>
+        <li>Link na bio</li>
+        <li>Educação</li>
+        <li>Comunidade</li>
+        <li>Indicação</li>
+      </ul>
+    </section>
+
+    <section data-step="2" hidden>
+      <p class="eyebrow">Amanhã</p>
+      <h1>Volte amanhã para a próxima peça.</h1>
+      <p class="lede">Se quiser, deixe o tema. A central abre por ele.</p>
+      <div class="form">
+        <label for="temaAmanha">Tema de amanhã</label>
+        <input id="temaAmanha" name="tema_amanha" type="text" maxlength="140" autocomplete="off" placeholder="Ex.: um detalhe do espaço da clínica">
+      </div>
+      <p id="onbErr" class="err" role="alert" hidden></p>
+    </section>
+
+    <div class="onb-actions">
+      <button type="button" class="btn-ghost" id="onbBack" hidden>Voltar</button>
+      <button type="submit" class="btn" id="onbNext">Continuar</button>
+    </div>
+  </form>
+</main>
+
+<div id="app" class="app" hidden></div>
+
+<template id="appShell">
+  <div class="shell" data-shell>
+    <aside class="rail" id="rail" aria-label="Frentes">
+      <div class="rail-brand">
+        <span class="logo logo-full">PRIME<span>STUDIO</span></span>
+        <span class="logo-mark">PS</span>
+        <button type="button" class="rail-collapse" data-collapse aria-pressed="false" aria-label="Recolher menu">Recolher</button>
+      </div>
+      <nav class="rail-menu" data-menu></nav>
+      <div class="rail-foot">
+        <div class="rail-copy">
+          <p class="who-name" data-who></p>
+          <p class="who" data-mail></p>
+        </div>
+        <button type="button" class="btn-ghost btn-xs" data-perfil aria-label="Perfil da marca">Perfil da marca</button>
+        <button type="button" class="btn-ghost btn-xs" data-logout>Sair</button>
+      </div>
+    </aside>
+    <div class="stage">
+      <header class="top">
+        <span class="logo">PRIME<span>STUDIO</span></span>
+        <span class="who" data-who></span>
+      </header>
+      <div class="stage-body">
+        <section class="view is-active" data-view="hoje"></section>
+        <section class="view" data-view="entrada"></section>
+        <section class="view" data-view="marca"></section>
+        <section class="view" data-view="historico"></section>
+        <iframe class="front-frame" data-front hidden title="Frente"></iframe>
+      </div>
+    </div>
+    <nav class="tabbar" aria-label="Seções">
+      <button type="button" data-tab="hoje">Início</button>
+      <button type="button" data-tab="presenca">Presença</button>
+      <button type="button" data-tab="estudio" class="tab-studio">Estúdio</button>
+      <button type="button" data-tab="link-na-bio" aria-label="Link na bio">Link</button>
+      <button type="button" data-tab="mais" aria-label="Mais seções" aria-expanded="false">Mais</button>
+    </nav>
+    <div class="mais" data-mais hidden>
+      <div class="mais-sheet" role="menu" aria-label="Mais seções">
+        <button type="button" data-go="/educacao">Educação</button>
+        <button type="button" data-go="/comunidade">Comunidade</button>
+        <button type="button" data-go="/indicacao">Indicação</button>
+        <button type="button" data-go="/marca">Perfil da marca / Treinar IA</button>
+        <button type="button" data-logout>Sair</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="/assets/app.js?v=13" defer></script>
+</body>
+</html>
