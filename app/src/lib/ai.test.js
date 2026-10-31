@@ -7,7 +7,7 @@ const SECRET = "AIzaTESTKEYSHOULDNOTLEAK123456";
 function geminiResponse(payload) {
   return new Response(
     JSON.stringify({
-      candidates: [{ content: { parts: [{ text: JSON.stringify(payload) }] } }],
+      choices: [{ message: { content: JSON.stringify(payload) } }],
     }),
     { status: 200, headers: { "content-type": "application/json" } }
   );
@@ -50,12 +50,13 @@ test("resposta do Gemini vira a legenda e o modelo flash", async () => {
   globalThis.fetch = async (url, opts) => {
     called = String(url);
     const headers = opts.headers || {};
-    assert.equal(headers["x-goog-api-key"], SECRET);
+    assert.equal(headers.authorization, `Bearer ${SECRET}`);
     assert.equal(String(url).includes(SECRET), false);
     const body = JSON.parse(opts.body);
-    assert.match(body.systemInstruction.parts[0].text, /AIDA/);
-    assert.match(body.systemInstruction.parts[0].text, /CFM/);
-    assert.equal(body.generationConfig.responseMimeType, "application/json");
+    assert.equal(body.model, GEMINI_MODEL);
+    assert.match(body.messages[0].content, /AIDA/);
+    assert.match(body.messages[0].content, /CFM/);
+    assert.equal(body.response_format.type, "json_object");
     return geminiResponse({
       caption: "Nosso time abre a recepção com luz natural e um convite sóbrio para conhecer o espaço.",
       imagePrompt: "Fotografia da recepção, sem pessoa e sem texto.",
@@ -68,7 +69,7 @@ test("resposta do Gemini vira a legenda e o modelo flash", async () => {
     );
     assert.equal(result.source, "ia");
     assert.equal(result.model, GEMINI_MODEL);
-    assert.match(called, new RegExp(`${GEMINI_MODEL}:generateContent`));
+    assert.match(called, /\/openai\/chat\/completions$/);
     assert.match(result.output.caption, /recepção/);
     assert.equal(result.output.copyMethod.name, "AIDA");
     assert.equal(JSON.stringify(result).includes(SECRET), false);

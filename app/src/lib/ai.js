@@ -117,63 +117,6 @@ function formatInstruction(format, recordingMode) {
   return `Formato: VÍDEO (reels ou story). Responda JSON: {"script": {"hook": string, "body": string, "cta": string}, "recording": {"mode": "camera" | "narracao", "tips": [string]}}. SEM prompt de imagem. ${modeLine} tips com enquadramento, luz natural e ordem das falas. Ritmo curto, sem citar segundos, métrica, faturamento, antes e depois ou dado de saúde.`;
 }
 
-const SCHEMAS = {
-  post: {
-    type: "object",
-    properties: {
-      caption: { type: "string" },
-      imagePrompt: { type: "string" },
-    },
-    required: ["caption", "imagePrompt"],
-  },
-  carousel: {
-    type: "object",
-    properties: {
-      caption: { type: "string" },
-      slides: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            title: { type: "string" },
-            imagePrompt: { type: "string" },
-          },
-          required: ["title", "imagePrompt"],
-        },
-      },
-    },
-    required: ["caption", "slides"],
-  },
-  video: {
-    type: "object",
-    properties: {
-      script: {
-        type: "object",
-        properties: {
-          hook: { type: "string" },
-          body: { type: "string" },
-          cta: { type: "string" },
-        },
-        required: ["hook", "body", "cta"],
-      },
-      recording: {
-        type: "object",
-        properties: {
-          mode: { type: "string" },
-          tips: { type: "array", items: { type: "string" } },
-        },
-        required: ["mode", "tips"],
-      },
-    },
-    required: ["script", "recording"],
-  },
-  line: {
-    type: "object",
-    properties: { line: { type: "string" } },
-    required: ["line"],
-  },
-};
-
 function geminiKey(env) {
   const key = env?.GEMINI_API_KEY;
   return typeof key === "string" ? key.trim() : "";
@@ -212,9 +155,8 @@ export async function generatePiece(env, { format, theme, profile, recordingMode
     const parsed = await callGemini(env, key, {
       profile,
       method,
-      schema: SCHEMAS[format],
       instruction: `${formatInstruction(format, mode)}\n\nTema: ${theme || "conteúdo institucional da clínica"}\nResponda apenas o JSON, curto.`,
-      timeoutMs: 26000,
+      timeoutMs: 22000,
     });
     const output = normalize(format, parsed, mode);
     return { source: "ia", model: geminiModel(env), output: attach(output, method) };
@@ -235,7 +177,6 @@ export async function generateStructureCopy(env, { structure, profile, theme } =
     const parsed = await callGemini(env, key, {
       profile,
       method,
-      schema: SCHEMAS.line,
       instruction: `Estrutura: ${method.structure}. Escreva uma frase de copy no método ${method.name}. ${method.note}\nTema: ${theme || "presença da clínica"}\nResponda JSON {"line": string}. Sem promessa de resultado, sem antes e depois, sem número inventado.`,
       timeoutMs: 12000,
     });
@@ -257,30 +198,31 @@ function attach(output, method) {
   return { ...output, copyMethod: method, warnings: brandGuard(output) };
 }
 
-async function callGemini(env, key, { profile, method, schema, instruction, timeoutMs }) {
+async function callGemini(env, key, { profile, method, instruction, timeoutMs }) {
   const model = geminiModel(env);
-  const resp = await fetch(`${GEMINI_URL}/${model}:generateContent`, {
+  const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-goog-api-key": key,
+      authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt(profile, method) }] },
-      contents: [{ role: "user", parts: [{ text: instruction }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingLevel: "low" },
-      },
+      model,
+      messages: [
+        { role: "system", content: systemPrompt(profile, method) },
+        { role: "user", content: instruction },
+      ],
+      response_format: { type: "json_object" },
     }),
-    signal: AbortSignal.timeout(timeoutMs || 28000),
+    signal: AbortSignal.timeout(timeoutMs || 22000),
   });
   const raw = await resp.text();
   if (!resp.ok) {
     let code = `gemini_${resp.status}`;
     try {
-      const status = JSON.parse(raw)?.error?.status;
-      if (typeof status === "string" && /^[A-Z0-9_]+$/.test(status)) code = `${code}_${status}`;
+      const err = JSON.parse(raw)?.error || {};
+      const status = typeof err.status === "string" ? err.status : typeof err.code === "string" ? err.code : "";
+      if (/^[A-Z0-9_]+$/.test(status)) code = `${code}_${status}`;
     } catch {
       code = `gemini_${resp.status}`;
     }
@@ -292,23 +234,13 @@ async function callGemini(env, key, { profile, method, schema, instruction, time
   } catch {
     throw new Error("gemini_json");
   }
-  const text = candidateText(data);
-  if (!text) throw new Error("gemini_vazio");
+  const text = data?.choices?.[0]?.message?.content;
+  if (typeof text !== "string" || !text.trim()) throw new Error("gemini_vazio");
   try {
     return JSON.parse(text);
   } catch {
     throw new Error("gemini_conteudo");
   }
-}
-
-function candidateText(data) {
-  const parts = data?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) return "";
-  return parts
-    .filter((part) => part && typeof part.text === "string" && !part.thought)
-    .map((part) => part.text)
-    .join("")
-    .trim();
 }
 
 // Garante a forma esperada por formato, mesmo se a IA variar.
