@@ -195,8 +195,49 @@ function buildPiece(piece) {
   const html =
     '<article class="sheet"><p class="badges"><span class="badge ' + srcClass + '">' + esc(src) +
     '</span><span class="badge ' + (approved ? "ok" : "") + '">' + esc(st) + "</span></p><h3>" +
-    esc(title) + "</h3>" + methodHtml + body + warns + approve + "</article>";
+    esc(title) + "</h3>" + methodHtml + body + warns + approve + "</article>" + visualHtml();
   return { html, copies };
+}
+
+function pieceCaption(piece) {
+  const o = piece.output || {};
+  if (piece.format === "video") {
+    const sc = o.script || {};
+    return [sc.hook, sc.body, sc.cta].filter(Boolean).join(" ");
+  }
+  return o.caption || "";
+}
+
+function visualHtml() {
+  const kindBtn = (id, label) =>
+    '<button type="button" class="pick" data-kind="' + id + '">' + label + "</button>";
+  const ratioBtn = (id) =>
+    '<button type="button" class="pick" data-ratio="' + id + '">' + id + "</button>";
+  return (
+    '<section class="visual" data-visual>' +
+    '<p class="eyebrow">Imagem</p>' +
+    "<h3>Post, stories e capa</h3>" +
+    '<div class="picks" role="radiogroup" aria-label="Peça visual">' +
+    kindBtn("post", "Post") + kindBtn("stories", "Stories") + kindBtn("capa", "Capa") +
+    "</div>" +
+    '<div class="picks" role="radiogroup" aria-label="Formato">' +
+    ratioBtn("1:1") + ratioBtn("4:5") + ratioBtn("9:16") +
+    "</div>" +
+    '<button type="button" class="btn btn-block" data-make-image>Gerar imagem</button>' +
+    '<p class="note" data-image-fallback hidden></p>' +
+    '<figure class="gen-figure" data-gen-figure hidden>' +
+    '<img data-gen-img alt="Imagem gerada para a peça">' +
+    '<div class="actions"><a class="btn" data-download href="#">Baixar</a>' +
+    '<button type="button" class="btn-ghost" data-regen>Regerar</button></div></figure>' +
+    '<p class="notice">Use fotos de pacientes apenas com autorização de uso de imagem.</p>' +
+    '<label class="btn-ghost btn-block file-btn">Importar foto<input type="file" accept="image/jpeg,image/png,image/webp" data-photo></label>' +
+    '<p class="note" data-photo-err hidden></p>' +
+    '<figure class="post-base" data-post-base hidden>' +
+    '<img data-base-img alt="Foto importada como base do post">' +
+    "<figcaption data-base-caption></figcaption></figure>" +
+    '<button type="button" class="btn-ghost btn-block" data-compose hidden>Compor com IA</button>' +
+    "</section>"
+  );
 }
 
 function mountPiece(el, piece) {
@@ -205,6 +246,7 @@ function mountPiece(el, piece) {
   el.querySelectorAll("[data-copy-i]").forEach((btn) => {
     btn.addEventListener("click", () => copyText(built.copies[Number(btn.getAttribute("data-copy-i"))], btn));
   });
+  wireVisual(el, piece);
   const approveBtn = el.querySelector("[data-approve]");
   if (!approveBtn) return;
   approveBtn.addEventListener("click", async () => {
@@ -218,6 +260,103 @@ function mountPiece(el, piece) {
     piece.status = "aprovado";
     mountPiece(el, piece);
     loadHistory();
+  });
+}
+
+function wireVisual(el, piece) {
+  const visual = el.querySelector("[data-visual]");
+  if (!visual) return;
+  const stateVis = { kind: "post", ratio: "4:5", origem: "", busy: false };
+  const fallback = visual.querySelector("[data-image-fallback]");
+  const figure = visual.querySelector("[data-gen-figure]");
+  const img = visual.querySelector("[data-gen-img]");
+  const down = visual.querySelector("[data-download]");
+  const base = visual.querySelector("[data-post-base]");
+  const baseImg = visual.querySelector("[data-base-img]");
+  const baseCap = visual.querySelector("[data-base-caption]");
+  const compose = visual.querySelector("[data-compose]");
+  const photoErr = visual.querySelector("[data-photo-err]");
+
+  function paintPicks() {
+    visual.querySelectorAll("[data-kind]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.getAttribute("data-kind") === stateVis.kind);
+    });
+    visual.querySelectorAll("[data-ratio]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.getAttribute("data-ratio") === stateVis.ratio);
+    });
+  }
+  paintPicks();
+  visual.querySelectorAll("[data-kind]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      stateVis.kind = btn.getAttribute("data-kind");
+      const preset = { post: "4:5", stories: "9:16", capa: "1:1" };
+      stateVis.ratio = preset[stateVis.kind] || stateVis.ratio;
+      paintPicks();
+    });
+  });
+  visual.querySelectorAll("[data-ratio]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      stateVis.ratio = btn.getAttribute("data-ratio");
+      paintPicks();
+    });
+  });
+
+  async function runImage(useOrigem) {
+    if (stateVis.busy) return;
+    stateVis.busy = true;
+    fallback.hidden = false;
+    fallback.textContent = "Gerando a imagem…";
+    const res = await api("/api/estudio/imagem", {
+      method: "POST",
+      body: {
+        kind: stateVis.kind,
+        ratio: stateVis.ratio,
+        caption: pieceCaption(piece),
+        theme: piece.theme || "",
+        origem: useOrigem ? stateVis.origem : "",
+      },
+    });
+    stateVis.busy = false;
+    if (res.status === 401) return showLogin();
+    if (!res.ok || !res.data.ok || !res.data.image) {
+      fallback.hidden = false;
+      fallback.textContent = res.data.motivo === "cota"
+        ? "A cota de imagens acabou por agora. Nada foi publicado."
+        : "A imagem não veio agora. Nada foi publicado. Você pode tentar de novo.";
+      return;
+    }
+    fallback.hidden = true;
+    figure.hidden = false;
+    img.src = res.data.image.url;
+    img.alt = "Imagem gerada para a peça";
+    down.href = res.data.image.url + "?download=1";
+    figure.setAttribute("data-image-model", res.data.image.model || "");
+  }
+
+  visual.querySelector("[data-make-image]").addEventListener("click", () => runImage(false));
+  visual.querySelector("[data-regen]").addEventListener("click", () => runImage(false));
+  compose.addEventListener("click", () => runImage(true));
+
+  visual.querySelector("[data-photo]").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    photoErr.hidden = true;
+    const body = new FormData();
+    body.append("foto", file);
+    const res = await fetch("/api/estudio/fotos", { method: "POST", credentials: "same-origin", body });
+    let data = {};
+    try { data = await res.json(); } catch { data = {}; }
+    if (res.status === 401) return showLogin();
+    if (!res.ok || !data.ok) {
+      photoErr.hidden = false;
+      photoErr.textContent = "Não foi possível guardar a foto. Nada foi apagado.";
+      return;
+    }
+    stateVis.origem = data.foto.id;
+    base.hidden = false;
+    baseImg.src = data.foto.url;
+    baseCap.textContent = pieceCaption(piece) || "A clínica, no tom do nosso time.";
+    compose.hidden = false;
   });
 }
 

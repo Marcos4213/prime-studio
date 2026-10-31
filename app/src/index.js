@@ -26,7 +26,7 @@ export default {
       const front = await routeFront(request, env, url);
       if (front) return front;
     } catch (err) {
-      console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
+      console.log(JSON.stringify({ level: "error", msg: redactSecrets(err?.message || err), path: url.pathname }));
       if (url.pathname.startsWith("/api/")) return json({ ok: false, error: "erro interno" }, 500);
       return new Response("erro interno", { status: 500, headers: { "content-type": "text/plain; charset=utf-8" } });
     }
@@ -34,7 +34,7 @@ export default {
       try {
         return await handleApi(request, env, url, ctx);
       } catch (err) {
-        console.log(JSON.stringify({ level: "error", msg: String(err?.message || err), path: url.pathname }));
+        console.log(JSON.stringify({ level: "error", msg: redactSecrets(err?.message || err), path: url.pathname }));
         return json({ ok: false, error: "erro interno" }, 500);
       }
     }
@@ -48,13 +48,9 @@ async function routeFront(request, env, url) {
 
   if (path === "/api/hoje" && request.method === "GET") return hojeResumo(request, env);
 
-  if (path === "/estudio" || path === "/estudio/" || path === "/api/estudio/generate") {
+  if (path === "/estudio" || path === "/estudio/" || path.startsWith("/api/estudio/")) {
     const mod = await import("../features/estudio/server.js");
-    if (path === "/api/estudio/generate") {
-      if (request.method !== "POST") return json({ ok: false, error: "metodo" }, 405);
-      return mod.handleEstudioGenerate(request, env);
-    }
-    return mod.handleEstudioPage(request);
+    return mod.handleEstudio(request, env, url);
   }
 
   if (path === "/presenca" || path === "/presenca/" || path.startsWith("/api/presenca")) {
