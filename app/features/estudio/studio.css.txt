@@ -39,7 +39,12 @@ p { overflow-wrap: anywhere; }
     padding-bottom: 24px;
   }
 }
-.studio-intro { min-width: 0; max-width: 40rem; }
+.studio-intro { min-width: 0; max-width: 46rem; }
+.still-empty {
+  width: min(100%, 480px); height: 200px; object-fit: cover; margin: 0 auto 8px;
+  border-radius: 16px; border: 1px solid var(--color-line); background: var(--color-surface);
+}
+.empty { display: grid; justify-items: center; text-align: center; }
 .studio-layout { display: flex; flex-direction: column; min-width: 0; }
 .studio-main, .studio-side { display: contents; }
 #formatSec { order: 1; }
@@ -102,10 +107,10 @@ label { display: block; margin-bottom: 6px; }
 
 .photos { box-shadow: inset 0 1px 0 var(--color-gold); }
 .hero, .photos { margin: 0; }
-.hero img, .pair img { width: 100%; object-fit: cover; border-radius: 16px; }
-.hero img { height: 180px; }
+.hero img, .pair img { width: 100%; object-fit: contain; border-radius: 16px; background: var(--color-surface-2); }
+.hero img { height: 220px; }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; min-width: 0; }
-.pair img { height: 116px; }
+.pair img { height: 168px; }
 .photo-note { margin: 12px 0 0; font-size: .84rem; max-width: 46ch; }
 
 .formats, .modes { display: grid; gap: 8px; }
@@ -115,10 +120,13 @@ label { display: block; margin-bottom: 6px; }
   background: var(--color-surface-2);
   border: 1px solid var(--color-line);
   border-radius: 16px;
-  padding: 13px 14px;
   color: var(--color-text);
   transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
 }
+.mode, .hitem { padding: 13px 14px; }
+.fmt { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.fmt img { width: 100%; height: 180px; object-fit: contain; background: var(--color-surface-2); }
+.fmt-copy { display: block; padding: 12px 14px 14px; }
 .fmt:hover, .mode:hover, .hitem:hover { border-color: var(--color-primary); }
 .fmt.is-on, .mode.is-on {
   border-color: var(--color-primary);
@@ -252,11 +260,11 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-pri
 
 .hist { display: grid; gap: 8px; }
 .hitem { border-radius: 14px; }
-.empty { color: var(--color-muted); margin: 8px 0; }
+.empty { color: var(--color-muted); margin: 8px 0; gap: 8px; }
 #histClose { margin: 12px 0; }
 
 .login { min-height: 100vh; display: flex; flex-direction: column; background: var(--color-bg); }
-.login-photo { width: 100%; height: 32vh; min-height: 168px; max-height: 280px; object-fit: cover; }
+.login-photo { width: 100%; height: 32vh; min-height: 168px; max-height: 280px; object-fit: contain; background: var(--color-surface-2); }
 .login-card {
   width: min(440px, calc(100% - 32px));
   margin: -42px auto 28px;
@@ -284,8 +292,8 @@ input:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-pri
   .habit-tomorrow { border-top: 0; border-left: 1px solid var(--color-line); padding: 0 0 0 16px; }
   .formats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hero img { height: min(40vh, 340px); }
-  .pair img { height: 148px; }
+  .hero img { height: 240px; }
+  .pair img { height: 180px; }
 }
 @media (min-width: 640px) and (max-width: 899px) {
   .habit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }

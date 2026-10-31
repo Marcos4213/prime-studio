@@ -14,8 +14,8 @@ h1,h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;line-height
 .logo{color:var(--color-text);font-weight:600;letter-spacing:.18em;font-size:.78rem;text-decoration:none;min-width:0}
 .logo span{color:var(--color-gold);font-weight:300;margin-left:.35em}
 .back{color:var(--color-primary);text-decoration:none;font-size:.82rem;border:1px solid var(--color-primary);border-radius:999px;padding:6px 12px;flex:none}
-.hero{position:relative;height:132px;border-radius:18px;overflow:hidden;border:1px solid var(--color-line);margin-bottom:14px}
-.hero img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
+.hero{position:relative;height:240px;border-radius:18px;overflow:hidden;border:1px solid var(--color-line);margin-bottom:14px;background:var(--color-surface)}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:center}
 .hero figcaption{position:absolute;left:0;right:0;bottom:0;padding:36px 14px 12px;background:linear-gradient(180deg,transparent,var(--color-bg))}
 .eyebrow{color:var(--color-primary);letter-spacing:.22em;text-transform:uppercase;font-size:.66rem;font-weight:600}
 h1{font-size:clamp(1.7rem,7vw,2.35rem)}
@@ -47,7 +47,8 @@ h1{font-size:clamp(1.7rem,7vw,2.35rem)}
 .done p{color:var(--color-muted);font-size:.9rem;overflow-wrap:anywhere}
 .list{margin-top:22px}
 .list h2{font-size:1.35rem;margin-bottom:8px}
-.empty{color:var(--color-muted);font-size:.88rem;padding:8px 0 4px}
+.still-empty{display:block;width:min(100%,420px);height:200px;object-fit:cover;margin:0 auto;border-radius:16px;border:1px solid var(--color-line);background:var(--color-surface)}
+.empty{display:grid;justify-items:center;text-align:center;gap:8px;color:var(--color-muted);font-size:.88rem;padding:8px 0 4px}
 .item{background:var(--color-surface);border:1px solid var(--color-line);border-radius:14px;padding:12px 14px;margin-bottom:8px;min-width:0}
 .item h3{font-size:.98rem;font-weight:600;overflow-wrap:anywhere}
 .item p{color:var(--color-muted);font-size:.78rem;margin-top:3px;overflow-wrap:anywhere}
@@ -92,7 +93,7 @@ ${data}
 
 function hero() {
   return `<figure class="hero">
-  <img src="/indicacao/media/sala.webp" alt="Sala de espera de clínica, clara e silenciosa." width="800" height="533">
+  <img src="/assets/visual3d/indicacao.webp" alt="Render 3D: dois cartões em branco, fio fino e seixo de vidro petróleo." width="960" height="720" loading="lazy" decoding="async">
   <figcaption>
     <span class="eyebrow">Indicação</span>
     <h1>Indique uma clínica</h1>
@@ -213,10 +214,25 @@ export const BROWSER_JS = String.raw`
 
   var statusLabel = { novo: "Recebida", em_contato: "Em conversa", fechado: "Fechada", sem_retorno: "Sem retorno" };
 
+  function emptyNote(text) {
+    var box = el("div", "empty");
+    var img = document.createElement("img");
+    img.className = "still-empty";
+    img.src = "/assets/visual3d/vazio.webp";
+    img.alt = "";
+    img.width = 640;
+    img.height = 640;
+    img.loading = "lazy";
+    img.decoding = "async";
+    box.appendChild(img);
+    box.appendChild(el("p", null, text));
+    return box;
+  }
+
   function renderList(items) {
     lista.replaceChildren();
     if (!items || !items.length) {
-      lista.appendChild(el("p", "empty", "Nenhuma indicação ainda. O caminho é o formulário aqui em cima."));
+      lista.appendChild(emptyNote("Nenhuma indicação ainda. O caminho é o formulário aqui em cima."));
       return;
     }
     for (var i = 0; i < items.length; i++) {
@@ -237,13 +253,13 @@ export const BROWSER_JS = String.raw`
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (r) {
         if (!r.ok || !r.data || !r.data.ok) {
-          lista.replaceChildren(el("p", "empty", "Não foi possível carregar suas indicações."));
+          lista.replaceChildren(emptyNote("Não foi possível carregar suas indicações."));
           return;
         }
         renderList(r.data.items || []);
       })
       .catch(function () {
-        lista.replaceChildren(el("p", "empty", "Não foi possível carregar suas indicações."));
+        lista.replaceChildren(emptyNote("Não foi possível carregar suas indicações."));
       });
   }
 

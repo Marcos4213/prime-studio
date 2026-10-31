@@ -100,11 +100,13 @@ function paint(host, view, ui) {
   const channels = Array.isArray(view.channels) ? view.channels : [];
   const frag = document.createDocumentFragment();
 
-  frag.append(p("eyebrow", "Olhar de hoje"));
-  frag.append(el("p", "date", view.today?.label || ""));
-  frag.append(el("h1", "", "Presença"));
-  frag.append(p("lede", "Site, Instagram e Google. Uma presença só."));
-  if (view.clinic) frag.append(p("clinic", view.clinic));
+  const head = el("div", "presence-head");
+  head.append(p("eyebrow", "Olhar de hoje"));
+  head.append(el("p", "date", view.today?.label || ""));
+  head.append(el("h1", "", "Presença"));
+  head.append(p("lede", "Site, Instagram e Google. Uma presença só."));
+  if (view.clinic) head.append(p("clinic", view.clinic));
+  frag.append(head);
 
   const habit = el("section", "habit");
   habit.append(el("h2", "", "O hábito"));
@@ -158,6 +160,7 @@ function doorCard(ch, openId) {
     const img = document.createElement("img");
     img.src = ch.photo;
     img.alt = ch.photo_alt || "";
+    img.loading = "lazy";
     img.decoding = "async";
     img.addEventListener("error", () => img.remove());
     shot.append(img);

@@ -43,6 +43,12 @@ const NICHOS = [
   { value: "odonto", label: "Odonto" },
 ];
 
+function still(name, alt, extra) {
+  const cls = extra ? `card-render ${extra}` : "card-render";
+  const wide = extra === "still-wide";
+  return `<img class="${cls}" src="/assets/visual3d/${name}.webp" alt="${esc(alt)}" width="${wide ? 1200 : 960}" height="${wide ? 800 : 720}" loading="lazy" decoding="async">`;
+}
+
 function icon(name) {
   const paths = {
     inicio: '<path d="M4 11.2 12 4l8 7.2V20a1 1 0 0 1-1 1h-5.2v-6.2H10.2V21H5a1 1 0 0 1-1-1z"/>',
@@ -419,19 +425,25 @@ function hojeHtml({ nome, weekday, estado, presenca, semana }) {
         ${weekday ? `<p class="hoje-day">${esc(weekday)}</p>` : ""}
       </header>
       <article class="hoje-strip">
-        <div class="hoje-copy">
-          <h3>Montar a peça de hoje</h3>
-          <p class="hoje-state"><i aria-hidden="true"></i>${esc(estado)}</p>
+        ${still("inicio", "Render 3D: cartão de papel em moldura de vidro petróleo.")}
+        <div class="hoje-body">
+          <div class="hoje-copy">
+            <h3>Montar a peça de hoje</h3>
+            <p class="hoje-state"><i aria-hidden="true"></i>${esc(estado)}</p>
+          </div>
+          <button class="btn" id="goEstudio" type="button">Criar post</button>
         </div>
-        <button class="btn" id="goEstudio" type="button">Criar post</button>
       </article>
       <section class="hoje-week" aria-labelledby="hojePresenca">
-        <div class="hoje-week-head">
-          <h3 id="hojePresenca">Presença</h3>
-          <button class="btn-ghost btn-xs" type="button" data-go="/presenca">Ver a presença</button>
+        ${still("presenca", "Render 3D: três portas de pedra, vidro petróleo e dobradiça fina.")}
+        <div class="hoje-week-body">
+          <div class="hoje-week-head">
+            <h3 id="hojePresenca">Presença</h3>
+            <button class="btn-ghost btn-xs" type="button" data-go="/presenca">Ver a presença</button>
+          </div>
+          <div class="week-chart" role="img" aria-label="${esc(chartLabel)}">${bars}</div>
+          ${presenca ? `<p class="hoje-note">${esc(presenca)}</p>` : ""}
         </div>
-        <div class="week-chart" role="img" aria-label="${esc(chartLabel)}">${bars}</div>
-        ${presenca ? `<p class="hoje-note">${esc(presenca)}</p>` : ""}
       </section>
     </div>`;
 }
@@ -809,6 +821,7 @@ function renderEntrada() {
     </section>`;
   }).join("");
   v.innerHTML = `<form id="entradaForm" class="entrada">
+    ${still("onboarding", "Render 3D de vidro petróleo, pedra e papel.", "still-wide")}
     <div class="onb-bar" id="entradaBar" aria-hidden="true">${ENTRADA_STEPS.map(() => "<i></i>").join("")}</div>
     <p class="onb-count" id="entradaCount" aria-live="polite"></p>
     ${steps}
@@ -878,9 +891,28 @@ function paintEntrada(moveFocus) {
     const heading = v.querySelector(`[data-entrada-step="${entradaStep}"] h2`);
     if (heading) {
       heading.tabIndex = -1;
-      heading.focus();
+      heading.focus({ preventScroll: true });
     }
   }
+  requestAnimationFrame(() => clearEntrada(v));
+}
+
+function clearEntrada(v) {
+  const stage = document.querySelector(".stage-body");
+  const bar = document.querySelector(".tabbar");
+  if (!stage) return;
+  const step = v.querySelector(`[data-entrada-step="${entradaStep}"]`);
+  const field = step && step.querySelector("[data-field], .choices");
+  const next = $("#entradaNext", v);
+  const barOn = bar && getComputedStyle(bar).display !== "none";
+  const limit = (barOn ? bar.getBoundingClientRect().top : window.innerHeight) - 12;
+  const lift = (el) => {
+    if (!el) return;
+    const bottom = el.getBoundingClientRect().bottom;
+    if (bottom > limit) stage.scrollTop += bottom - limit;
+  };
+  lift(field);
+  lift(next);
 }
 
 async function advanceEntrada(concluir) {
@@ -1168,7 +1200,7 @@ function leadsHtml(resumo, items, atual) {
           </button>`;
         })
         .join("")
-    : `<p class="empty">Nenhum lead neste caderno.</p>`;
+    : `<div class="empty">${still("vazio", "", "still-empty")}<p>Nenhum lead neste caderno.</p></div>`;
   const a = atual || {};
   const status = a.status || "aberto";
   const assuntoOpts = LEAD_SUBJECTS.map((item) => `<option value="${esc(item.id)}">${esc(item.label)}</option>`).join("");
@@ -1177,11 +1209,14 @@ function leadsHtml(resumo, items, atual) {
     : "Ainda sem contato por aqui.";
   return `
     <div class="leads">
-      <header class="leads-head">
-        <p class="eyebrow">Caderno</p>
-        <h2>Leads</h2>
-        <p class="leads-resumo" data-resumo>${esc(resumoTexto(resumo))}</p>
-      </header>
+      <article class="leads-card">
+        ${still("leads", "Render 3D: caderno fechado em couro petróleo, com fecho fino.")}
+        <div class="leads-card-copy">
+          <p class="eyebrow">Caderno</p>
+          <h2>Leads</h2>
+          <p class="leads-resumo" data-resumo>${esc(resumoTexto(resumo))}</p>
+        </div>
+      </article>
       <div class="leads-grid">
         <div class="leads-list" aria-label="Leads">${lista}</div>
         <form class="leads-editor block" id="leadForm">
@@ -1361,7 +1396,7 @@ async function renderHistorico() {
   const list = ok && data.ok ? data.items : [];
   const box = $("#hist");
   if (!list.length) {
-    box.innerHTML = `<div class="empty">Nada por aqui ainda. Crie sua primeira peça no Estúdio.</div>`;
+    box.innerHTML = `<div class="empty">${still("vazio", "", "still-empty")}<p>Nada por aqui ainda. Crie sua primeira peça no Estúdio.</p></div>`;
     return;
   }
   box.innerHTML = list
