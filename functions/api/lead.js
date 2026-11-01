@@ -12,6 +12,7 @@ export async function onRequestPost({ request, env }) {
     subnicho: clean(b.subnicho, 120), segmento_outro: clean(b.segmento_outro, 80), instagram: clean(b.instagram, 60), email: clean(b.email, 120), dor: clean(b.dor, 80), nota: +b.nota || 0, fit: +b.fit || 0,
     nivel: clean(b.nivel, 10), ligacao: !!b.ligacao, respostas: b.respostas && typeof b.respostas === "object" ? Object.fromEntries(Object.entries(b.respostas).slice(0, 10).map(([k, v]) => [clean(k, 30), clean(v, 120)])) : {},
     faixa: clean(b.faixa, 10), nicho_key: clean(b.nicho_key, 12), origem: clean(b.origem, 40), status: "novo", faturamento: clean(b.faturamento, 20), site: clean(b.site, 120), qualificado: /^(30_80k|80_150k|acima_150k)$/.test(clean(b.faturamento, 20)), urgencia: clean(b.urgencia, 40),
+    variante: /^[17]$/.test(clean(b.variante, 8)) ? clean(b.variante, 8) : "", nicho_anuncio: clean(b.nicho_anuncio, 24),
     atribuicao: b.atribuicao && typeof b.atribuicao === "object" ? Object.fromEntries(Object.entries(b.atribuicao).slice(0, 15).map(([k, v]) => [clean(k, 20), clean(v, 200)])) : {},
     pagina: clean(b.pagina, 200), ua: clean(request.headers.get("user-agent"), 160), data: new Date().toISOString()
   };
@@ -20,18 +21,20 @@ export async function onRequestPost({ request, env }) {
   if (env.LEADS) await env.LEADS.put(id, JSON.stringify(lead), { expirationTtl: TTL, metadata: { nome: lead.nome, nivel: lead.nivel, status: lead.status } });
   await indexLead(env, id, lead.email, lead.whatsapp);
 
-  const txt = `${lead.qualificado ? "📞 LIGAR EM ATÉ 30 MIN" : lead.ligacao ? "📞 PEDIU LIGAÇÃO" : "🆕 Novo lead"} · ${lead.origem} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\nNota ${lead.nota}/100 · fit ${lead.fit}\nWhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
+  const txt = `${lead.qualificado ? "★ QUALIFICADO" : "🆕 Novo lead"} · ${lead.origem || "site"}${lead.variante ? " · v" + lead.variante : ""}${lead.nicho_anuncio ? " · " + lead.nicho_anuncio : ""} (${lead.nivel})\n${lead.nome} · ${lead.clinica}\n${lead.subnicho}\n${lead.nota ? "Nota " + lead.nota + "/100 · fit " + lead.fit + "\n" : ""}WhatsApp: https://wa.me/${lead.whatsapp}${lead.instagram ? "\nIG: " + lead.instagram : ""}`;
   const jobs = [];
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID)
     jobs.push(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: txt, disable_web_page_preview: true }) }));
   if (env.NOTIFY_WEBHOOK)
     jobs.push(fetch(env.NOTIFY_WEBHOOK, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, texto: txt, ...lead }) }));
-  const a = lead.atribuicao, c = { nome: lead.nome, email: lead.email, whatsapp: lead.whatsapp, negocio: lead.clinica, nicho: lead.subnicho, nicho_key: lead.nicho_key, fit_nivel: lead.nivel, fbclid: a.fbclid, score: lead.nota, dor: lead.dor, faixa: lead.faixa, origem: lead.origem || "quiz", status: "lead", faturamento: lead.faturamento, instagram: lead.instagram, site: lead.site, utm_source: a.utm_source, utm_medium: a.utm_medium, utm_campaign: a.utm_campaign, utm_content: a.utm_content, utm_term: a.utm_term };
+  const a = lead.atribuicao, c = { nome: lead.nome, email: lead.email, whatsapp: lead.whatsapp, negocio: lead.clinica, nicho: lead.subnicho, nicho_key: lead.nicho_key, nicho_anuncio: lead.nicho_anuncio, variante: lead.variante, fit_nivel: lead.nivel, fbclid: a.fbclid, score: lead.nota, dor: lead.dor, faixa: lead.faixa, origem: lead.origem || "quiz", status: "lead", faturamento: lead.faturamento, instagram: lead.instagram, site: lead.site, utm_source: a.utm_source, utm_medium: a.utm_medium, utm_campaign: a.utm_campaign, utm_content: a.utm_content, utm_term: a.utm_term };
   const eid = s => /^[\w-]{8,80}$/.test(s || "") ? s : "";
   const capiBase = { test: b.teste_rastreio === true, url: lead.pagina, fbc: clean(a.fbc, 200), fbp: clean(a.fbp, 200), user: { em: lead.email, ph: lead.whatsapp, fn: lead.nome.split(/\s+/)[0], ln: lead.nome.split(/\s+/).slice(1).join(""), external_id: lead.whatsapp } };
   // custom_data neutro (sem saúde, dor ou procedimento): só faixa de faturamento e tipo de lead
-  const cd = { content_name: /^bio|ebook|raio|quiz|site/.test(lead.origem) ? lead.origem.replace(/[^\w-]/g, "").slice(0, 30) : "site", faixa_faturamento: lead.faturamento, lead_type: lead.qualificado ? "qualificado" : "nao_qualificado" };
+  const originKey = (lead.origem || "").replace(/[^\w-]/g, "").slice(0, 30);
+  const cd = { content_name: /bio|ebook|raio|quiz|site|contato/.test(originKey) ? originKey : "site", faixa_faturamento: lead.faturamento, lead_type: lead.qualificado ? "qualificado" : "nao_qualificado", variante: lead.variante };
   if (!cd.faixa_faturamento) delete cd.faixa_faturamento;
+  if (!cd.variante) delete cd.variante;
   const capiJobs = [];
   if (eid(b.event_id)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "Lead", event_id: eid(b.event_id), params: cd }));
   if (lead.qualificado && eid(b.event_id_qual)) capiJobs.push(capiSend(env, request, { ...capiBase, event_name: "SubmitApplication", event_id: eid(b.event_id_qual), params: cd }));

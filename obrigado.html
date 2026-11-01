@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Recebemos os seus dados — Prime Studio</title>
+<meta name="theme-color" content="#0A313B">
+<link rel="canonical" href="https://prime.devbrasil.online/obrigado">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A313B;--gold2:#C8A25A;--tx:#F7F5F0;--mut:#C5D0D2;--serif:"Cormorant Garamond",Georgia,serif;--sans:Inter,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:
+  linear-gradient(#C8A25A,#C8A25A) left 14px top 14px / 22px 1.5px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) left 14px top 14px / 1.5px 22px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) right 14px top 14px / 22px 1.5px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) right 14px top 14px / 1.5px 22px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) left 14px bottom 14px / 22px 1.5px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) left 14px bottom 14px / 1.5px 22px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) right 14px bottom 14px / 22px 1.5px no-repeat,
+  linear-gradient(#C8A25A,#C8A25A) right 14px bottom 14px / 1.5px 22px no-repeat,
+  var(--bg);color:var(--tx);font:16px/1.55 var(--sans)}
+main{width:min(640px,100%);margin:0 auto;padding:36px 20px 48px}
+.logo{font-weight:600;letter-spacing:.28em;font-size:.78rem;text-decoration:none;color:var(--tx)}
+.logo span{color:var(--gold2);font-weight:400;margin-left:.4em}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(2.2rem,8vw,3.4rem);line-height:1.05;margin:28px 0 12px}
+h1 em{color:var(--gold2);font-style:italic}
+p{color:var(--mut);margin:0 0 14px}
+.card{margin-top:18px;padding:16px 18px;border:1px solid #1E5C6C;border-radius:16px;background:#0F4C5C;color:var(--tx)}
+a.btn{display:inline-flex;margin-top:8px;padding:14px 20px;border-radius:999px;background:linear-gradient(135deg,#C8A25A,#B08D57);color:#1A2328;font-weight:600;text-decoration:none}
+a.quiet{color:var(--gold2)}
+footer{margin-top:32px;font-size:.75rem;letter-spacing:.14em;color:#8aa0a6}
+footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <a class="logo" href="/">PRIME<span>STUDIO</span></a>
+  <h1>Recebemos <em>os seus dados</em>.</h1>
+  <p id="lead">O nosso time entra em contato para o Raio-X gratuito da clínica.</p>
+  <div class="card" id="fallback" hidden>
+    <p style="color:#F7F5F0">O envio pelo site não foi confirmado. Chame o nosso time no WhatsApp com a mensagem já pronta.</p>
+    <a class="btn" id="wa" href="https://wa.me/5511913221587" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+  </div>
+  <p style="margin-top:22px"><a class="quiet" href="/">Voltar ao site</a></p>
+  <footer>PRIME STUDIO · <a href="/privacidade">Privacidade</a></footer>
+</main>
+<script src="/assets/px.js?v=21" defer></script>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var info = {};
+  try { info = JSON.parse(sessionStorage.getItem("prime_contato_ok") || "{}"); } catch (e) {}
+  var salvo = q.get("salvo");
+  if (salvo === "0" || info.salvo === false) {
+    var box = document.getElementById("fallback");
+    box.hidden = false;
+    var nome = info.nome || "";
+    var cli = info.clinica || "";
+    var msg = "Olá, time Prime Studio! Deixei meus dados para o Raio-X gratuito" + (nome ? " (sou " + nome + ")" : "") + (cli ? " da " + cli : "") + ".";
+    document.getElementById("wa").href = "https://wa.me/5511913221587?text=" + encodeURIComponent(msg);
+  }
+})();
+</script>
+</body>
+</html>

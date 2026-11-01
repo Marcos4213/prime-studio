@@ -3,7 +3,7 @@ const CONFIG = {
   // Endpoint que salva o lead (Cloudflare Pages Function em /functions/api/lead.js).
   // No GitHub Pages não existe; o site cai automaticamente no WhatsApp.
   LEAD_API: "/api/lead",
-  // Horário comercial (America/Sao_Paulo) para a promessa "ligação em até 30 minutos"
+  // Horário comercial (America/Sao_Paulo). O site não promete prazo de retorno.
   HORARIO: { dias:[1,2,3,4,5,6], inicio:9, fim:18 },   // seg–sáb, 9h–18h (sábado a confirmar)
   WHATSAPP_NUMERO: "5511913221587",
   // Opção 3 (agenda). Placeholder: trocar pelo link do Cal.com quando estiver pronto.
@@ -33,31 +33,28 @@ footWa.onclick = ()=>track("Contact",{content_name:"whatsapp_rodape"});
 /* ---------- Cases (EXEMPLOS de projeto — substitua por cases reais) ---------- */
 const CASES = [
   { id:"ver", nicho:"Harmonização facial", nome:"Maison Verelle",
-    resumo:"Site em tons de creme e dourado, com equipe, espaço e depoimentos à vista e WhatsApp a um toque.",
+    resumo:"Site em tons de creme e dourado, com equipe, espaço e WhatsApp a um toque.",
     t:{a:"#a07a4f",bgc:"#f7f0e7",ink:"#2b2118",soft:"#eadccb"},
     h1:"Beleza <em>natural</em>, assinada com precisão.", sub:"Harmonização facial com planejamento individual e foco em resultados equilibrados.",
     servs:[["Preenchimento labial","Volume e contorno respeitando a proporção do rosto."],["Toxina botulínica","Suavização de linhas de expressão com naturalidade."],["Bioestimuladores","Firmeza e qualidade de pele de forma gradual."]],
     team:[["Dra. Helena Duarte","Harmonização facial"],["Dra. Marina Lacerda","Dermatologia estética"],["Dra. Beatriz Sallum","Biomedicina estética"]],
     amb:["Recepção","Sala de espera","Lounge","Área de atendimento"],
-    deps:[["Carolina M.","Saí me sentindo eu mesma, só mais descansada. Explicaram cada etapa com calma."],["Juliana P.","A clínica é linda e o cuidado vai do primeiro contato ao retorno."],["Regina A.","Gostei de não sentir pressão nenhuma na avaliação."]],
     band:"Cada rosto pede um plano. O seu começa com uma avaliação." },
   { id:"sol", nicho:"Odontologia estética", nome:"Solenne Odonto",
     resumo:"Site claro e moderno para lentes e implantes, com planejamento do sorriso, equipe e consultórios.",
     t:{a:"#2b7a99",bgc:"#f5f9fb",ink:"#13283a",soft:"#dfeaf0"},
     h1:"O sorriso que você <em>sempre quis</em> mostrar.", sub:"Lentes de contato dental, implantes e ortodontia com planejamento digital do sorriso.",
     servs:[["Lentes de contato dental","Lâminas ultrafinas para forma, cor e alinhamento."],["Clareamento","Sorriso mais claro com acompanhamento profissional."],["Implantes","Reabilitação com planejamento digital e conforto."]],
-    team:[["Dra. Camila Rezende","Lentes e reabilitação oral"],["Dra. Luiza Fontes","Ortodontia"],["Dra. Renata Okada","Implantodontia"]],
+    team:[["Dra. Clara Mendes","Lentes e reabilitação oral"],["Dra. Luiza Fontes","Ortodontia"],["Dra. Renata Okada","Implantodontia"]],
     amb:["Consultório","Sala de planejamento","Atendimento","Recepção"],
-    deps:[["Ana L.","Vi o planejamento do meu sorriso antes de começar. Isso me deixou muito segura."],["Fernanda C.","Pontualidade e cuidado em todas as consultas."],["Rafael T.","Tinha receio de dentista e fui muito bem acolhido."]],
     band:"Agende sua avaliação e conheça o planejamento do seu sorriso." },
   { id:"ave", nicho:"Dermatologia e bem-estar", nome:"Clinique Avelline",
     resumo:"Site sofisticado de dermatologia e bem-estar, com protocolos por objetivo, equipe e espaço reservado.",
     t:{a:"#6f7b5e",bgc:"#f2f0ea",ink:"#23261f",soft:"#e1e2d6"},
     h1:"Cuidado que se <em>sente</em> e se vê.", sub:"Dermatologia clínica e protocolos de pele em um espaço reservado, com avaliação personalizada.",
     servs:[["Peelings e renovação","Textura e luminosidade com acompanhamento médico."],["Protocolos de pele","Rotina pensada para o seu tipo de pele."],["Bem-estar","Experiência completa em ambiente reservado."]],
-    team:[["Dra. Isabela Moraes","Dermatologia clínica"],["Dra. Patrícia Viana","Estética facial e corporal"],["Dra. Sofia Brandão","Medicina do bem-estar"]],
+    team:[["Dra. Isabela Moraes","Dermatologia clínica"],["Dra. Helena Pires","Estética facial e corporal"],["Dra. Sofia Brandão","Medicina do bem-estar"]],
     amb:["Recepção","Corredor","Sala de protocolos","Suíte reservada"],
-    deps:[["Larissa N.","Ambiente silencioso e equipe gentil. Virou o meu momento da semana."],["Teresa G.","Montaram um protocolo pensado para a minha rotina."],["Marta S.","Tudo muito bem explicado, sem pressa nenhuma."]],
     band:"Descubra o protocolo ideal para a sua pele." }
 ];
 const STK="/assets/img/stock/";
@@ -71,7 +68,6 @@ function tplHTML(c,lite){
   <div class="t-sec"><p class="t-eb">Tratamentos</p><h2>Procedimentos</h2><div class="t-grid">${c.servs.map((s,k)=>`<div class="t-card"><div class="t-pi">${IM(f("proc"+(k+1)),[800],s[0],"",lite)}</div><div class="t-cb"><h3>${s[0]}</h3><p>${s[1]}</p></div></div>`).join("")}</div></div>
   <div class="t-sec t-alt"><p class="t-eb">Nossa equipe</p><h2>Quem cuida de você</h2><div class="t-team">${c.team.map((m,k)=>`<figure>${IM(f("team"+(k+1)),[400,800],m[0],"(max-width:760px) 33vw, 22vw",lite)}<figcaption><b>${m[0]}</b><span>${m[1]}</span></figcaption></figure>`).join("")}</div></div>
   <div class="t-sec"><p class="t-eb">O espaço</p><h2>Um ambiente pensado para você</h2><div class="t-gal">${c.amb.map((a,k)=>`<figure>${IM(f("amb"+(k+1)),[800,1600],a,k===0?"(max-width:760px) 100vw, 60vw":"(max-width:760px) 50vw, 30vw",lite)}<figcaption>${a}</figcaption></figure>`).join("")}</div></div>
-  <div class="t-sec t-alt"><p class="t-eb">Depoimentos</p><h2>Quem já passou por aqui</h2><div class="t-deps">${c.deps.map((d,k)=>`<blockquote><p>“${d[1]}”</p><footer>${IM(f("dep"+(k+1)),[200,400],d[0],"56px",lite)}<b>${d[0]}</b></footer></blockquote>`).join("")}</div></div>
   <div class="t-sec"><p class="t-eb">Como funciona</p><h2>Sua jornada</h2><div class="t-steps"><div><h3>Contato</h3><p>Pelo WhatsApp, em poucos toques.</p></div><div><h3>Avaliação</h3><p>Conversa e análise individual.</p></div><div><h3>Plano</h3><p>Proposta personalizada.</p></div><div><h3>Acompanhamento</h3><p>Retornos e cuidado contínuo.</p></div></div></div>
   <div class="t-band"><h2>${c.band}</h2><p style="margin:14px 0 26px">Atendimento com hora marcada.</p><span class="t-cta">Agendar avaliação</span></div>
   <div class="t-foot"><span>${c.nome}</span><span>Instagram · WhatsApp</span></div>
@@ -80,7 +76,7 @@ function tplHTML(c,lite){
 const grid = document.getElementById("cases-grid");
 grid.innerHTML = CASES.map((c,k)=>`<button class="case reveal" data-k="${k}" aria-label="Ver projeto ${c.nome} em tela cheia">
   <div class="frame"><div class="mini">${tplHTML(c,1)}</div></div>
-  <div class="info"><h3>${c.nome}</h3><p><strong>${c.nicho}.</strong> ${c.resumo}</p></div></button>`).join("");
+  <div class="info"><span class="ex">Site-modelo</span><h3>${c.nome}</h3><p><strong>${c.nicho}.</strong> ${c.resumo}</p></div></button>`).join("");
 function fitMinis(){ grid.querySelectorAll(".frame").forEach(f=>{ f.querySelector(".mini").style.transform=`scale(${f.clientWidth/1280})`; }); }
 addEventListener("resize", fitMinis); fitMinis();
 // v17: site em MacBook + iPhone (mesmo projeto dos cases)
@@ -171,13 +167,13 @@ const NICHOS = {
   outro:{t:"Outro negócio de alto padrão", p:"cliente", ps:"clientes", unid:"novos clientes", item:"serviço", local:"negócio"}
 };
 const HEAD = {
-  estetica:["Sua clínica entrega mais do que a internet mostra.","Sua estética já aparece. Ainda não convence.","Base forte. Agora é transformar presença em protocolo fechado."],
-  odonto:["Quem procura lentes na sua cidade ainda não encontra você.","Seu consultório aparece, mas não transmite o valor do tratamento.","Presença sólida. Falta virar agenda de casos de alto valor."],
-  harmo:["Seu resultado é natural. Sua presença ainda é invisível.","A paciente te encontra, compara e ainda hesita.","Você já é referência. Falta escalar com previsibilidade."],
-  nutri:["Seu atendimento é sério. Seu perfil ainda não mostra isso.","Você aparece, mas parece mais um nutri entre muitos.","Boa autoridade. Agora é lotar a agenda de primeiras consultas."],
-  fisio:["Quem sente dor procura no Google, e encontra outra clínica.","Sua clínica aparece, mas não explica por que tratar com você.","Presença boa. Falta canal previsível de pacientes particulares."],
-  beleza:["Seu trabalho é premium. Seu perfil ainda parece comum.","A cliente gosta do seu feed, mas não sente segurança para agendar.","Você já atrai. Agora é encher a agenda com quem paga o seu valor."],
-  outro:["Seu negócio entrega alto padrão. A presença digital ainda não.","Você aparece, mas não se diferencia de quem cobra menos.","Base sólida. Falta transformar presença em agenda previsível."]
+  estetica:["A clínica entrega mais do que a internet mostra.","A estética já aparece. Ainda não convence.","Base forte. O próximo passo é protocolo fechado, com confiança."],
+  odonto:["Quem procura lentes na cidade ainda não encontra esta clínica.","O consultório aparece, mas não transmite o valor do tratamento.","Base sólida. Falta a paciente chegar confiando no caso de alto valor."],
+  harmo:["O resultado é natural. A presença ainda é invisível.","A paciente encontra, compara e ainda hesita.","A referência já existe. Falta a confiança antes da primeira mensagem."],
+  nutri:["O atendimento é sério. O perfil ainda não mostra isso.","O perfil aparece, mas parece mais um entre muitos.","Boa autoridade. O próximo passo é a primeira consulta com quem já confia."],
+  fisio:["Quem procura no Google encontra outra clínica.","A clínica aparece, mas não explica por que tratar aqui.","Presença boa. Falta um caminho previsível de pacientes particulares."],
+  beleza:["O trabalho é premium. O perfil ainda parece comum.","A cliente gosta do feed, mas não sente segurança para agendar.","O perfil já atrai. Falta a cliente chegar pronta para o valor."],
+  outro:["O negócio entrega alto padrão. A presença digital ainda não.","O perfil aparece, mas não se diferencia de quem cobra menos.","Base sólida. Falta transformar atenção em confiança."]
 };
 const DOR = {
   preco:{t:"Chegam pedindo só preço", d:N=>`Quando o ${N.p} chega perguntando só o preço, é porque a sua presença não mostrou o valor antes da conversa. Ele compara você com o mais barato porque não viu diferença.`},
@@ -208,7 +204,6 @@ const LPQ=document.body.classList.contains("lp-quiz");
 if(LPQ){ const keep=["nicho","dor","site","google","faturamento"]; for(let i=QUESTIONS.length-1;i>=0;i--) if(!keep.includes(QUESTIONS[i].id)) QUESTIONS.splice(i,1); }
 const MAXP=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.p||0)),0)||100, MAXF=QUESTIONS.reduce((a,Q)=>a+Math.max(0,...Q.opts.map(o=>o.f||0)),0)||70;
 const QUALF = new Set(["30_80k","80_150k","acima_150k"]);
-function emHorario(){ const d=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Sao_Paulo"})); const h=d.getHours(); return CONFIG.HORARIO.dias.includes(d.getDay()) && h>=CONFIG.HORARIO.inicio && h<CONFIG.HORARIO.fim; }
 const DOR_W = {agenda:"wpp", preco:"insta", visib:"google", valor:"site"};
 const SK="prime_rx";
 let st = (()=>{ try{ return JSON.parse(sessionStorage.getItem(SK))||{} }catch(e){ return {} } })();
@@ -266,7 +261,7 @@ function renderForm(){
   const L=st.lead||{};
   qs.innerHTML=`<div class="qx-lock">${ringSvg(r.nota,true)}<p class="k">Seu Raio-X está pronto</p></div>
   <h2 class="qx-q">Para quem é este diagnóstico?</h2>
-  <p class="qx-sub">Você vê o resultado na hora. Com o seu Instagram em mãos, nosso time já abre os seus perfis para o diagnóstico.</p>
+  <p class="qx-sub">A nota aparece na hora. Com o Instagram em mãos, o nosso time abre os perfis para o diagnóstico.</p>
   <label for="nome">Seu nome</label><input id="nome" autocomplete="name" value="${esc(L.nome||"")}">
   <label for="wpp">WhatsApp (com DDD)</label><input id="wpp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${esc(L.whatsapp||"")}">
   <label for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@clinica.com.br" value="${esc(L.email||"")}">
@@ -299,11 +294,10 @@ function renderResult(){
   const head = HEAD[r.nk][{baixa:0,media:1,alta:2}[r.faixa]];
   const msgWa = `Olá, time Prime Studio! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
   const wa = t=>`https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(t)}`;
-  const quando = emHorario() ? "em até 30 minutos" : "no início do próximo horário de atendimento";
   const fim = st.qual
-   ? `<div class="qx-call"><p class="k">Diagnóstico por ligação</p><h3>Pronto, ${esc(nome)}. Nosso time vai te ligar ${quando} com seus perfis já abertos.</h3><p>Na ligação, analisamos ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} com você e entendemos seus objetivos. Deixe o WhatsApp por perto.</p>
-      <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Prefere adiantar? Fale no WhatsApp</a></div>`
-   : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. Seu próximo passo é fortalecer a base.</h3><p>Pelo momento do seu negócio, o melhor caminho agora é estruturar a sua presença com o nosso guia gratuito. Quando estiver pronto para o próximo nível, estaremos aqui.</p>
+   ? `<div class="qx-call"><p class="k">Próximo passo</p><h3>Pronto, ${esc(nome)}. O nosso time entra em contato com os perfis já abertos.</h3><p>Na conversa, o time analisa ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} e entende os objetivos. O WhatsApp fica à mão para adiantar.</p>
+      <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Adiantar no WhatsApp</a></div>`
+   : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. O próximo passo é fortalecer a base.</h3><p>Pelo momento do negócio, o melhor caminho agora é o guia gratuito. Quando fizer sentido avançar, o nosso time está aqui.</p>
       <a class="btn" id="bGuia" href="/guia?utm_source=quiz">Ler o guia gratuito</a></div>`;
   qs.innerHTML=`<div class="score-wrap">${ringSvg(r.nota,false)}
    <div><p class="k">${esc(nome)}, este é o seu Raio-X</p><span class="tag">${esc(L.clinica)} · ${esc(seg)}</span></div></div>
