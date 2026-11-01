@@ -2,7 +2,7 @@
 
 Site da Prime Studio: https://prime.devbrasil.online
 
-Promessa: paciente de alto valor que pergunta o preço e some não está achando caro — está sem confiança. O nosso time arruma isso em 90 dias. O Método PRIME é o como. O preço do pacote não aparece no site.
+Promessa: paciente de alto valor que pergunta o preço e some não está achando caro — está sem confiança. Google, site, link na bio, Instagram com 3 posts e display com QR ficam prontos em até 7 dias. Os 90 dias seguintes são só acompanhamento de ajustes. O Método PRIME é o como. O preço do pacote não aparece no site.
 
 HTML/CSS/JS estático, sem build, hospedado no Cloudflare Pages (projeto `prime-studio`) com Pages Functions.
 

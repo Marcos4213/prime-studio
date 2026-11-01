@@ -295,7 +295,7 @@ function renderResult(){
   const msgWa = `Olá, time Prime Studio! Sou ${L.nome}, da ${L.clinica} (${seg}). Fiz o Raio-X de Presença, minha nota foi ${r.nota}/100 e minha maior dor hoje é ${DOR[r.dk].t.toLowerCase()}. Meu Instagram é ${L.instagram}. Quero adiantar o meu diagnóstico.`;
   const wa = t=>`https://wa.me/${CONFIG.WHATSAPP_NUMERO}?text=${encodeURIComponent(t)}`;
   const fim = st.qual
-   ? `<div class="qx-call"><p class="k">Próximo passo</p><h3>Pronto, ${esc(nome)}. O nosso time entra em contato com os perfis já abertos.</h3><p>Na conversa, o time analisa ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} e entende os objetivos. O WhatsApp fica à mão para adiantar.</p>
+   ? `<div class="qx-call"><p class="k">Próximo passo</p><h3>Pronto, ${esc(nome)}. O nosso time entra em contato com os perfis já abertos.</h3><p>Na conversa, o time analisa ${N.local==="clínica"?"a sua":"o seu"} ${esc(N.local)} e entende os objetivos. Se fizer sentido seguir, Google, site, bio, Instagram e o display ficam prontos em até 7 dias. Os 90 dias seguintes são ajustes — foto, texto, depoimento. O WhatsApp fica à mão para adiantar.</p>
       <a class="btn ghost" id="bWa" href="${esc(wa(msgWa))}" target="_blank" rel="noopener">Adiantar no WhatsApp</a></div>`
    : `<div class="qx-call"><h3>Obrigado, ${esc(nome)}. O próximo passo é fortalecer a base.</h3><p>Pelo momento do negócio, o melhor caminho agora é o guia gratuito. Quando fizer sentido avançar, o nosso time está aqui.</p>
       <a class="btn" id="bGuia" href="/guia?utm_source=quiz">Ler o guia gratuito</a></div>`;

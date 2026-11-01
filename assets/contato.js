@@ -10,12 +10,12 @@
   };
   var COPY = {
     "1": {
-      h: "Mais pacientes de alto valor em 90 dias, sem depender de indicação.",
-      s: "O nosso time aplica o Método PRIME no seu Google, Instagram e site. Deixa os seus dados: a gente analisa a presença da sua clínica de graça e entra em contato."
+      h: "Mais pacientes de alto valor, sem depender de indicação. Estrutura pronta em até 7 dias.",
+      s: "O nosso time deixa Google, site, Instagram e o display com QR prontos em até 7 dias e acompanha os ajustes por 90 dias. Deixa os seus dados: a gente analisa a clínica de graça e entra em contato."
     },
     "7": {
       h: "“Quanto custa?” e sumiu? Quase nunca é o preço.",
-      s: "É confiança. O nosso time conecta site, Google e Instagram numa presença só. Análise gratuita para clínicas que já faturam a partir de R$ 30 mil/mês."
+      s: "É confiança. O nosso time deixa site, Google e Instagram prontos em até 7 dias e acompanha os ajustes por 90 dias. Análise gratuita para clínicas que já faturam a partir de R$ 30 mil/mês."
     }
   };
   var FAT = [

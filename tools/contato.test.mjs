@@ -30,7 +30,10 @@ test("variante forçada, persistida e 50/50", () => {
   assert.equal(C.assignVariante("", "1"), "1");
   assert.equal(C.assignVariante("", "", () => 0.1), "1");
   assert.equal(C.assignVariante("", "", () => 0.9), "7");
-  assert.equal(C.COPY["1"].h, "Mais pacientes de alto valor em 90 dias, sem depender de indicação.");
+  assert.equal(C.COPY["1"].h, "Mais pacientes de alto valor, sem depender de indicação. Estrutura pronta em até 7 dias.");
+  assert.match(C.COPY["1"].s, /até 7 dias/);
+  assert.match(C.COPY["1"].s, /90 dias/);
+  assert.doesNotMatch(C.COPY["1"].h, /em 90 dias/);
   assert.match(C.COPY["7"].h, /Quanto custa/);
   assert.equal(C.COPY["1"].h.startsWith("Você"), false);
   assert.equal(C.COPY["7"].h.startsWith("Você"), false);
